@@ -5,7 +5,7 @@ from urllib.request import urlretrieve
 
 # Configuration
 platform = 'linux64'  # Change this to 'win32', 'mac64', or 'linux64' as needed
-storage_dir = '/home/jerrykurian/Public/code/whatsapp_web/driver'  # Change to your desired directory
+storage_dir = '/home/jerrykurian/Public/code/whatsapp_helper/driver'  # Change to your desired directory
 
 # Fetch the latest Chrome driver information
 def get_latest_driver_info():

@@ -17,12 +17,12 @@ qr = qrcode.QRCode(
     box_size=10,
     border=4,
 )
-driver_path = '/home/jerrykurian/Public/code/whatsapp_web/driver/chromedriver-linux64/chromedriver'
-image_save_path = '/home/jerrykurian/Public/code/whatsapp_web/img'
+driver_path = '/home/jerrykurian/Public/code/whatsapp_helper/driver/chromedriver-linux64/chromedriver'
+image_save_path = '/home/jerrykurian/Public/code/whatsapp_helper/img'
 def create_instance():
     options = Options()
     options.add_argument("--headless=new")
-    browser = webdriver.Chrome(executable_path=driver_path, options=options) 
+    browser = webdriver.Chrome(executable_path=driver_path) 
     print('Getting the whatsapp web')
     browser.get(whatsapp_web_url)  
     return browser

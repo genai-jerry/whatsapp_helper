@@ -3,4 +3,3 @@ requests==2.26.0
 qrcode
 pillow
 BeautifulSoup4
-urlretrieve
