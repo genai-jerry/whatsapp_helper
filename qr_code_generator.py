@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 import qrcode
 from bs4 import BeautifulSoup
 from selenium.common.exceptions import TimeoutException
+import time
 
 # URL for WhatsApp Web
 whatsapp_web_url = "https://web.whatsapp.com/"
@@ -18,11 +19,11 @@ qr = qrcode.QRCode(
     border=4,
 )
 driver_path = '/home/jerrykurian/Public/code/whatsapp_helper/driver/chromedriver-linux64/chromedriver'
-image_save_path = '/home/jerrykurian/Public/code/whatsapp_helper/img'
+image_save_path = '/home/jerrykurian/Public/code/whatsapp_helper/static/images'
 def create_instance():
     options = Options()
     options.add_argument("--headless=new")
-    browser = webdriver.Chrome(executable_path=driver_path) 
+    browser = webdriver.Chrome(executable_path=driver_path  ) 
     print('Getting the whatsapp web')
     browser.get(whatsapp_web_url)  
     return browser
@@ -34,14 +35,17 @@ def load_qr_code(browser, host_number):
         print('Page is ready!')
     except TimeoutException:
         print('Loading took too much time!')
+        return
 
+    start_time = time.time()  # Record the start time
+    timeout = 30  # Timeout in seconds
     while True:
-        try:
-            # Get the HTML of the page
-            html = browser.page_source
+        # Get the HTML of the page
+        html = browser.page_source
 
-            # Parse the HTML with BeautifulSoup
-            soup = BeautifulSoup(html, 'html.parser')
+        # Parse the HTML with BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
+        try:
             # Find the element using BeautifulSoup and get the 'data-ref' attribute
             divs = soup.find('div', {"class":"_19vUU"})
 
@@ -59,5 +63,9 @@ def load_qr_code(browser, host_number):
                 img.save(f"{image_save_path}/whatsapp_web_qr_{host_number}.png")
 
                 return 
+        
         except Exception as e:
             print(f'{e}')
+            
+        if time.time() - start_time > timeout:
+            raise RuntimeError('Unable to send message')

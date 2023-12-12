@@ -1,9 +1,10 @@
 from selenium.webdriver.common.keys import Keys
 import time
 from bs4 import BeautifulSoup
-import os
+import os, requests
 from selenium.webdriver.common.by import By
 
+media_home = '/home/jerrykurian/Public/code/whatsapp_helper/static/videos/'
 # Function to send a WhatsApp message
 def is_instance_ready(browser):
     # Get the HTML of the page
@@ -37,27 +38,49 @@ def open_new_chat(browser):
         print('Ready to chat')
         return True
 
-def attach_file(browser):
+def attach_file(browser, file_name):
     # Locate the file input element (assuming it's hidden)
     file_input = browser.find_element(By.CSS_SELECTOR, "input[type='file']")
     # Make the file input element visible using JavaScript
     browser.execute_script("arguments[0].style.display = 'block';", file_input)
-    file_path = '/home/jerrykurian/amit-standing.jpeg'
+    file_path = f'{media_home}{file_name}'
     # Send the file path to the now-visible input element
     file_input.send_keys(os.path.abspath(file_path))
 
-def send_video(browser):
+def download_file(url, destination_folder):
+    # Make a request to the URL
+    response = requests.get(url, stream=True)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Extract filename from URL
+        filename = url.split('/')[-1]
+
+        # Create the full path for the destination
+        destination_file_path = destination_folder + '/' + filename
+
+        # Open a file with the same name in binary write mode
+        with open(destination_file_path, 'wb') as file:
+            for chunk in response.iter_content(chunk_size=128):
+                file.write(chunk)
+
+        return filename
+    else:
+        print(f"Error downloading file: {response.status_code}")
+        raise RuntimeError("Unable to download the file.")
+
+def send_media(browser, file_url):
     print('Attaching the file')
-    attach_file(browser)
-    while True:
-        try:
-            print('Sending file')
-            send_button = browser.find_element_by_xpath('//*[@aria-label="Send"]')
-            send_button.click()
-            print('File sent')
-            return True
-        except:
-            time.sleep(1)
+    file_name = download_file(file_url, media_home)
+    attach_file(browser, file_name)
+    try:
+        print('Sending file')
+        send_button = browser.find_element_by_xpath('//*[@aria-label="Send"]')
+        send_button.click()
+        print('File sent')
+        return True
+    except:
+        return False
     
 def search_and_start_chat(browser, contact_name):
     print('Searching the contact')
@@ -93,20 +116,32 @@ def send_message(browser, message):
 
 # Function to send a WhatsApp message
 def send_whatsapp_message(browser, contact_name, message):
-    try:
-        while not search_and_start_chat(browser, contact_name):
-            time.sleep(1)
-        while not send_message(browser, message):
-            time.sleep(1)
-    except Exception as e:
-        print(f"Failed to send message: {e}")
+    start_time = time.time()  # Record the start time
+    timeout = 30  # Timeout in seconds
+    while not search_and_start_chat(browser, contact_name):
+        if time.time() - start_time > timeout:
+            raise RuntimeError('Unable to send message')
+        time.sleep(1)
+
+    start_time = time.time()  # Record the start time
+    timeout = 30  # Timeout in seconds
+    while not send_message(browser, message):
+        if time.time() - start_time > timeout:
+            raise RuntimeError('Unable to send message')
+        time.sleep(1)
 
 # Function to send a WhatsApp message
-def send_video_whatsapp_message(browser, contact_name):
-    try:
-        while not search_and_start_chat(browser, contact_name):
-            time.sleep(1)
-        while not send_video(browser):
-            time.sleep(1)
-    except Exception as e:
-        print(f"Failed to send message: {e}")
+def send_media_whatsapp_message(browser, contact_name, file_url):
+    start_time = time.time()  # Record the start time
+    timeout = 30  # Timeout in seconds
+    while not search_and_start_chat(browser, contact_name):
+        if time.time() - start_time > timeout:
+            raise RuntimeError('Unable to send message')
+        time.sleep(1)
+
+    start_time = time.time()  # Record the start time
+    timeout = 30  # Timeout in seconds
+    while not send_media(browser, file_url):
+        if time.time() - start_time > timeout:
+            raise RuntimeError('Unable to send message')
+        time.sleep(1)

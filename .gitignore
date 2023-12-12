@@ -1,4 +1,5 @@
 __pycache__
 venv
 driver/*
-img/*
+static/images/*
+static/videos/*
