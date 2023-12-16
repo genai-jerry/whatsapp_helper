@@ -36,12 +36,17 @@ def create_instance(app_home):
     options = Options()
     options.add_argument("--headless=new")
     driver_file_path = os.path.join(app_home, driver_path)
-    print(f'Driver path is {driver_file_path}')
+    print(f'Driver path is {driver_file_path}. Making it executable')
     make_file_executable(driver_file_path)
-    browser = webdriver.Chrome(executable_path=driver_file_path, options=options) 
-    print('Getting the whatsapp web')
-    browser.get(whatsapp_web_url)  
-    return browser
+    print('Loading chrome web driver')
+    try:
+        browser = webdriver.Chrome(executable_path=driver_file_path, options=options) 
+        print('Getting the whatsapp web')
+        browser.get(whatsapp_web_url)  
+        return browser
+    except Exception as e:
+        print(e)
+        raise e
 
 def load_qr_code(browser, host_number):
     try:
