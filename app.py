@@ -40,7 +40,7 @@ def register_qr():
         # Respond with a successful creation message or similar
         return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
     except Exception as e:
-        return error_response(500, f'{app_home} - str(e)')
+        return error_response(500, f'{app_home} - {str(e)}')
 
 @app.route('/register/qr', methods=['GET'])
 def get_qr_code():
