@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import os, requests
 from selenium.webdriver.common.by import By
 
-media_home = './static/media/'
+media_home = 'static/media/'
 # Function to send a WhatsApp message
 def is_instance_ready(browser):
     # Get the HTML of the page
@@ -31,14 +31,13 @@ def open_new_chat(browser):
     print('Ready to chat')
     return True
 
-def attach_media_file(browser, file_name):
+def attach_media_file(media_path, browser, file_name):
     attach_link = browser.find_element_by_xpath('//*[@title="Attach"]')
     attach_link.click()
 
     # Locate the file input element (assuming it's hidden)
     file_input = browser.find_element_by_xpath('//input[@accept="image/*,video/mp4,video/3gpp,video/quicktime" and @type="file" and @multiple="" and @style="display: none;"]')
-
-    file_path = f'{media_home}{file_name}'
+    file_path = f'{media_path}{file_name}'
     # Send the file path to the now-visible input element
     file_input.send_keys(os.path.abspath(file_path))
 
@@ -64,10 +63,11 @@ def download_file(url, destination_folder):
         print(f"Error downloading file: {response.status_code}")
         raise RuntimeError("Unable to download the file.")
 
-def attach_media(browser, file_url):
+def attach_media(app_home, browser, file_url):
     print('Attaching the file')
-    file_name = download_file(file_url, media_home)
-    attach_media_file(browser, file_name)
+    media_path = os.path.join(app_home, media_home)
+    file_name = download_file(file_url, media_path)
+    attach_media_file(media_path, browser, file_name)
     return True
 
 def send_media(browser):
@@ -149,12 +149,12 @@ def send_whatsapp_message(browser, contact_name, message):
         time.sleep(1)
 
 # Function to send a WhatsApp message
-def send_media_whatsapp_message(browser, contact_name, file_url):
+def send_media_whatsapp_message(app_home, browser, contact_name, file_url):
     setup_contact_message_box(browser, contact_name)
     
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
-    while not attach_media(browser, file_url):
+    while not attach_media(app_home, browser, file_url):
         if time.time() - start_time > timeout:
             raise RuntimeError('Unable to send media message')
         time.sleep(1)

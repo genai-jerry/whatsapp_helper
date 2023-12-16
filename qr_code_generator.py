@@ -20,7 +20,7 @@ qr = qrcode.QRCode(
     border=4,
 )
 driver_path = 'driver/unzipped_contents/chromedriver-linux64/chromedriver'
-image_save_path = './static/images'
+image_save_path = 'static/images'
 
 def make_file_executable(file_path):
     # Get the current permissions
@@ -48,7 +48,7 @@ def create_instance(app_home):
         print(e)
         raise e
 
-def load_qr_code(browser, host_number):
+def load_qr_code(app_home, browser, host_number):
     try:
         print('Waiting for qr_code')
         WebDriverWait(browser, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div._19vUU')))
@@ -80,7 +80,8 @@ def load_qr_code(browser, host_number):
                 img = qr.make_image(fill_color="black", back_color="white")
 
                 # Save the QR code image to a file
-                img.save(f"{image_save_path}/whatsapp_web_qr_{host_number}.png")
+                image_path = os.path.join(app_home, image_save_path)
+                img.save(f"{image_path}/whatsapp_web_qr_{host_number}.png")
 
                 return 
         

@@ -52,7 +52,7 @@ def get_qr_code():
         
         if instance != None:
             # In a real application, provide the URL or path to the generated QR code
-            load_qr_code(instance['browser'], mobile_number)
+            load_qr_code(app_home, instance['browser'], mobile_number)
             instance['status'] = 'Ready'
             return jsonify({'status': 'ready'})
         else:
@@ -146,7 +146,7 @@ def media_message():
         if is_instance_ready(instance['browser']):
             with resource_lock:
                 browser = instance['browser']
-                send_media_whatsapp_message(browser, contact_name, url)
+                send_media_whatsapp_message(app_home, browser, contact_name, url)
                 return jsonify({'status': 'Done'})
         else:
             return error_response(400, 'Instance is not ready for the number')
