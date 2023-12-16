@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request, render_template, url_for, redirect, m
 from qr_code_generator import *
 from whatsapp_automation import *
 import threading
+# Create a lock to synchronize access to a resource
+resource_lock = threading.Lock()
 
 app = Flask(__name__)
 
@@ -98,8 +100,10 @@ def text_message():
         return error_response(400, 'No instance available for the number')
     if is_instance_ready(instance['browser']):
         try:
-            send_whatsapp_message(instance['browser'], contact_name, message)
-            return jsonify({'status': 'Done'})
+            with resource_lock:
+                browser = instance['browser']
+                send_whatsapp_message(browser, contact_name, message)
+                return jsonify({'status': 'Done'})
         except RuntimeError as e:
             return error_response(400, str(e))
     else:
@@ -115,8 +119,10 @@ def media_message():
     if instance == None:
         return error_response(400, 'No instance available for the number')
     if is_instance_ready(instance['browser']):
-        send_media_whatsapp_message(instance['browser'], contact_name, url)
-        return jsonify({'status': 'Done'})
+        with resource_lock:
+            browser = instance['browser']
+            send_media_whatsapp_message(browser, contact_name, url)
+            return jsonify({'status': 'Done'})
     else:
         return error_response(400, 'Instance is not ready for the number')
 
