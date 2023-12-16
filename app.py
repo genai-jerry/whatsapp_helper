@@ -97,8 +97,11 @@ def text_message():
     if instance == None:
         return error_response(400, 'No instance available for the number')
     if is_instance_ready(instance['browser']):
-        send_whatsapp_message(instance['browser'], contact_name, message)
-        return jsonify({'status': 'Done'})
+        try:
+            send_whatsapp_message(instance['browser'], contact_name, message)
+            return jsonify({'status': 'Done'})
+        except RuntimeError as e:
+            return error_response(400, str(e))
     else:
         return error_response(400, 'Instance is not ready for the number')
     

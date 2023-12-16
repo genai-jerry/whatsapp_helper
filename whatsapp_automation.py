@@ -25,24 +25,19 @@ def load_html(browser):
 
 def open_new_chat(browser):
     print('Opening new chat')
-    soup = load_html(browser)
-    # Locate the New Chat icon and click
-    new_chat = soup.find('div', {'aria-label':'New chat'})
-    print(f'new chat is {new_chat}')
-    if new_chat is None:
-        return False
-    else:
-        print('Clicking to start')
-        new_chat = browser.find_element_by_xpath('//*[@aria-label="New chat"]')
-        new_chat.click()
-        print('Ready to chat')
-        return True
+    new_chat = browser.find_element_by_xpath('//*[@aria-label="New chat"]')
+    print('Clicking to start')
+    new_chat.click()
+    print('Ready to chat')
+    return True
 
-def attach_file(browser, file_name):
+def attach_media_file(browser, file_name):
+    attach_link = browser.find_element_by_xpath('//*[@title="Attach"]')
+    attach_link.click()
+
     # Locate the file input element (assuming it's hidden)
-    file_input = browser.find_element(By.CSS_SELECTOR, "input[type='file']")
-    # Make the file input element visible using JavaScript
-    browser.execute_script("arguments[0].style.display = 'block';", file_input)
+    file_input = browser.find_element_by_xpath('//input[@accept="image/*,video/mp4,video/3gpp,video/quicktime" and @type="file" and @multiple="" and @style="display: none;"]')
+
     file_path = f'{media_home}{file_name}'
     # Send the file path to the now-visible input element
     file_input.send_keys(os.path.abspath(file_path))
@@ -69,59 +64,82 @@ def download_file(url, destination_folder):
         print(f"Error downloading file: {response.status_code}")
         raise RuntimeError("Unable to download the file.")
 
-def send_media(browser, file_url):
+def attach_media(browser, file_url):
     print('Attaching the file')
     file_name = download_file(file_url, media_home)
-    attach_file(browser, file_name)
+    attach_media_file(browser, file_name)
+    return True
+
+def send_media(browser):
     try:
-        print('Sending file')
-        send_button = browser.find_element_by_xpath('//*[@aria-label="Send"]')
+        send_button = browser.find_element_by_xpath('//div[@role="button" and @aria-label="Send"]')
         send_button.click()
-        print('File sent')
         return True
     except:
         return False
-    
-def search_and_start_chat(browser, contact_name):
-    print('Searching the contact')
-    soup = load_html(browser)
-    # Locate the search input field
-    search_box = soup.find('div', {'title': 'Search input textbox'})
-    if search_box == None:
-        return False
-    else:
-        print('Clicking to enter details')
-        search_box = browser.find_element_by_xpath('//*[@title="Search input textbox"]')
-        search_box.click()
-        search_box.send_keys(contact_name)
-        search_box.send_keys(Keys.ENTER)
-        print('Message box for contact opened')
+
+def load_contact_message_box(browser):
+    # //div[contains(text(), 'Contacts on WhatsApp')]/ancestor::div[@role='listitem'][1]/following-sibling::div[@role='listitem']
+    # //div[contains(text(), 'Not in your contacts')]/following-sibling::div[1]
+    try:
+        print('Check contact in WhatsApp')
+        contact_item = browser.find_element_by_xpath("//div[contains(text(), 'Contacts on WhatsApp')]/ancestor::div[@role='listitem'][1]/following-sibling::div[@role='listitem']")
+        contact_item.click()
         return True
+    except Exception as e:
+        try:
+            print(e)
+            contact_item = browser.find_element_by_xpath("//div[contains(text(), 'Not in your contacts')]/following-sibling::div[1]")
+            contact_item.click()
+            return True
+        except:
+            print('Contact not on WhatsApp')
+            return False
+        
+def search_and_start_chat(browser, contact_name):
+    print('Opening Search Box')
+    search_box = browser.find_element_by_xpath('//*[@title="Search input textbox"]')
+    search_box.click()
+    print('Searching for the contact')
+    search_box.send_keys(contact_name)
+    time.sleep(1)
+    print('Message box for contact opened')
+    return True
 
 def send_message(browser, message):
-    print('Sending message')
-    soup = load_html(browser)
-    # Send message in the message box
-    message_box = soup.find('div', {"title": "Type a message"})
-    if message_box == None:
-        return False
-    else:
-        print('Clicking to write the message')
-        message_box = browser.find_element_by_xpath('//*[@title="Type a message"]')
-        message_box.click()
-        message_box.send_keys(message)
-        message_box.send_keys(Keys.ENTER)
-        print('Sending message to contact')
-        return True
+    print('Clicking to write the message')
+    message_box = browser.find_element_by_xpath('//*[@title="Type a message"]')
+    message_box.click()
+    message_box.send_keys(message)
+    message_box.send_keys(Keys.ENTER)
+    print('Sending message to contact')
+    return True
 
-# Function to send a WhatsApp message
-def send_whatsapp_message(browser, contact_name, message):
+def setup_contact_message_box(browser, contact_name):
+    start_time = time.time()  # Record the start time
+    timeout = 30  # Timeout in seconds
+    while not open_new_chat(browser):
+        if time.time() - start_time > timeout:
+            raise RuntimeError('Unable to open new chat')
+        time.sleep(1)
+
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
     while not search_and_start_chat(browser, contact_name):
         if time.time() - start_time > timeout:
             raise RuntimeError('Unable to send message')
         time.sleep(1)
+
+    start_time = time.time()  # Record the start time
+    timeout = 30  # Timeout in seconds
+    while not load_contact_message_box(browser):
+        if time.time() - start_time > timeout:
+            raise RuntimeError('Unable to find contact')
+        time.sleep(1)
+
+# Function to send a WhatsApp message
+def send_whatsapp_message(browser, contact_name, message):
+    setup_contact_message_box(browser, contact_name)
 
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
@@ -132,16 +150,18 @@ def send_whatsapp_message(browser, contact_name, message):
 
 # Function to send a WhatsApp message
 def send_media_whatsapp_message(browser, contact_name, file_url):
+    setup_contact_message_box(browser, contact_name)
+    
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
-    while not search_and_start_chat(browser, contact_name):
+    while not attach_media(browser, file_url):
         if time.time() - start_time > timeout:
-            raise RuntimeError('Unable to send message')
+            raise RuntimeError('Unable to send media message')
         time.sleep(1)
 
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
-    while not send_media(browser, file_url):
+    while not send_media(browser):
         if time.time() - start_time > timeout:
-            raise RuntimeError('Unable to send message')
+            raise RuntimeError('Unable to send media message')
         time.sleep(1)
