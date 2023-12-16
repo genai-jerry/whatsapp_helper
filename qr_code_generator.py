@@ -37,9 +37,9 @@ def create_instance(app_home):
     options.add_argument("--headless=new")
     driver_file_path = os.path.join(app_home, driver_path)
     print(f'Driver path is {driver_file_path}. Making it executable')
-    make_file_executable(driver_file_path)
-    print('Loading chrome web driver')
     try:
+        make_file_executable(driver_file_path)
+        print('Loading chrome web driver')
         browser = webdriver.Chrome(executable_path=driver_file_path, options=options) 
         print('Getting the whatsapp web')
         browser.get(whatsapp_web_url)  
