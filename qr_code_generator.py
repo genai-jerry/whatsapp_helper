@@ -19,7 +19,7 @@ qr = qrcode.QRCode(
     box_size=10,
     border=4,
 )
-driver_path = '/driver/unzipped_contents/chromedriver-linux64/chromedriver'
+driver_path = 'driver/unzipped_contents/chromedriver-linux64/chromedriver'
 image_save_path = './static/images'
 
 def make_file_executable(file_path):
