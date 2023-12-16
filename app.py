@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, render_template, url_for, redirect, make_response
 from qr_code_generator import *
 from whatsapp_automation import *
+from update_chrome import *
 import threading
 # Create a lock to synchronize access to a resource
 resource_lock = threading.Lock()
@@ -26,7 +27,7 @@ def register_qr():
     instance = instances.get(mobile_number)
     if instance == None:
         print('Creating new instance')
-        browser = create_instance()
+        browser = create_instance(app_home)
         instances[mobile_number] = {'mobile_number': mobile_number, 'status': 'Pending', 'browser': browser, 'name': user_name}
     else:
         if is_instance_ready(instance['browser']):
@@ -89,6 +90,11 @@ def error_response(status_code, message):
     response.status_code = status_code
     return response
 
+@app.route('/driver/update')
+def driver_update():
+    update_chrome_driver()
+    return jsonify({'status': 'Done'})
+
 @app.route('/message/text', methods=['POST'])
 def text_message():
     data = request.json
@@ -126,5 +132,6 @@ def media_message():
     else:
         return error_response(400, 'Instance is not ready for the number')
 
+app_home = os.path.abspath(os.path.dirname(__file__))
 if __name__ == '__main__':
     app.run(debug=True)

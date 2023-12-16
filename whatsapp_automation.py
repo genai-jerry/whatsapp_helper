@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import os, requests
 from selenium.webdriver.common.by import By
 
-media_home = '/home/jerrykurian/Public/code/whatsapp_helper/static/videos/'
+media_home = './static/media/'
 # Function to send a WhatsApp message
 def is_instance_ready(browser):
     # Get the HTML of the page

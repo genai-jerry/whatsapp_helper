@@ -8,6 +8,7 @@ import qrcode
 from bs4 import BeautifulSoup
 from selenium.common.exceptions import TimeoutException
 import time
+import os
 
 # URL for WhatsApp Web
 whatsapp_web_url = "https://web.whatsapp.com/"
@@ -18,12 +19,26 @@ qr = qrcode.QRCode(
     box_size=10,
     border=4,
 )
-driver_path = '/home/jerrykurian/Public/code/whatsapp_helper/driver/chromedriver-linux64/chromedriver'
-image_save_path = '/home/jerrykurian/Public/code/whatsapp_helper/static/images'
-def create_instance():
+driver_path = 'driver/unzipped_contents/chromedriver-linux64/chromedriver'
+image_save_path = './static/images'
+
+def make_file_executable(file_path):
+    # Get the current permissions
+    current_permissions = os.stat(file_path).st_mode
+
+    # Add executable permission to the owner
+    new_permissions = current_permissions | 0o111
+
+    # Set the new permissions
+    os.chmod(file_path, new_permissions)
+
+def create_instance(app_home):
     options = Options()
     options.add_argument("--headless=new")
-    browser = webdriver.Chrome(executable_path=driver_path  ) 
+    driver_file_path = os.path.join(app_home, driver_path)
+    print(f'Driver path is {driver_file_path}')
+    make_file_executable(driver_file_path)
+    browser = webdriver.Chrome(executable_path=driver_file_path, options=options) 
     print('Getting the whatsapp web')
     browser.get(whatsapp_web_url)  
     return browser

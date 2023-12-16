@@ -17,7 +17,7 @@ def create_and_send_message(source, destination, message, type):
         if type == 1:
             send_whatsapp_message(browser, destination, message)
         else:
-            send_video_whatsapp_message(browser, destination)
+            send_media_whatsapp_message(browser, destination)
         return True
     else:
         print('Loading QR Code again')
