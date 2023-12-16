@@ -20,7 +20,7 @@ qr = qrcode.QRCode(
     border=4,
 )
 driver_path = 'driver/unzipped_contents/chromedriver-linux64/chromedriver'
-image_save_path = 'static/images'
+image_save_path = 'static/media'
 
 def make_file_executable(file_path):
     # Get the current permissions
