@@ -40,7 +40,7 @@ def register_qr():
         # Respond with a successful creation message or similar
         return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
     except Exception as e:
-        error_response(500, str(e))
+        return error_response(500, str(e))
 
 @app.route('/register/qr', methods=['GET'])
 def get_qr_code():
@@ -59,7 +59,7 @@ def get_qr_code():
             instance['status'] = 'Pending'
             return jsonify({'status': 'not ready'})
     except Exception as e:
-        error_response(500, str(e))
+        return error_response(500, str(e))
     
 @app.route('/qr/image', methods=['GET'])
 def redirect_to_home():
@@ -80,7 +80,7 @@ def check_activation():
             instance['status'] = 'Pending'
             return jsonify({'status': 'not ready'})
     except Exception as e:
-        error_response(500, str(e))
+        return error_response(500, str(e))
 
 @app.route('/instances', methods=['GET'])
 def list_instances():
@@ -95,7 +95,7 @@ def list_instances():
         # Apply the function to the data
         return jsonify(data)
     except Exception as e:
-        error_response(500, str(e))
+        return error_response(500, str(e))
 
 def error_response(status_code, message):
     response = jsonify({'error': message})
@@ -108,7 +108,7 @@ def driver_update():
         update_chrome_driver()
         return jsonify({'status': 'Done'})
     except Exception as e:
-        error_response(500, str(e))
+        return error_response(500, str(e))
 
 @app.route('/message/text', methods=['POST'])
 def text_message():
@@ -131,7 +131,7 @@ def text_message():
         else:
             return error_response(400, 'Instance is not ready for the number')
     except Exception as e:
-        error_response(500, str(e))
+        return error_response(500, str(e))
     
 @app.route('/message/media', methods=['POST'])
 def media_message():
@@ -151,7 +151,7 @@ def media_message():
         else:
             return error_response(400, 'Instance is not ready for the number')
     except Exception as e:
-        error_response(500, str(e))
+        return error_response(500, str(e))
 
 app_home = os.path.abspath(os.path.dirname(__file__))
 if __name__ == '__main__':
