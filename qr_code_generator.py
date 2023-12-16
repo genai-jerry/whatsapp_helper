@@ -49,44 +49,47 @@ def create_instance(app_home):
         raise e
 
 def load_qr_code(app_home, browser, host_number):
-    try:
-        print('Waiting for qr_code')
-        WebDriverWait(browser, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div._19vUU')))
-        print('Page is ready!')
-    except TimeoutException:
-        print('Loading took too much time!')
-        return
-
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
     while True:
-        # Get the HTML of the page
-        html = browser.page_source
-
-        # Parse the HTML with BeautifulSoup
-        soup = BeautifulSoup(html, 'html.parser')
         try:
-            # Find the element using BeautifulSoup and get the 'data-ref' attribute
-            divs = soup.find('div', {"class":"_19vUU"})
+            print('Waiting for qr_code')
+            browser.find_element_by_xpath('//div[@class="_19vUU"]')
+            print('Page is ready!')
+            start_time = time.time()  # Record the start time
+            timeout = 30  # Timeout in seconds
+            while True:
+                # Get the HTML of the page
+                html = browser.page_source
 
-            if divs != None:
-                print('Waiting for data-ref')
-                # Get the canvas as a PNG base64 string
-                data_ref = divs.attrs["data-ref"]
-                qr.add_data(data_ref)
-                qr.make(fit=True)
+                # Parse the HTML with BeautifulSoup
+                soup = BeautifulSoup(html, 'html.parser')
+                try:
+                    # Find the element using BeautifulSoup and get the 'data-ref' attribute
+                    divs = soup.find('div', {"class":"_19vUU"})
 
-                # Create an image of the QR code
-                img = qr.make_image(fill_color="black", back_color="white")
+                    if divs != None:
+                        print('Waiting for data-ref')
+                        # Get the canvas as a PNG base64 string
+                        data_ref = divs.attrs["data-ref"]
+                        qr.add_data(data_ref)
+                        qr.make(fit=True)
 
-                # Save the QR code image to a file
-                image_path = os.path.join(app_home, image_save_path)
-                img.save(f"{image_path}/whatsapp_web_qr_{host_number}.png")
+                        # Create an image of the QR code
+                        img = qr.make_image(fill_color="black", back_color="white")
 
-                return 
-        
-        except Exception as e:
-            print(f'{e}')
-            
-        if time.time() - start_time > timeout:
-            raise RuntimeError('Unable to send message')
+                        # Save the QR code image to a file
+                        image_path = os.path.join(app_home, image_save_path)
+                        img.save(f"{image_path}/whatsapp_web_qr_{host_number}.png")
+
+                        return 
+                
+                except Exception as e:
+                    print(f'{e}')
+                    
+                if time.time() - start_time > timeout:
+                    raise RuntimeError('Unable to send message')
+        except:
+            print('Loading took too much time!')
+            if time.time() - start_time > timeout:
+                raise RuntimeError('Unable to send message')
