@@ -34,7 +34,7 @@ def register_qr():
             if is_instance_ready(instance['browser']):
                 return jsonify({'status': 'ready', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
         # Start a new thread for loading the QR code
-        thread = threading.Thread(target=load_qr_code, args=(browser, mobile_number))
+        thread = threading.Thread(target=load_qr_code, args=(app_home, browser, mobile_number))
         thread.start()
 
         # Respond with a successful creation message or similar
