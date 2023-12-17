@@ -40,7 +40,7 @@ def create_instance(app_home):
     try:
         make_file_executable(driver_file_path)
         print('Loading chrome web driver')
-        browser = webdriver.Chrome(executable_path=driver_file_path, options=options) 
+        browser = webdriver.Chrome(executable_path=driver_file_path) 
         print('Getting the whatsapp web')
         browser.get(whatsapp_web_url)  
         return browser
@@ -54,42 +54,36 @@ def load_qr_code(app_home, browser, host_number):
     while True:
         try:
             print('Waiting for qr_code')
-            browser.find_element_by_xpath('//div[@class="_19vUU"]')
+            qr_div = browser.find_element_by_xpath('//div[@class="_19vUU"]')
             print('Page is ready!')
             start_time = time.time()  # Record the start time
             timeout = 30  # Timeout in seconds
             while True:
-                # Get the HTML of the page
-                html = browser.page_source
-
-                # Parse the HTML with BeautifulSoup
-                soup = BeautifulSoup(html, 'html.parser')
                 try:
-                    # Find the element using BeautifulSoup and get the 'data-ref' attribute
-                    divs = soup.find('div', {"class":"_19vUU"})
-
-                    if divs != None:
-                        print('Waiting for data-ref')
-                        # Get the canvas as a PNG base64 string
-                        data_ref = divs.attrs["data-ref"]
+                    print('Waiting for data-ref')
+                    # Get the canvas as a PNG base64 string
+                    qr_div = browser.find_element_by_xpath('//div[@class="_19vUU"]')
+                    data_ref = qr_div.get_attribute("data-ref")
+                    if data_ref != None:
+                        print(f'Got data {data_ref}')
                         qr.add_data(data_ref)
+                        print('Fitting qr')
                         qr.make(fit=True)
-
+                        print('Making Image')
                         # Create an image of the QR code
                         img = qr.make_image(fill_color="black", back_color="white")
 
                         # Save the QR code image to a file
                         image_path = os.path.join(app_home, image_save_path)
+                        print(f'Saving image to {image_path}')
                         img.save(f"{image_path}/whatsapp_web_qr_{host_number}.png")
-
-                        return 
-                
+                        return
                 except Exception as e:
                     print(f'{e}')
-                    
                 if time.time() - start_time > timeout:
-                    raise RuntimeError('Unable to send message')
+                    raise RuntimeError('Unable to load QR Code')
+                time.sleep(1)
         except:
-            print('Loading took too much time!')
             if time.time() - start_time > timeout:
-                raise RuntimeError('Unable to send message')
+                print('Loading took too much time!')
+                raise RuntimeError('Unable to load QR Code')
