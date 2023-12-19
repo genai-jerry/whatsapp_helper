@@ -91,7 +91,7 @@
                     var row = '<tr>' +
                               '<td>' + instance.mobile_number + '</td>' +
                               '<td>' + instance.status + '</td>' +
-                              '<td><a href="/instances/edit?mobile_number="'+ instance.mobile_number +'">Edit</a></td>' +
+                              '<td><a href="/instances/edit?mobile_number='+ instance.mobile_number +'">Edit</a></td>' +
                               '</tr>';
                     $('#instances-table-body').append(row);
                 });

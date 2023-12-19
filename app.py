@@ -14,7 +14,7 @@ def home():
 
 @app.route('/instances/home')
 def show_instances():
-    return render_template('instance.html')
+    return render_template('instance.html', content={})
 
 # Placeholder for storing instances - in a real application, use a database
 instances = {}
@@ -33,10 +33,7 @@ def register_qr():
         else:
             if is_instance_ready(instance['browser']):
                 return jsonify({'status': 'ready', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
-        # Start a new thread for loading the QR code
-        thread = threading.Thread(target=load_qr_code, args=(app_home, browser, mobile_number))
-        thread.start()
-
+       
         # Respond with a successful creation message or similar
         return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
     except Exception as e:
@@ -53,6 +50,7 @@ def refresh_qr():
             print('Creating new instance')
             browser = create_instance(app_home)
             instances[mobile_number] = {'mobile_number': mobile_number, 'status': 'Pending', 'browser': browser, 'name': user_name}
+            print(instances)
             # Respond with a successful creation message or similar
             return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
         else:
@@ -62,10 +60,6 @@ def refresh_qr():
                 return jsonify({'status': 'ready', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
             else:
                 browser.refresh()
-
-        # Start a new thread for loading the QR code
-        thread = threading.Thread(target=load_qr_code, args=(app_home, browser, mobile_number))
-        thread.start()
         # Respond with a successful creation message or similar
         return jsonify({'status': 'pending', 'message': 'QR Loading Initiated', 'mobileNumber': mobile_number})
     except Exception as e:
@@ -123,6 +117,15 @@ def list_instances():
         data = [{k: v for k, v in sub_dict.items() if k not in keys_to_exclude} for sub_dict in instances.values()]
         # Apply the function to the data
         return jsonify(data)
+    except Exception as e:
+        return error_response(500, str(e))
+
+@app.route('/instances/edit', methods=['GET'])
+def edit_instance():
+    try:
+        mobile_number = request.args.get('mobile_number')
+        instance = instances.get(mobile_number)
+        return render_template("instance.html", content=instance)
     except Exception as e:
         return error_response(500, str(e))
 

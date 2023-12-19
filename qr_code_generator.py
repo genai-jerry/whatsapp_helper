@@ -12,13 +12,6 @@ import os
 
 # URL for WhatsApp Web
 whatsapp_web_url = "https://web.whatsapp.com/"
-# Create a QR code instance
-qr = qrcode.QRCode(
-    version=1,
-    error_correction=qrcode.constants.ERROR_CORRECT_L,
-    box_size=10,
-    border=4,
-)
 driver_path = 'driver/unzipped_contents/chromedriver-linux64/chromedriver'
 image_save_path = 'static/images'
 
@@ -51,6 +44,12 @@ def create_instance(app_home):
 def load_qr_code(app_home, browser, host_number):
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
     while True:
         try:
             print('Waiting for qr_code')
@@ -75,8 +74,11 @@ def load_qr_code(app_home, browser, host_number):
 
                         # Save the QR code image to a file
                         image_path = os.path.join(app_home, image_save_path)
-                        print(f'Saving image to {image_path}')
-                        img.save(f"{image_path}/whatsapp_web_qr_{host_number}.png")
+                        qr_file_path = f"{image_path}/whatsapp_web_qr_{host_number}.png"
+                        print(f'Saving image to {qr_file_path}')
+                        if os.path.exists(qr_file_path):
+                            os.remove(qr_file_path)
+                        img.save(qr_file_path)
                         return
                 except Exception as e:
                     print(f'{e}')
