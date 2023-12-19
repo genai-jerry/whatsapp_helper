@@ -21,7 +21,8 @@
                 <input type="text" class="form-control" id="userName" value="{{content.name}}" required>
             </div>
             <div class="mt-4">
-                <p><button type="button" onclick="loadQRCode()">Refresh QR Code</button></p>
+                <progress id="progress" style="display: none;">Loading QR Code</progress>
+                <p><button id="refresh" type="button" onclick="loadQRCode()">Refresh QR Code</button></p>
                 <!-- QR Code Image will be dynamically inserted here -->
                 <div id="qrCodeContainer" class="text-center">
                 </div>
@@ -35,6 +36,8 @@
             var mobileNumber = $('#mobileNumber').val();
             var userName = $('#userName').val();
             $('#qrCodeContainer').hide();
+            $('#refresh').hide()
+            $('#progress').show()
             // Post to create instance
             $.post({
                 url: '/register/qr/refresh',
@@ -48,37 +51,48 @@
                 success: function(response) {
                     if(response.status == 'pending'){
                         // Handle success
-                        checkQRCode(mobileNumber)
+                        checkQRCode(mobileNumber, 1)
                     }else{
                         window.location.href = '/'; // Redirect to the instances page
                     }
                 },
                 error: function(xhr, status, error) {
                     // Handle error
+                    $('#refresh').show()
+                    $('#progress').hide()
                 }
             });
         }
-        function checkQRCode(mobileNumber) {
+        function checkQRCode(mobileNumber, attempt) {
             if(mobileNumber == undefined){
                 mobileNumber = $('#mobileNumber').val();
             }
             $.getJSON("/register/qr?mobile_number=" + mobileNumber, function(data) {
                 if (data.status === 'ready') {
+                    $('#refresh').hide()
+                    $('#progress').hide()
                     $('#qrCodeContainer').show();
-                    $('#qrCodeContainer').html('<img width="264px" height="264px" src="/qr/image?mobile_number='+mobileNumber+'" alt="QR Code">');
-                    checkActivation(mobileNumber);
+                    $('#qrCodeContainer').html('<img width="264px" height="264px" src="/qr/image?mobile_number='+mobileNumber+'" alt="QR Code"></img><progress></progress>');
+                    checkActivation(mobileNumber, 1);
                 } else {
-                    setTimeout(function() { checkQRCode(mobileNumber); }, 5000);
+                    $('#refresh').show()
+                    $('#progress').hide()
                 }
             });
         }
 
-        function checkActivation(mobileNumber) {
+        function checkActivation(mobileNumber, attempt) {
             $.getJSON("/register/qr/active?mobile_number=" + mobileNumber, function(data) {
                 if (data.status === 'ready') {
                     window.location.href = '/'; // Redirect to the instances page
                 } else {
-                    setTimeout(function() { checkActivation(mobileNumber); }, 5000);
+                    if(attempt>12){
+                        $('#refresh').show();
+                        $('#qrCodeContainer').html('<p></p>');
+                        $('#qrCodeContainer').hide();
+                    }else{
+                        setTimeout(function() { checkActivation(mobileNumber, attempt+1); }, 5000);
+                    }
                 }
             });
         }
