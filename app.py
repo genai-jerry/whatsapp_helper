@@ -41,6 +41,35 @@ def register_qr():
         return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
     except Exception as e:
         return error_response(500, f'{app_home} - {str(e)}')
+    
+@app.route('/register/qr/refresh', methods=['POST'])
+def refresh_qr():
+    try:
+        data = request.json
+        mobile_number = data.get('mobileNumber')
+        user_name = data.get('userName')
+        instance = instances.get(mobile_number)
+        if instance == None:
+            print('Creating new instance')
+            browser = create_instance(app_home)
+            instances[mobile_number] = {'mobile_number': mobile_number, 'status': 'Pending', 'browser': browser, 'name': user_name}
+            # Respond with a successful creation message or similar
+            return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
+        else:
+            browser = instance['browser']
+            if is_instance_ready(browser):
+                instance['status'] = 'Ready'
+                return jsonify({'status': 'ready', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
+            else:
+                browser.refresh()
+
+        # Start a new thread for loading the QR code
+        thread = threading.Thread(target=load_qr_code, args=(app_home, browser, mobile_number))
+        thread.start()
+        # Respond with a successful creation message or similar
+        return jsonify({'status': 'pending', 'message': 'QR Loading Initiated', 'mobileNumber': mobile_number})
+    except Exception as e:
+        return error_response(500, f'{app_home} - {str(e)}')
 
 @app.route('/register/qr', methods=['GET'])
 def get_qr_code():
