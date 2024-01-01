@@ -1,49 +1,22 @@
-from selenium import webdriver 
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys 
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 import qrcode
-from bs4 import BeautifulSoup
-from selenium.common.exceptions import TimeoutException
 import time
 import os
+from xmlrpc.client import ServerProxy
+import inspect
 
-# URL for WhatsApp Web
-whatsapp_web_url = "https://web.whatsapp.com/"
-driver_path = 'driver/unzipped_contents/chromedriver-linux64/chromedriver'
-image_save_path = 'static/images'
+# Connect to the server
+server = ServerProxy("http://localhost:8000/", allow_none=True)
 
-def make_file_executable(file_path):
-    # Get the current permissions
-    current_permissions = os.stat(file_path).st_mode
-
-    # Add executable permission to the owner
-    new_permissions = current_permissions | 0o111
-
-    # Set the new permissions
-    os.chmod(file_path, new_permissions)
-
-def create_instance(app_home):
-    options = Options()
-    options.add_argument("--headless=new")
-    driver_file_path = os.path.join(app_home, driver_path)
-    print(f'Driver path is {driver_file_path}. Making it executable')
-    try:
-        make_file_executable(driver_file_path)
-        print('Loading chrome web driver')
-        browser = webdriver.Chrome(executable_path=driver_file_path, options=options) 
-        print('Getting the whatsapp web')
-        browser.get(whatsapp_web_url)  
-        return browser
-    except Exception as e:
-        print(e)
-        raise e
-
-def load_qr_code(app_home, browser, host_number):
+def load_qr_code(mobile_number, app_home):
+    variables = (app_home, mobile_number)
+    server.execute_script('__generate_qr_code', 
+                                 mobile_number,inspect.getsource(__generate_qr_code), variables)
+    
+def __generate_qr_code(browser, app_home, host_number):
+    print('Generating the QR Code')
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
+    image_save_path = 'static/images'
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -74,12 +47,13 @@ def load_qr_code(app_home, browser, host_number):
 
                         # Save the QR code image to a file
                         image_path = os.path.join(app_home, image_save_path)
+                        print(f'Storing QR code at {image_path}')
                         qr_file_path = f"{image_path}/whatsapp_web_qr_{host_number}.png"
                         print(f'Saving image to {qr_file_path}')
                         if os.path.exists(qr_file_path):
                             os.remove(qr_file_path)
                         img.save(qr_file_path)
-                        return
+                        return True
                 except Exception as e:
                     print(f'{e}')
                 if time.time() - start_time > timeout:

@@ -2,11 +2,16 @@ from flask import Flask, jsonify, request, render_template, url_for, redirect, m
 from qr_code_generator import *
 from whatsapp_automation import *
 from update_chrome import *
+from instance_store import *
 import threading
+from xmlrpc.client import ServerProxy
+
 # Create a lock to synchronize access to a resource
 resource_lock = threading.Lock()
 
 app = Flask(__name__)
+# Connect to the server
+server = ServerProxy("http://localhost:8000/", allow_none=True)
 
 @app.route('/')
 def home():
@@ -16,22 +21,19 @@ def home():
 def show_instances():
     return render_template('instance.html', content={})
 
-# Placeholder for storing instances - in a real application, use a database
-instances = {}
-
 @app.route('/register/qr', methods=['POST'])
 def register_qr():
     try:
         data = request.json
         mobile_number = data.get('mobileNumber')
         user_name = data.get('userName')
-        instance = instances.get(mobile_number)
+        instance = retrieve_instance(mobile_number)
         if instance == None:
             print('Creating new instance')
-            browser = create_instance(app_home)
-            instances[mobile_number] = {'mobile_number': mobile_number, 'status': 'Pending', 'browser': browser, 'name': user_name}
+            server.create_instance(app_home, mobile_number)
+            store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
         else:
-            if is_instance_ready(instance['browser']):
+            if is_instance_ready(mobile_number):
                 return jsonify({'status': 'ready', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
        
         # Respond with a successful creation message or similar
@@ -42,24 +44,29 @@ def register_qr():
 @app.route('/register/qr/refresh', methods=['POST'])
 def refresh_qr():
     try:
+        print('Refreshing QR')
         data = request.json
         mobile_number = data.get('mobileNumber')
         user_name = data.get('userName')
-        instance = instances.get(mobile_number)
+        print('Retreiving instances')
+        instance = retrieve_instance(mobile_number)
+        print(f'Got instance {instance}')
         if instance == None:
             print('Creating new instance')
-            browser = create_instance(app_home)
-            instances[mobile_number] = {'mobile_number': mobile_number, 'status': 'Pending', 'browser': browser, 'name': user_name}
-            print(instances)
+            server.create_instance(app_home, mobile_number)
+            store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
             # Respond with a successful creation message or similar
             return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
         else:
-            browser = instance['browser']
-            if is_instance_ready(browser):
-                instance['status'] = 'Ready'
+            print('Instance is available')
+            if is_instance_ready(mobile_number):
+                print('Instance is ready. Updating instance')
+                update_instance(mobile_number, {'status': 'Ready'})
+                print('Updated the instance')
                 return jsonify({'status': 'ready', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
             else:
-                browser.refresh()
+                print('Refreshing Browser')
+                server.refresh(mobile_number)
         # Respond with a successful creation message or similar
         return jsonify({'status': 'pending', 'message': 'QR Loading Initiated', 'mobileNumber': mobile_number})
     except Exception as e:
@@ -71,15 +78,20 @@ def get_qr_code():
         mobile_number = request.args.get('mobile_number')
 
         # Check if the instance exists and if the QR code is ready
-        instance = instances.get(mobile_number)
-        
+        instance = retrieve_instance(mobile_number)
+        print(f'Instance is {instance}')
         if instance != None:
+            print('Loading the QR Code')
             # In a real application, provide the URL or path to the generated QR code
-            load_qr_code(app_home, instance['browser'], mobile_number)
-            instance['status'] = 'Ready'
+            load_qr_code(mobile_number, app_home)
+            print('Loaded the QR Code and updating instance')
+            update_instance(mobile_number, {'status': 'Ready'})
+            print('Updated the instance')
             return jsonify({'status': 'ready'})
         else:
-            instance['status'] = 'Pending'
+            print('Updating instance')
+            update_instance(mobile_number, {'status': 'Pending'})
+            print('Updated the instance')
             return jsonify({'status': 'not ready'})
     except Exception as e:
         return error_response(500, str(e))
@@ -95,12 +107,13 @@ def check_activation():
         mobile_number = request.args.get('mobile_number')
 
         # Check if the instance is activated
-        instance = instances.get(mobile_number)
-        if instance != None and is_instance_ready(instance['browser']):
-            instance['status'] = 'Ready'
+        instance = retrieve_instance(mobile_number)
+        if instance != None and is_instance_ready(mobile_number):
+            update_instance(mobile_number, {'status': 'Ready'})
+            #read_text_message(mobile_number)
             return jsonify({'status': 'ready'})
         else:
-            instance['status'] = 'Pending'
+            update_instance(mobile_number, {'status': 'Pending'})
             return jsonify({'status': 'not ready'})
     except Exception as e:
         return error_response(500, str(e))
@@ -108,15 +121,11 @@ def check_activation():
 @app.route('/instances', methods=['GET'])
 def list_instances():
     try:
+        print('Listing instances')
         # List all instances - in a real app, fetch this from a database
         # Function to filter and map the dictionary
         # Filtering out specific keys
-        keys_to_exclude = ['browser']
-
-        # Using list comprehension to map and filter
-        data = [{k: v for k, v in sub_dict.items() if k not in keys_to_exclude} for sub_dict in instances.values()]
-        # Apply the function to the data
-        return jsonify(data)
+        return get_all_instances()
     except Exception as e:
         return error_response(500, str(e))
 
@@ -124,7 +133,7 @@ def list_instances():
 def edit_instance():
     try:
         mobile_number = request.args.get('mobile_number')
-        instance = instances.get(mobile_number)
+        instance = retrieve_instance(mobile_number)
         return render_template("instance.html", content=instance)
     except Exception as e:
         return error_response(500, str(e))
@@ -149,14 +158,13 @@ def text_message():
         mobile_number = data.get('mobile_number')
         contact_name = data.get('contact_name')
         message = data.get('message')
-        instance = instances.get(mobile_number)
+        instance = retrieve_instance(mobile_number)
         if instance == None:
             return error_response(400, 'No instance available for the number')
-        if is_instance_ready(instance['browser']):
+        if is_instance_ready(mobile_number):
             try:
                 with resource_lock:
-                    browser = instance['browser']
-                    send_whatsapp_message(browser, contact_name, message)
+                    send_whatsapp_message(mobile_number, contact_name, message)
                     return jsonify({'status': 'Done'})
             except RuntimeError as e:
                 return error_response(400, str(e))
@@ -172,13 +180,12 @@ def media_message():
         mobile_number = data.get('mobile_number')
         contact_name = data.get('contact_name')
         url = data.get('url')
-        instance = instances.get(mobile_number)
+        instance = retrieve_instance(mobile_number)
         if instance == None:
             return error_response(400, 'No instance available for the number')
-        if is_instance_ready(instance['browser']):
+        if is_instance_ready(mobile_number):
             with resource_lock:
-                browser = instance['browser']
-                send_media_whatsapp_message(app_home, browser, contact_name, url)
+                send_media_whatsapp_message(mobile_number, app_home, contact_name, url)
                 return jsonify({'status': 'Done'})
         else:
             return error_response(400, 'Instance is not ready for the number')

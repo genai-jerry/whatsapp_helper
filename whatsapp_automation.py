@@ -2,11 +2,107 @@ from selenium.webdriver.common.keys import Keys
 import time
 from bs4 import BeautifulSoup
 import os, requests
-from selenium.webdriver.common.by import By
+from xmlrpc.client import ServerProxy
+import inspect
 
 media_home = 'static/media/'
+
+# Connect to the server
+server = ServerProxy("http://localhost:8000/", allow_none=True)
+
 # Function to send a WhatsApp message
-def is_instance_ready(browser):
+def is_instance_ready(mobile_number):
+    state = server.execute_script('__check_browser_state', 
+                                 mobile_number,inspect.getsource(__check_browser_state), ())
+    print(f'Instance is {state}')
+    return state
+
+# Function to send a WhatsApp message
+def send_whatsapp_message(mobile_number, contact_name, message):
+    print('Setting up message box')
+    try:
+        variables_1 = [contact_name]
+        message_box_source = inspect.getsource(setup_contact_message_box)
+        print('Executing setup_contact_message_box')
+        result = server.execute_script('setup_contact_message_box', mobile_number, message_box_source
+                            , variables_1)
+        print(f'Executed and got result {result}')
+        start_time = time.time()  # Record the start time
+        timeout = 30  # Timeout in seconds
+
+        variables_2 = [message]
+        while not server.execute_script('__send_message', mobile_number,
+                            inspect.getsource(__send_message), variables_2):
+            if time.time() - start_time > timeout:
+                raise RuntimeError('Unable to send message')
+            time.sleep(1)
+    except Exception as e:
+        print(f'Caught {e}')
+
+# Function to send a WhatsApp message
+def send_media_whatsapp_message(mobile_number, app_home, contact_name, file_url):
+    variables_1 = (contact_name)
+    server.execute_script('__setup_contact_message_box', mobile_number,
+                          inspect.getsource(setup_contact_message_box), variables_1)
+    
+    start_time = time.time()  # Record the start time
+    timeout = 30  # Timeout in seconds
+
+    variables_2 = (app_home, file_url)
+    while not server.execute_script('__attach_media', mobile_number,
+                          inspect.getsource(__attach_media), variables_2):
+        if time.time() - start_time > timeout:
+            raise RuntimeError('Unable to send media message')
+        time.sleep(1)
+
+    start_time = time.time()  # Record the start time
+    timeout = 30  # Timeout in seconds
+
+    while not server.execute_script('__send_media', mobile_number,
+                          inspect.getsource(__send_media), ()):
+        if time.time() - start_time > timeout:
+            raise RuntimeError('Unable to send media message')
+        time.sleep(1)
+
+def read_text_message(mobile_number):
+    # JavaScript code to observe changes within the "Chat List" div
+    try:
+        print('Setting up script')
+        observe_changes_script = """
+            var targets = document.querySelectorAll('div[aria-label="Chat List"] div[role="listitem"]');
+            var observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                // Notify Python script about the change and pass the updated HTML of the changed div
+                window.postMessage({ type: 'divChanged', data: mutation.target.outerHTML }, '*');
+            });
+            });
+
+            var config = { childList: true, subtree: true };
+            targets.forEach(function(targetElement) {
+                observer.observe(targetElement, config);
+            });
+            """
+        print('Executing Script')
+        # Execute the JavaScript code
+        #browser.execute_script(observe_changes_script)
+
+        print('Executing script')
+        # Register a message listener to capture the callback
+        #browser.execute_script("""
+        #    window.addEventListener('message', function(event) {
+        #    if (event.data.type === 'divChanged') {
+        #        console.log('Div Changed ' + event.data.data)
+        #    }
+        #    });
+                               
+        #""")
+
+        print('Set up script')
+    except Exception as e:
+        print(e)
+
+def __check_browser_state(browser):
+    print('Checking browser state')
     # Get the HTML of the page
     html = browser.page_source
 
@@ -14,24 +110,12 @@ def is_instance_ready(browser):
     soup = BeautifulSoup(html, 'html.parser')
     # Find the element using BeautifulSoup and get the 'data-ref' attribute
     profile = soup.find('div', {"aria-label":"profile photo"})
+    print(f'Profile is {profile}')
     return profile != None
 
-def load_html(browser):
-    # Get the HTML of the page
-    html = browser.page_source
-    # Parse the HTML with BeautifulSoup
-    soup = BeautifulSoup(html, 'html.parser')
-    return soup
 
-def open_new_chat(browser):
-    print('Opening new chat')
-    new_chat = browser.find_element_by_xpath('//*[@aria-label="New chat"]')
-    print('Clicking to start')
-    new_chat.click()
-    print('Ready to chat')
-    return True
 
-def attach_media_file(media_path, browser, file_name):
+def __attach_media_file(media_path, browser, file_name):
     attach_link = browser.find_element_by_xpath('//*[@title="Attach"]')
     attach_link.click()
 
@@ -41,7 +125,7 @@ def attach_media_file(media_path, browser, file_name):
     # Send the file path to the now-visible input element
     file_input.send_keys(os.path.abspath(file_path))
 
-def download_file(url, destination_folder):
+def __download_file(url, destination_folder):
     # Make a request to the URL
     response = requests.get(url, stream=True)
 
@@ -63,14 +147,14 @@ def download_file(url, destination_folder):
         print(f"Error downloading file: {response.status_code}")
         raise RuntimeError("Unable to download the file.")
 
-def attach_media(app_home, browser, file_url):
+def __attach_media(app_home, browser, file_url):
     print('Attaching the file')
     media_path = os.path.join(app_home, media_home)
-    file_name = download_file(file_url, media_path)
-    attach_media_file(media_path, browser, file_name)
+    file_name = __download_file(file_url, media_path)
+    __attach_media_file(media_path, browser, file_name)
     return True
 
-def send_media(browser):
+def __send_media(browser):
     try:
         send_button = browser.find_element_by_xpath('//div[@role="button" and @aria-label="Send"]')
         send_button.click()
@@ -78,35 +162,7 @@ def send_media(browser):
     except:
         return False
 
-def load_contact_message_box(browser):
-    # //div[contains(text(), 'Contacts on WhatsApp')]/ancestor::div[@role='listitem'][1]/following-sibling::div[@role='listitem']
-    # //div[contains(text(), 'Not in your contacts')]/following-sibling::div[1]
-    try:
-        print('Check contact in WhatsApp')
-        contact_item = browser.find_element_by_xpath("//div[contains(text(), 'Contacts on WhatsApp')]/ancestor::div[@role='listitem'][1]/following-sibling::div[@role='listitem']")
-        contact_item.click()
-        return True
-    except Exception as e:
-        try:
-            print(e)
-            contact_item = browser.find_element_by_xpath("//div[contains(text(), 'Not in your contacts')]/following-sibling::div[1]")
-            contact_item.click()
-            return True
-        except:
-            print('Contact not on WhatsApp')
-            return False
-        
-def search_and_start_chat(browser, contact_name):
-    print('Opening Search Box')
-    search_box = browser.find_element_by_xpath('//*[@title="Search input textbox"]')
-    search_box.click()
-    print('Searching for the contact')
-    search_box.send_keys(contact_name)
-    time.sleep(1)
-    print('Message box for contact opened')
-    return True
-
-def send_message(browser, message):
+def __send_message(browser, message):
     print('Clicking to write the message')
     message_box = browser.find_element_by_xpath('//*[@title="Type a message"]')
     message_box.click()
@@ -116,52 +172,67 @@ def send_message(browser, message):
     return True
 
 def setup_contact_message_box(browser, contact_name):
+    print('Opening New Chat')
+    def __open_new_chat(browser):
+        print('Opening new chat')
+        new_chat = browser.find_element_by_xpath('//*[@aria-label="New chat"]')
+        print('Clicking to start')
+        new_chat.click()
+        print('Ready to chat')
+        return True
+    
+    def __search_and_start_chat(browser, contact_name):
+        print('Opening Search Box')
+        search_box = browser.find_element_by_xpath('//*[@title="Search input textbox"]')
+        search_box.click()
+        print('Searching for the contact')
+        search_box.send_keys(contact_name)
+        time.sleep(1)
+        print('Message box for contact opened')
+        return True
+    
+    def __load_contact_message_box(browser):
+        # //div[contains(text(), 'Contacts on WhatsApp')]/ancestor::div[@role='listitem'][1]/following-sibling::div[@role='listitem']
+        # //div[contains(text(), 'Not in your contacts')]/following-sibling::div[1]
+        try:
+            print('Check contact in WhatsApp')
+            contact_item = browser.find_element_by_xpath("//div[contains(text(), 'Contacts on WhatsApp')]/ancestor::div[@role='listitem'][1]/following-sibling::div[@role='listitem']")
+            contact_item.click()
+            return True
+        except Exception as e:
+            try:
+                print(e)
+                contact_item = browser.find_element_by_xpath("//div[contains(text(), 'Not in your contacts')]/following-sibling::div[1]")
+                contact_item.click()
+                return True
+            except:
+                print('Contact not on WhatsApp')
+                return False
+            
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
-    while not open_new_chat(browser):
+    print('Opening New Chat')
+    while not __open_new_chat(browser):
         if time.time() - start_time > timeout:
             raise RuntimeError('Unable to open new chat')
         time.sleep(1)
 
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
-    while not search_and_start_chat(browser, contact_name):
+    while not __search_and_start_chat(browser, contact_name):
         if time.time() - start_time > timeout:
             raise RuntimeError('Unable to send message')
         time.sleep(1)
 
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
-    while not load_contact_message_box(browser):
+    while not __load_contact_message_box(browser):
         if time.time() - start_time > timeout:
             raise RuntimeError('Unable to find contact')
         time.sleep(1)
 
-# Function to send a WhatsApp message
-def send_whatsapp_message(browser, contact_name, message):
-    setup_contact_message_box(browser, contact_name)
+# Function to handle the callback when the div changes
+def __handle_div_change(message):
+    print("Chat List content changed:", message)
 
-    start_time = time.time()  # Record the start time
-    timeout = 30  # Timeout in seconds
-    while not send_message(browser, message):
-        if time.time() - start_time > timeout:
-            raise RuntimeError('Unable to send message')
-        time.sleep(1)
 
-# Function to send a WhatsApp message
-def send_media_whatsapp_message(app_home, browser, contact_name, file_url):
-    setup_contact_message_box(browser, contact_name)
-    
-    start_time = time.time()  # Record the start time
-    timeout = 30  # Timeout in seconds
-    while not attach_media(app_home, browser, file_url):
-        if time.time() - start_time > timeout:
-            raise RuntimeError('Unable to send media message')
-        time.sleep(1)
-
-    start_time = time.time()  # Record the start time
-    timeout = 30  # Timeout in seconds
-    while not send_media(browser):
-        if time.time() - start_time > timeout:
-            raise RuntimeError('Unable to send media message')
-        time.sleep(1)
