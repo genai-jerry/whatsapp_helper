@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from xmlrpc.server import SimpleXMLRPCServer
 from bs4 import BeautifulSoup
-import os
+import os, requests
 import qrcode, time
 
 # URL for WhatsApp Web
@@ -93,7 +93,6 @@ def execute_script(function_name, mobile_number, script, variables):
         browser = browser_instances[mobile_number]
         print('Adding browser to arguments')
         variables.insert(0, browser)
-        print(f'Executing script {script}')
         # Execute the script in the context of locals_dict
         exec(script, globals(), locals_dict)
         print('Executed')

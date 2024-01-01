@@ -2,4 +2,4 @@ __pycache__
 venv
 driver/*
 static/images/*
-static/videos/*
+static/media/*
