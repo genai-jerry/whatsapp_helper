@@ -4,5 +4,4 @@ qrcode
 pillow
 BeautifulSoup4
 flask
-zipfile
 redis
