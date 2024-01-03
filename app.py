@@ -30,8 +30,12 @@ def register_qr():
         instance = retrieve_instance(mobile_number)
         if instance == None:
             print('Creating new instance')
-            server.create_instance(app_home, mobile_number)
-            store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
+            result = server.create_instance(app_home, mobile_number)
+            if result:
+                print('Storing Instance')
+                store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
+            else:
+                return error_response(400, f'{app_home} - Unable to load page')
         else:
             if is_instance_ready(mobile_number):
                 return jsonify({'status': 'ready', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
@@ -53,10 +57,14 @@ def refresh_qr():
         print(f'Got instance {instance}')
         if instance == None:
             print('Creating new instance')
-            server.create_instance(app_home, mobile_number)
-            store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
-            # Respond with a successful creation message or similar
-            return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
+            result = server.create_instance(app_home, mobile_number)
+            if result:
+                print('Storing Instance')
+                store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
+                # Respond with a successful creation message or similar
+                return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
+            else:
+                return error_response(400, f'{app_home} - Unable to load page')
         else:
             print('Instance is available')
             if is_instance_ready(mobile_number):
@@ -79,7 +87,7 @@ def get_qr_code():
 
         # Check if the instance exists and if the QR code is ready
         instance = retrieve_instance(mobile_number)
-        print(f'Instance is {instance}')
+        print(f'Instance in get_qr_code is {instance}')
         if instance != None:
             print('Loading the QR Code')
             # In a real application, provide the URL or path to the generated QR code

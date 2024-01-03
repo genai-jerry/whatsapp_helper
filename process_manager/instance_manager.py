@@ -9,6 +9,8 @@ from xmlrpc.server import SimpleXMLRPCServer
 from bs4 import BeautifulSoup
 import os, requests
 import qrcode, time
+from persistent_driver import PersistentWebDriver
+import threading
 
 # URL for WhatsApp Web
 whatsapp_web_url = "https://web.whatsapp.com/"
@@ -30,13 +32,15 @@ def update_instance(mobile_number, user_data):
     print('Storing Data')
     instance_data = instances[mobile_number]
     instance_data.update(user_data)
-    print(f'Stored {instances}')
+    print(f'Updated {instances}')
 
 def retrieve_instance(mobile_number):
     # Retrieve JSON data from Redis using the mobile number as the key
     # return redis_client.get(mobile_number)
     print(f'Getting instance for {mobile_number}')
-    return instances.get(mobile_number)
+    instance = instances.get(mobile_number)
+    print(f'Got instance {instance}')
+    return instance
 
 def get_all_instances():
     keys_to_exclude = []
@@ -61,7 +65,8 @@ def make_file_executable(file_path):
 def refresh(mobile_number):
     try:
         browser = browser_instances[mobile_number]
-        browser.refresh()
+        with browser.get_lock():
+            browser.get_driver().refresh()
         return True
     except Exception as e:
         raise e
@@ -78,11 +83,41 @@ def create_instance(app_home, mobile_number):
         browser = webdriver.Chrome(executable_path=driver_file_path, options=options) 
         print('Getting the whatsapp web')
         browser.get(whatsapp_web_url)  
-        browser_instances[mobile_number] = browser
-        return True
+
+        if app_loaded(browser):
+            persistent_browser = PersistentWebDriver(browser)
+            print('Got the browser. Now keeping alive')
+            my_thread = threading.Thread(target=persistent_browser.keep_alive)
+            # Start the thread
+            my_thread.start()
+            browser_instances[mobile_number] = persistent_browser
+            return True
+        else:
+            browser.quit()
+            return False
     except Exception as e:
-        print(str(e))
         raise e
+    
+def app_loaded(browser):
+    print('Checking browser state')
+    start_time = time.time()  # Record the start time
+    timeout = 10  # Timeout in seconds
+
+    while True:
+        # Get the HTML of the page
+        html = browser.page_source
+
+        # Parse the HTML with BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
+        # Find the element using BeautifulSoup and get the 'data-ref' attribute
+        landing = soup.find('div', {"class":"landing-headerTitle"})
+        if landing != None:
+            print('Whatsapp loaded')
+            return True
+        if time.time() - start_time > timeout:
+            print('Whatsapp not loaded')
+            return False
+        
     
 def execute_script(function_name, mobile_number, script, variables):
     try:
@@ -92,10 +127,12 @@ def execute_script(function_name, mobile_number, script, variables):
         print('Getting browser instance')
         browser = browser_instances[mobile_number]
         print('Adding browser to arguments')
-        variables.insert(0, browser)
+        variables.insert(0, browser.get_driver())
         # Execute the script in the context of locals_dict
-        exec(script, globals(), locals_dict)
+        with browser.get_lock():
+            exec(script, globals(), locals_dict)
         print('Executed')
+
         # Call the function named 'main' in the script and pass variables
         if function_name in locals_dict and callable(locals_dict[function_name]):
             print('Getting results from locals_dict')
