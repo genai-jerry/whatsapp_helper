@@ -144,7 +144,7 @@ def execute_script(function_name, mobile_number, script, variables):
     except Exception as e:
         return f"Error executing script: {str(e)}"
 
-def run():
+if __name__ == "__main__":
     server = SimpleXMLRPCServer(("localhost", 8000), allow_none=True)
     server.register_function(execute_script, "execute_script")
     server.register_function(refresh, "refresh")
