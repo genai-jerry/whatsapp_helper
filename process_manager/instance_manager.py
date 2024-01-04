@@ -80,7 +80,8 @@ def create_instance(app_home, mobile_number):
     try:
         make_file_executable(driver_file_path)
         print('Loading chrome web driver')
-        browser = webdriver.Chrome(executable_path=driver_file_path,
+        browser = webdriver.Chrome(
+            service=webdriver.chrome.service.Service(executable_path=driver_file_path),
                                    options=options, keep_alive=True) 
         print('Getting the whatsapp web')
         browser.get(whatsapp_web_url)  
