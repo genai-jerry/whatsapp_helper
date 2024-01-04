@@ -96,6 +96,7 @@ def create_instance(app_home, mobile_number):
             browser.quit()
             return False
     except Exception as e:
+        print(str(e))
         raise e
     
 def app_loaded(browser):
