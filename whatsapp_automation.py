@@ -126,11 +126,11 @@ def __attach_media(browser, app_home, file_url):
     media_home = 'static/media/'
     def __attach_media_file(media_path, browser, file_name):
         print('Attaching media file')
-        attach_link = browser.find_element_by_xpath('//*[@title="Attach"]')
+        attach_link = browser.find_element("xpath",'//*[@title="Attach"]')
         attach_link.click()
 
         # Locate the file input element (assuming it's hidden)
-        file_input = browser.find_element_by_xpath('//input[@accept="image/*,video/mp4,video/3gpp,video/quicktime" and @type="file" and @multiple="" and @style="display: none;"]')
+        file_input = browser.find_element("xpath",'//input[@accept="image/*,video/mp4,video/3gpp,video/quicktime" and @type="file" and @multiple="" and @style="display: none;"]')
         file_path = f'{media_path}{file_name}'
         # Send the file path to the now-visible input element
         print('Sending attached file')
@@ -166,7 +166,7 @@ def __attach_media(browser, app_home, file_url):
 def __send_media(browser):
     try:
         print('Sending file')
-        send_button = browser.find_element_by_xpath('//div[@role="button" and @aria-label="Send"]')
+        send_button = browser.find_element("xpath",'//div[@role="button" and @aria-label="Send"]')
         send_button.click()
         return True
     except:
@@ -174,7 +174,7 @@ def __send_media(browser):
 
 def __send_message(browser, message):
     print('Clicking to write the message')
-    message_box = browser.find_element_by_xpath('//*[@title="Type a message"]')
+    message_box = browser.find_element("xpath",'//*[@title="Type a message"]')
     message_box.click()
     message_box.send_keys(message)
     message_box.send_keys(Keys.ENTER)
@@ -185,7 +185,7 @@ def __setup_contact_message_box(browser, contact_name):
     print('Opening New Chat')
     def __open_new_chat(browser):
         print('Opening new chat')
-        new_chat = browser.find_element_by_xpath('//*[@aria-label="New chat"]')
+        new_chat = browser.find_element("xpath",'//*[@aria-label="New chat"]')
         print('Clicking to start')
         new_chat.click()
         print('Ready to chat')
@@ -193,7 +193,7 @@ def __setup_contact_message_box(browser, contact_name):
     
     def __search_and_start_chat(browser, contact_name):
         print('Opening Search Box')
-        search_box = browser.find_element_by_xpath('//*[@title="Search input textbox"]')
+        search_box = browser.find_element("xpath",'//*[@title="Search input textbox"]')
         search_box.click()
         print('Searching for the contact')
         search_box.send_keys(contact_name)
@@ -206,13 +206,13 @@ def __setup_contact_message_box(browser, contact_name):
         # //div[contains(text(), 'Not in your contacts')]/following-sibling::div[1]
         try:
             print('Check contact in WhatsApp')
-            contact_item = browser.find_element_by_xpath("//div[contains(text(), 'Contacts on WhatsApp')]/ancestor::div[@role='listitem'][1]/following-sibling::div[@role='listitem']")
+            contact_item = browser.find_element("xpath","//div[contains(text(), 'Contacts on WhatsApp')]/ancestor::div[@role='listitem'][1]/following-sibling::div[@role='listitem']")
             contact_item.click()
             return True
         except Exception as e:
             try:
                 print(e)
-                contact_item = browser.find_element_by_xpath("//div[contains(text(), 'Not in your contacts')]/following-sibling::div[1]")
+                contact_item = browser.find_element("xpath","//div[contains(text(), 'Not in your contacts')]/following-sibling::div[1]")
                 contact_item.click()
                 return True
             except:
