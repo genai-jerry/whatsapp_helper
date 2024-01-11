@@ -40,7 +40,7 @@
             $('#progress').show()
             // Post to create instance
             $.post({
-                url: '/register/qr/refresh',
+                url: '/qr/refresh',
                 data: JSON.stringify({ 
                     mobileNumber: mobileNumber, 
                     userName: userName 
@@ -67,7 +67,7 @@
             if(mobileNumber == undefined){
                 mobileNumber = $('#mobileNumber').val();
             }
-            $.getJSON("/register/qr?mobile_number=" + mobileNumber, function(data) {
+            $.getJSON("/qr/register?mobile_number=" + mobileNumber, function(data) {
                 if (data.status === 'ready') {
                     $('#refresh').hide()
                     $('#progress').hide()
@@ -82,7 +82,7 @@
         }
 
         function checkActivation(mobileNumber, attempt) {
-            $.getJSON("/register/qr/active?mobile_number=" + mobileNumber, function(data) {
+            $.getJSON("/qr/active?mobile_number=" + mobileNumber, function(data) {
                 if (data.status === 'ready') {
                     window.location.href = '/'; // Redirect to the instances page
                 } else {
