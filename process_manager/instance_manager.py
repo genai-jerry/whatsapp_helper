@@ -19,38 +19,20 @@ driver_path = 'driver/unzipped_contents/chromedriver-linux64/chromedriver'
 browser_instances = {}
 instances = {}
 
-def store_instance(mobile_number, user_data):
+def instance_exists(mobile_number):
+    browser = browser_instances[mobile_number]
+    if browser != None:
+        return True
+    else:
+        return False
+
+def remove_instance(mobile_number):
     # Use mobile number as the key to store data in Redis
     # redis_client.set(user_data['mobile_number'], user_data)
-    print('Storing Data')
-    instances[mobile_number] = user_data
-    print(f'Stored {instances}')
-
-def update_instance(mobile_number, user_data):
-    # Use mobile number as the key to store data in Redis
-    # redis_client.set(user_data['mobile_number'], user_data)
-    print('Storing Data')
-    instance_data = instances[mobile_number]
-    instance_data.update(user_data)
-    print(f'Updated {instances}')
-
-def retrieve_instance(mobile_number):
-    # Retrieve JSON data from Redis using the mobile number as the key
-    # return redis_client.get(mobile_number)
-    print(f'Getting instance for {mobile_number}')
-    instance = instances.get(mobile_number)
-    print(f'Got instance {instance}')
-    return instance
-
-def get_all_instances():
-    keys_to_exclude = []
-
-    # Using list comprehension to map and filter
-    print('Getting data from values')
-    data = [{k: v for k, v in sub_dict.items()} for sub_dict in instances.values()]
-    # Apply the function to the data
-    print(f'Got data {data}')
-    return data
+    print('Removing Instance')
+    browser = browser_instances[mobile_number]
+    browser.get_driver().quit()
+    browser_instances.pop(mobile_number)
 
 def make_file_executable(file_path):
     # Get the current permissions
@@ -152,9 +134,8 @@ if __name__ == "__main__":
     server.register_function(execute_script, "execute_script")
     server.register_function(refresh, "refresh")
     server.register_function(create_instance, "create_instance")
-    server.register_function(store_instance, "store_instance")
-    server.register_function(update_instance, "update_instance")
-    server.register_function(retrieve_instance, "retrieve_instance")
-    server.register_function(get_all_instances, "get_all_instances")
+    server.register_function(instance_exists, "instance_exists")
+    server.register_function(remove_instance, "remove_instance")
+    
     print("Server listening on port 8000...")
     server.serve_forever()

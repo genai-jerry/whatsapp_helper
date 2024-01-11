@@ -10,14 +10,10 @@ instance_blueprint = Blueprint('instance', __name__)
 server = ServerProxy("http://localhost:8000/", allow_none=True)
 
 @instance_blueprint.route('/')
-def home():
-    return render_template('index.html')
-
-@instance_blueprint.route('/instances/home')
 def show_instances():
     return render_template('instance.html', content={})
 
-@instance_blueprint.route('/instances', methods=['GET'])
+@instance_blueprint.route('/list', methods=['GET'])
 def list_instances():
     try:
         print('Listing instances')
@@ -28,7 +24,7 @@ def list_instances():
     except Exception as e:
         return error_response(500, str(e))
 
-@instance_blueprint.route('/instances/edit', methods=['GET'])
+@instance_blueprint.route('/edit', methods=['GET'])
 def edit_instance():
     try:
         mobile_number = request.args.get('mobile_number')
@@ -37,6 +33,15 @@ def edit_instance():
     except Exception as e:
         return error_response(500, str(e))
 
+@instance_blueprint.route('/delete')
+def delete_instance():
+    try:
+        mobile_number = request.args.get('mobile_number')
+        instance = remove_instance(mobile_number)
+        return render_template("/index.html")
+    except Exception as e:
+        return error_response(500, str(e))
+    
 def error_response(status_code, message):
     response = jsonify({'error': message})
     response.status_code = status_code

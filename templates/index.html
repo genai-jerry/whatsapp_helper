@@ -17,7 +17,7 @@
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/">
+                            <a class="nav-link active" aria-current="page" href="/instance">
                                 Instances
                             </a>
                         </li>
@@ -36,7 +36,7 @@
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Instances</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <a type="button" class="btn btn-sm btn-outline-secondary" id="new-instance-btn" href="/instances/home">New</a>
+                        <a type="button" class="btn btn-sm btn-outline-secondary" id="new-instance-btn" href="/instance">New</a>
                     </div>
                 </div>
 
@@ -91,12 +91,13 @@
 
     <script>
         $(document).ready(function() {
-            $.getJSON('/instances', function(data) {
+            $.getJSON('/instance/list', function(data) {
                 $.each(data, function(index, instance) {
                     var row = '<tr>' +
                               '<td>' + instance.mobile_number + '</td>' +
                               '<td>' + instance.status + '</td>' +
-                              '<td><a href="/instances/edit?mobile_number='+ instance.mobile_number +'">Edit</a></td>' +
+                              '<td><a href="/instance/edit?mobile_number='+ instance.mobile_number +'">Edit</a>&nbsp;' +
+                              '<a href="/instance/delete?mobile_number='+ instance.mobile_number +'">Delete</a></td>' +
                               '</tr>';
                     $('#instances-table-body').append(row);
                 });

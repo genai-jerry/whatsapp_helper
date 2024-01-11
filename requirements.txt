@@ -5,3 +5,4 @@ pillow
 BeautifulSoup4
 flask
 redis
+mysql-connector-python

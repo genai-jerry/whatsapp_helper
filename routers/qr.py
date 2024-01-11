@@ -50,29 +50,36 @@ def refresh_qr():
         instance = retrieve_instance(mobile_number)
         print(f'Got instance {instance}')
         if instance == None:
-            print('Creating new instance')
-            result = server.create_instance(app_home, mobile_number)
-            if result:
-                print('Storing Instance')
-                store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
-                # Respond with a successful creation message or similar
-                return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
-            else:
-                return error_response(400, f'{app_home} - Unable to load page')
+            return create_instance(mobile_number, user_name, True)
         else:
             print('Instance is available')
-            if is_instance_ready(mobile_number):
-                print('Instance is ready. Updating instance')
-                update_instance(mobile_number, {'status': 'Ready'})
-                print('Updated the instance')
-                return jsonify({'status': 'ready', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
-            else:
-                print('Refreshing Browser')
-                server.refresh(mobile_number)
+            try:
+                if is_instance_ready(mobile_number):
+                    print('Instance is ready. Updating instance')
+                    update_instance(mobile_number, {'status': 'Ready'})
+                    print('Updated the instance')
+                    return jsonify({'status': 'ready', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
+                else:
+                    print('Refreshing Browser')
+                    server.refresh(mobile_number)
+            except:
+                return create_instance(mobile_number, user_name, False)
         # Respond with a successful creation message or similar
         return jsonify({'status': 'pending', 'message': 'QR Loading Initiated', 'mobileNumber': mobile_number})
     except Exception as e:
         return error_response(500, f'{app_home} - {str(e)}')
+
+def create_instance(mobile_number, user_name, new_instance):
+    print('Creating new instance')
+    result = server.create_instance(app_home, mobile_number)
+    if result:
+        if new_instance:
+            print('Storing Instance')
+            store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
+        # Respond with a successful creation message or similar
+        return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
+    else:
+        return error_response(400, f'{app_home} - Unable to load page')
 
 @qr_blueprint.route('/register', methods=['GET'])
 def get_qr_code():

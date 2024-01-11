@@ -12,10 +12,13 @@ server = ServerProxy("http://localhost:8000/", allow_none=True)
 
 # Function to send a WhatsApp message
 def is_instance_ready(mobile_number):
-    state = server.execute_script('__check_browser_state', 
-                                 mobile_number,inspect.getsource(__check_browser_state), [])
-    print(f'Instance is {state}')
-    return state
+    if server.instance_exists(mobile_number):
+        state = server.execute_script('__check_browser_state', 
+                                    mobile_number,inspect.getsource(__check_browser_state), [])
+        print(f'Instance is {state}')
+        return state
+    else:
+        raise Exception
 
 # Function to send a WhatsApp message
 def send_whatsapp_message(mobile_number, contact_name, message):
