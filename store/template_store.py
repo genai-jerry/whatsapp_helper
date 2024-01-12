@@ -15,15 +15,13 @@ def activate_template(id):
     update_template_status(id, True)
 
 def retrieve_templates():
-    # Retrieve JSON data from Redis using the mobile number as the key
-    # return redis_client.get(mobile_number)
     return load_all_templates()
 
 def retrieve_template(id):
-    # Retrieve JSON data from Redis using the mobile number as the key
-    # return redis_client.get(mobile_number)
-    template = load_template(id)
-    return template
+    return load_template(id)
+
+def retrieve_template_by_name(name):
+    return load_template_by_name(name)
 
 def get_all_templats():
     print('Getting Templates')

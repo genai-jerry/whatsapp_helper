@@ -166,6 +166,30 @@ def save_template(name, template):
         if cursor:
             cursor.close()
 
+def load_template_by_name(name):
+    # Select data from the specified table and return as JSON
+    try:
+        connection = create_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Select data for the given ID
+        cursor.execute(f"SELECT * FROM templates WHERE name = %s", (name,))
+
+        # Fetch the result as a dictionary
+        template = cursor.fetchone()
+
+        if template:
+            # Convert the result to a JSON object
+            return template
+        else:
+            return None
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+
 def load_template(id):
     # Select data from the specified table and return as JSON
     try:

@@ -3,6 +3,7 @@ from qr_code_generator import *
 from whatsapp_automation import *
 from update_chrome import *
 from store.instance_store import *
+from store.template_store import *
 import threading
 from xmlrpc.client import ServerProxy
 
@@ -46,6 +47,46 @@ def text_message():
             return error_response(400, 'Instance is not ready for the number')
     except Exception as e:
         return error_response(500, str(e))
+    
+@message_blueprint.route('/template', methods=['POST'])
+def template_message():
+    try:
+        data = request.json
+        mobile_number = data.get('mobile_number')
+        contact_name = data.get('contact_name')
+        instance = retrieve_instance(mobile_number)
+        
+        if instance == None:
+            return error_response(400, 'No instance available for the number')
+        if is_instance_ready(mobile_number):
+            try:
+                template_name = data.get('template_name')
+                template = retrieve_template_by_name(template_name)
+                print(f'Got template name {template_name} with {template}')
+                if template == None:
+                    return error_response(400, 'Template not available')
+                message = process_template(template['template_text'], data)
+                print(f'Sending template message {message}')
+                with resource_lock:
+                    send_whatsapp_message(mobile_number, contact_name, message)
+                    return jsonify({'status': 'Done'})
+            except RuntimeError as e:
+                return error_response(400, str(e))
+        else:
+            return error_response(400, 'Instance is not ready for the number')
+    except Exception as e:
+        return error_response(500, str(e))
+        
+def process_template(template, args):
+    for placeholder in set(find_placeholders(template)):
+        print(f'Checking {placeholder} in {args}')
+        if placeholder in args:
+            template = template.replace(f"{{{placeholder}}}", str(args[placeholder]))
+    return template
+
+def find_placeholders(template):
+    import re
+    return re.findall(r'{(.*?)}', template)
     
 def get_query_param_values(request):
     # Get the values of query parameters in the original sequence
