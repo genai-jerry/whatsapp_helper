@@ -2,7 +2,7 @@ from flask import Flask, jsonify, Blueprint, request, render_template, url_for, 
 from qr_code_generator import *
 from whatsapp_automation import *
 from update_chrome import *
-from instance_store import *
+from store.instance_store import *
 from xmlrpc.client import ServerProxy
 
 # Get the current script's directory

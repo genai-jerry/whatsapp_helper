@@ -14,12 +14,12 @@
         <form id="editTemplateForm" action="/template/edit" method="post">
             <input type="hidden" name="id" value="{{content.id}}"/>
             <div class="mb-3">
-                <label for="templateName" class="form-label">Template Name</label>
-                <input type="text" class="form-control" id="templateName" name="name" value="{{content.name}}" required>
+                <label for="templateName" class="form-label">Template Name: </label>
+                <label for="templateName" class="form-label"><b>{{content.name}}</b></label>
             </div>
             <div class="mb-3">
                 <label for="templateText">Template Text</label>
-                <textarea class="form-control" id="templateText" rows="3" name="text">{{content.text}}</textarea>
+                <textarea class="form-control" id="templateText" rows="3" name="text">{{content.template_text}}</textarea>
             </div>
             <button type="submit" class="btn btn-secondary">Save</button>
             <button type="button" class="btn btn-secondary" onclick="window.history.back();">Cancel</button>

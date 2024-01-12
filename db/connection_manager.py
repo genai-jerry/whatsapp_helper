@@ -134,7 +134,6 @@ def load_instance(mobile_number):
 
         # Fetch the result as a dictionary
         instance = cursor.fetchone()
-        print(instance)
         if instance:
             # Convert the result to a JSON object
             return instance
@@ -154,7 +153,7 @@ def save_template(name, template):
         cursor = connection.cursor()
 
         # Define the SQL query with placeholders
-        sql = "INSERT INTO templates (name, text_template) VALUES (%s, %s)"
+        sql = "INSERT INTO templates (name, template_text, active) VALUES (%s, %s, 1)"
 
         # Prepare the query and execute it with the provided values
         cursor.execute(sql, (name, template))
@@ -181,7 +180,7 @@ def load_template(id):
 
         if template:
             # Convert the result to a JSON object
-            return json.dumps(template, indent=2)
+            return template
         else:
             return None
     except mysql.connector.Error as err:
@@ -191,22 +190,65 @@ def load_template(id):
         if cursor:
             cursor.close()
 
-def update_template(id, name, template_text):
+def update_template_status(id, status):
     # Update data into 'templates' table using a prepared statement
     try:
         connection = create_connection()
         cursor = connection.cursor()
 
         # Define the SQL query with placeholders
-        sql = "UPDATE templates set name=%s, template_text=%s where id=%s"
+        sql = "UPDATE templates set active=%s where id=%s"
 
         # Prepare the query and execute it with the provided values
-        cursor.execute(sql, (name, template_text, id))
+        cursor.execute(sql, (status, id))
 
         connection.commit()
         print("Data updated successfully.")
     except mysql.connector.Error as err:
         print(f"Error: {err}")
+    finally:
+        if cursor:
+            cursor.close()
+
+def update_template_text(id, text):
+    # Update data into 'templates' table using a prepared statement
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Define the SQL query with placeholders
+        sql = "UPDATE templates set template_text=%s where id=%s"
+
+        # Prepare the query and execute it with the provided values
+        cursor.execute(sql, (text, id))
+
+        connection.commit()
+        print("Data updated successfully.")
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+    finally:
+        if cursor:
+            cursor.close()
+
+def load_all_templates():
+    # Select data from the specified table and return as JSON
+    try:
+        connection = create_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Select all data from the specified table
+        cursor.execute(f"SELECT * FROM templates")
+
+        # Fetch all rows as a list of dictionaries
+        rows = cursor.fetchall()
+
+        # Convert the result to a JSON object
+        result_json = json.dumps(rows, indent=2)
+        print(result_json)
+        return result_json
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return None
     finally:
         if cursor:
             cursor.close()

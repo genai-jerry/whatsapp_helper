@@ -2,14 +2,9 @@ from flask import jsonify, Blueprint, request, render_template
 from qr_code_generator import *
 from whatsapp_automation import *
 from update_chrome import *
-from instance_store import *
-from xmlrpc.client import ServerProxy
+from store.template_store import *
 
 template_blueprint = Blueprint('template', __name__)
-# Connect to the server
-server = ServerProxy("http://localhost:8000/", allow_none=True)
-
-templates = []
 
 @template_blueprint.route('/')
 def home():
@@ -19,20 +14,18 @@ def home():
 def new():
     return render_template('template.html')
 
-@template_blueprint.route('/edit')
-def edit():
-    id = request.args.get("id")
-    print(f'Editing {id}')
-    return render_template('template_edit.html', content=templates[0])
-
-@template_blueprint.route('/edit', methods=['POST'])
-def update():
+@template_blueprint.route('/activate')
+def activate():
     print(f'Updating the template {request.form}')
-    id = request.form["id"]
-    print(f'Updating {id}')
-    name = request.form['name']
-    template = request.form['text']
-    print(f'Name: {name} : Template : {template}')
+    id = request.args["id"]
+    activate_template(id)
+    return render_template('templates.html')
+
+@template_blueprint.route('/deactivate')
+def deactivate():
+    print(f'Updating the template {request.form}')
+    id = request.args["id"]
+    deactivate_template(id)
     return render_template('templates.html')
 
 @template_blueprint.route('/', methods=['POST'])
@@ -41,12 +34,28 @@ def save_template():
     name = request.form['name']
     template = request.form['text']
     print(f'Name: {name} : Template : {template}')
-    templates.append({'name': name, 'text': template})
+    store_template({'name': name, 'template_text': template})
+    return render_template('templates.html')
+
+@template_blueprint.route('/edit')
+def load_edit_template():
+    print('Loading Template')
+    id = request.args['id']
+    template = load_template(id)
+    print(template)
+    return render_template('template_edit.html', content=template)
+
+@template_blueprint.route('/edit', methods=['POST'])
+def edit_template():
+    print('Updating Template')
+    id = request.form['id']
+    template = request.form['text']
+    update_template({'id': id, 'template_text': template})
     return render_template('templates.html')
 
 @template_blueprint.route('/list')
 def list_templates():
-    return templates
+    return retrieve_templates()
 
 def error_response(status_code, message):
     response = jsonify({'error': message})

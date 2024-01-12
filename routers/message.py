@@ -2,7 +2,7 @@ from flask import jsonify, Blueprint, request
 from qr_code_generator import *
 from whatsapp_automation import *
 from update_chrome import *
-from instance_store import *
+from store.instance_store import *
 import threading
 from xmlrpc.client import ServerProxy
 

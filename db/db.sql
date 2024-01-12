@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS instances (
 
 CREATE TABLE IF NOT EXISTS templates (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
+                name VARCHAR(255) NOT NULL unique,
+                active bit NOT NULL,
                 template_text TEXT
             );

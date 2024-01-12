@@ -3,7 +3,7 @@ from flask import jsonify
 from xmlrpc.client import ServerProxy
 from db.connection_manager import *
 
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+# redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 instances = {}
 # Connect to the server
 server = ServerProxy("http://localhost:8000/", allow_none=True)

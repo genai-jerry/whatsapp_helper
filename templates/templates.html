@@ -47,6 +47,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Template</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="templates-table-body">
@@ -62,10 +63,17 @@
         $(document).ready(function() {
             $.getJSON('/template/list', function(data) {
                 $.each(data, function(index, template) {
+                    var status = 'Active'
+                    var active_td = '<td><a href="/template/deactivate?id='+template.id+'">Deactivate</a>'
+                    if(!template.active){
+                        active_td = '<td><a href="/template/activate?id='+template.id+'">Activate</a>'
+                        status = "Inactive"
+                    }
                     var row = '<tr>' +
-                              '<td>' + template.name + '</td>' +
-                              '<td>' + template.text + '</td>' +
-                              '<td><a href="/template/edit?id='+ template.id +'">Edit</a></td>' +
+                              '<td><a href="/template/edit?id='+template.id+'">' + template.name + '</a></td>' +
+                              '<td>' + template.template_text + '</td>' +
+                              '<td>' + status + '</td>' +
+                              active_td
                               '</tr>';
                     $('#templates-table-body').append(row);
                 });
