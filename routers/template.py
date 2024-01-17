@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint, request, render_template
-from qr_code_generator import *
-from whatsapp_automation import *
-from update_chrome import *
+from whatsapp.qr_code_generator import *
+from whatsapp.whatsapp_automation import *
+from driver.update_chrome import *
 from store.template_store import *
 
 template_blueprint = Blueprint('template', __name__)
@@ -55,7 +55,7 @@ def edit_template():
 
 @template_blueprint.route('/list')
 def list_templates():
-    return retrieve_templates()
+    return get_all_templates()
 
 def error_response(status_code, message):
     response = jsonify({'error': message})

@@ -4,8 +4,7 @@ from bs4 import BeautifulSoup
 import os, requests
 from xmlrpc.client import ServerProxy
 import inspect
-
-
+from store.message_store import *
 
 # Connect to the server
 server = ServerProxy("http://localhost:8000/", allow_none=True)
@@ -21,11 +20,15 @@ def is_instance_ready(mobile_number):
         raise Exception
 
 # Function to send a WhatsApp message
-def send_whatsapp_message(mobile_number, contact_name, message):
+def send_whatsapp_message(message_data):
     print('Setting up message box')
+    sender = message_data['sender']
+    receiver = message_data['receiver']
+    message = message_data['message']
+    id = message_data['id']
     try:
-        variables_1 = [contact_name]
-        result = server.execute_script('__setup_contact_message_box', mobile_number, 
+        variables_1 = [receiver]
+        result = server.execute_script('__setup_contact_message_box', sender, 
                                        inspect.getsource(__setup_contact_message_box)
                             , variables_1)
         print(f'Executed and got result {result}')
@@ -33,18 +36,25 @@ def send_whatsapp_message(mobile_number, contact_name, message):
         timeout = 30  # Timeout in seconds
 
         variables_2 = [message]
-        while not server.execute_script('__send_message', mobile_number,
+        while not server.execute_script('__send_message', sender,
                             inspect.getsource(__send_message), variables_2):
             if time.time() - start_time > timeout:
                 raise RuntimeError('Unable to send message')
             time.sleep(1)
+        update_message(id, 'Sent', None)
     except Exception as e:
+        update_message(id, 'Error', str(e)[:255])
         print(f'Caught {e}')
 
 # Function to send a WhatsApp message
-def send_media_whatsapp_message(mobile_number, app_home, contact_name, file_url):
-    variables_1 = [contact_name]
-    server.execute_script('__setup_contact_message_box', mobile_number,
+def send_media_whatsapp_message(message_data):
+    sender = message_data['sender']
+    receiver = message_data['receiver']
+    app_home = message_data['app_home']
+    file_url = message_data['url']
+    id = message_data['id']
+    variables_1 = [receiver]
+    server.execute_script('__setup_contact_message_box', sender,
                           inspect.getsource(__setup_contact_message_box), variables_1)
     
     try:
@@ -53,62 +63,27 @@ def send_media_whatsapp_message(mobile_number, app_home, contact_name, file_url)
 
         print('Attaching Media for sending file')
         variables_2 = [app_home, file_url]
-        attached = server.execute_script('__attach_media', mobile_number,
+        attached = server.execute_script('__attach_media', sender,
                             inspect.getsource(__attach_media), variables_2)
         print(f'Attached {attached}')
         while not attached:
             if time.time() - start_time > timeout:
                 raise RuntimeError('Unable to send media message')
             time.sleep(1)
-            attached = server.execute_script('__attach_media', mobile_number,
+            attached = server.execute_script('__attach_media', sender,
                             inspect.getsource(__attach_media), variables_2)
 
         start_time = time.time()  # Record the start time
         timeout = 30  # Timeout in seconds
 
-        while not server.execute_script('__send_media', mobile_number,
+        while not server.execute_script('__send_media', sender,
                             inspect.getsource(__send_media), []):
             if time.time() - start_time > timeout:
                 raise RuntimeError('Unable to send media message')
             time.sleep(1)
+        update_message(id, 'Sent', None)
     except Exception as e:
-        print(e)
-
-def read_text_message(mobile_number):
-    # JavaScript code to observe changes within the "Chat List" div
-    try:
-        print('Setting up script')
-        observe_changes_script = """
-            var targets = document.querySelectorAll('div[aria-label="Chat List"] div[role="listitem"]');
-            var observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                // Notify Python script about the change and pass the updated HTML of the changed div
-                window.postMessage({ type: 'divChanged', data: mutation.target.outerHTML }, '*');
-            });
-            });
-
-            var config = { childList: true, subtree: true };
-            targets.forEach(function(targetElement) {
-                observer.observe(targetElement, config);
-            });
-            """
-        print('Executing Script')
-        # Execute the JavaScript code
-        #browser.execute_script(observe_changes_script)
-
-        print('Executing script')
-        # Register a message listener to capture the callback
-        #browser.execute_script("""
-        #    window.addEventListener('message', function(event) {
-        #    if (event.data.type === 'divChanged') {
-        #        console.log('Div Changed ' + event.data.data)
-        #    }
-        #    });
-                               
-        #""")
-
-        print('Set up script')
-    except Exception as e:
+        update_message(id, 'Error', str(e)[:255])
         print(e)
 
 def __check_browser_state(browser):

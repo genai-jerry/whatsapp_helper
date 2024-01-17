@@ -129,6 +129,43 @@ def execute_script(function_name, mobile_number, script, variables):
     except Exception as e:
         return f"Error executing script: {str(e)}"
 
+def read_text_message(mobile_number):
+    # JavaScript code to observe changes within the "Chat List" div
+    try:
+        print('Setting up script')
+        observe_changes_script = """
+            var targets = document.querySelectorAll('div[aria-label="Chat List"] div[role="listitem"]');
+            var observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                // Notify Python script about the change and pass the updated HTML of the changed div
+                window.postMessage({ type: 'divChanged', data: mutation.target.outerHTML }, '*');
+            });
+            });
+
+            var config = { childList: true, subtree: true };
+            targets.forEach(function(targetElement) {
+                observer.observe(targetElement, config);
+            });
+            """
+        print('Executing Script')
+        # Execute the JavaScript code
+        #browser.execute_script(observe_changes_script)
+
+        print('Executing script')
+        # Register a message listener to capture the callback
+        #browser.execute_script("""
+        #    window.addEventListener('message', function(event) {
+        #    if (event.data.type === 'divChanged') {
+        #        console.log('Div Changed ' + event.data.data)
+        #    }
+        #    });
+                               
+        #""")
+
+        print('Set up script')
+    except Exception as e:
+        print(e)
+
 if __name__ == "__main__":
     server = SimpleXMLRPCServer(("localhost", 8000), allow_none=True)
     server.register_function(execute_script, "execute_script")

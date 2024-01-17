@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint, request, render_template
-from qr_code_generator import *
-from whatsapp_automation import *
-from update_chrome import *
+from whatsapp.qr_code_generator import *
+from whatsapp.whatsapp_automation import *
+from driver.update_chrome import *
 from store.instance_store import *
 from xmlrpc.client import ServerProxy
 

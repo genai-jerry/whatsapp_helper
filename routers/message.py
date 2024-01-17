@@ -1,11 +1,13 @@
 from flask import jsonify, Blueprint, request
-from qr_code_generator import *
-from whatsapp_automation import *
-from update_chrome import *
+from whatsapp.qr_code_generator import *
+from whatsapp.whatsapp_automation import *
+from driver.update_chrome import *
+from store.message_store import *
 from store.instance_store import *
 from store.template_store import *
 import threading
-from xmlrpc.client import ServerProxy
+from .message_producer import producer, topic
+from whatsapp.message_consumer import *
 
 # Get the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -18,9 +20,6 @@ resource_lock = threading.Lock()
 
 message_blueprint = Blueprint('message', __name__)
 
-# Connect to the server
-server = ServerProxy("http://localhost:8000/", allow_none=True)
-
 def error_response(status_code, message):
     response = jsonify({'error': message})
     response.status_code = status_code
@@ -30,17 +29,25 @@ def error_response(status_code, message):
 def text_message():
     try:
         data = request.json
-        mobile_number = data.get('mobile_number')
-        contact_name = data.get('contact_name')
+        sender = data.get('sender')
+        receiver = data.get('receiver')
         message = data.get('message')
-        instance = retrieve_instance(mobile_number)
+        instance = retrieve_instance(sender)
         if instance == None:
             return error_response(400, 'No instance available for the number')
-        if is_instance_ready(mobile_number):
+        if is_instance_ready(sender):
             try:
-                with resource_lock:
-                    send_whatsapp_message(mobile_number, contact_name, message)
-                    return jsonify({'status': 'Done'})
+                print(f'Sending text message {message}')
+                message_data = {'type': 'text', 'sender': sender, 'receiver': receiver, 
+                                         'message': message}
+                id = store_message(message_data)
+                message_data['id'] = id
+                print(f'Sending message on queue {message_data}')
+                producer.produce(topic,
+                                 json.dumps(message_data).encode('utf-8')
+                                  )
+                producer.flush()
+                return jsonify({'status': 'Done', 'id': id})
             except RuntimeError as e:
                 return error_response(400, str(e))
         else:
@@ -52,24 +59,35 @@ def text_message():
 def template_message():
     try:
         data = request.json
-        mobile_number = data.get('mobile_number')
-        contact_name = data.get('contact_name')
-        instance = retrieve_instance(mobile_number)
+        sender = data.get('sender')
+        receiver = data.get('receiver')
+        instance = retrieve_instance(sender)
         
         if instance == None:
             return error_response(400, 'No instance available for the number')
-        if is_instance_ready(mobile_number):
+        if is_instance_ready(sender):
             try:
                 template_name = data.get('template_name')
                 template = retrieve_template_by_name(template_name)
                 print(f'Got template name {template_name} with {template}')
                 if template == None:
                     return error_response(400, 'Template not available')
+            
                 message = process_template(template['template_text'], data)
+
                 print(f'Sending template message {message}')
-                with resource_lock:
-                    send_whatsapp_message(mobile_number, contact_name, message)
-                    return jsonify({'status': 'Done'})
+                message_data = {'type': 'template', 'sender': sender, 'receiver': receiver, 
+                                         'message': message,
+                                         'template': template}
+                id = store_message(message_data)
+                message_data['id'] = id
+                producer.produce(topic,
+                                 json.dumps(message_data).encode('utf-8')
+                                  )
+                producer.flush()
+                #with resource_lock:
+                #    send_whatsapp_message(mobile_number, contact_name, message)
+                return jsonify({'status': 'Done', 'id': id})
             except RuntimeError as e:
                 return error_response(400, str(e))
         else:
@@ -98,16 +116,23 @@ def get_query_param_values(request):
 def media_message():
     try:
         data = request.json
-        mobile_number = data.get('mobile_number')
-        contact_name = data.get('contact_name')
+        sender = data.get('sender')
+        receiver = data.get('receiver')
         url = data.get('url')
-        instance = retrieve_instance(mobile_number)
+        instance = retrieve_instance(sender)
         if instance == None:
             return error_response(400, 'No instance available for the number')
-        if is_instance_ready(mobile_number):
-            with resource_lock:
-                send_media_whatsapp_message(mobile_number, app_home, contact_name, url)
-                return jsonify({'status': 'Done'})
+        if is_instance_ready(sender):
+            print(f'Sending media {url}')
+            message_data = {'type': 'media', 'sender': sender, 'receiver': receiver, 
+                                        'message': url}
+            id = store_message(message_data)
+            message_data['id'] = id
+            message_data['app_home'] = app_home
+            producer.produce(topic,
+                                 json.dumps(message_data).encode('utf-8')
+                                  )
+            producer.flush()
         else:
             return error_response(400, 'Instance is not ready for the number')
     except Exception as e:
