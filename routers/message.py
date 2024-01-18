@@ -69,18 +69,17 @@ def template_message():
             try:
                 template_name = data.get('template_name')
                 template = retrieve_template_by_name(template_name)
-                print(f'Got template name {template_name} with {template}')
                 if template == None:
                     return error_response(400, 'Template not available')
             
                 message = process_template(template['template_text'], data)
 
-                print(f'Sending template message {message}')
                 message_data = {'type': 'template', 'sender': sender, 'receiver': receiver, 
                                          'message': message,
-                                         'template': template}
+                                         'template': template['name']}
                 id = store_message(message_data)
                 message_data['id'] = id
+                print(f'Sending message to producer {message_data}')
                 producer.produce(topic,
                                  json.dumps(message_data).encode('utf-8')
                                   )
@@ -97,7 +96,6 @@ def template_message():
         
 def process_template(template, args):
     for placeholder in set(find_placeholders(template)):
-        print(f'Checking {placeholder} in {args}')
         if placeholder in args:
             template = template.replace(f"{{{placeholder}}}", str(args[placeholder]))
     return template
@@ -133,6 +131,7 @@ def media_message():
                                  json.dumps(message_data).encode('utf-8')
                                   )
             producer.flush()
+            return jsonify({'status': 'Done', 'id': id})
         else:
             return error_response(400, 'Instance is not ready for the number')
     except Exception as e:

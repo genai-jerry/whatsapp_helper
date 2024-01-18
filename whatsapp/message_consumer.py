@@ -42,6 +42,7 @@ class KafkaConsumerThread(threading.Thread):
 
                 # Process the message asynchronously
                 asyncio.run(self.process_message(msg))
+                self.consumer.commit(msg)
 
         except KeyboardInterrupt:
             pass

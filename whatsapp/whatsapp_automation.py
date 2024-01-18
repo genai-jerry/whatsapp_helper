@@ -51,7 +51,7 @@ def send_media_whatsapp_message(message_data):
     sender = message_data['sender']
     receiver = message_data['receiver']
     app_home = message_data['app_home']
-    file_url = message_data['url']
+    file_url = message_data['message']
     id = message_data['id']
     variables_1 = [receiver]
     server.execute_script('__setup_contact_message_box', sender,

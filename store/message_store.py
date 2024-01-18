@@ -19,7 +19,6 @@ def update_message(id, status, error):
             cursor.close()
 
 def store_message(message_data):
-    print(f'Got {message_data}')
     type = message_data['type']
     sender = message_data['sender']
     receiver = message_data['receiver']

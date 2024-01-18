@@ -41,7 +41,7 @@ def save_template():
 def load_edit_template():
     print('Loading Template')
     id = request.args['id']
-    template = load_template(id)
+    template = retrieve_template(id)
     print(template)
     return render_template('template_edit.html', content=template)
 
