@@ -1,4 +1,5 @@
 from db.connection_manager import *
+from datetime import datetime
 
 def update_message(id, status, error):
     try:
@@ -7,10 +8,10 @@ def update_message(id, status, error):
         cursor = connection.cursor()
 
         # Define the SQL query with placeholders
-        sql = '''Update messages set status=%s, error_message=%s where id=%s'''
+        sql = '''Update messages set status=%s, error_message=%s, update_time=%s where id=%s'''
 
         # Prepare the query and execute it with the provided values
-        cursor.execute(sql, (status, error, id))
+        cursor.execute(sql, (status, error, datetime.now(), id))
 
         connection.commit()
         print("Data Updated successfully.")

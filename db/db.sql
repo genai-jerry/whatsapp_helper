@@ -20,7 +20,9 @@ CREATE TABLE IF NOT EXISTS messages (
                 message TEXT NOT NULL,
                 template VARCHAR(255),
                 status VARCHAR(10) NOT NULL,
-                error_message VARCHAR(255)
+                error_message VARCHAR(255),
+                create_time datetime default now(),
+                update_time datetime
             );
 
 CREATE TABLE IF NOT EXISTS opportunity (
