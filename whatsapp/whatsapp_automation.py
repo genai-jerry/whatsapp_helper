@@ -5,10 +5,13 @@ import os, requests
 from xmlrpc.client import ServerProxy
 import inspect
 from store.message_store import *
+import threading
 
 # Connect to the server
 server = ServerProxy("http://localhost:8000/", allow_none=True)
-
+# Create a lock to synchronize access to a resource
+resource_lock = threading.Lock()
+browser_instance_locks = {}
 # Function to send a WhatsApp message
 def is_instance_ready(mobile_number):
     if server.instance_exists(mobile_number):
@@ -19,6 +22,16 @@ def is_instance_ready(mobile_number):
     else:
         raise Exception
 
+def obtain_sender_lock(sender):
+    lock = None
+    if sender in browser_instance_locks:
+        lock = browser_instance_locks[sender]
+    if lock == None:
+        with resource_lock:
+            lock = threading.Lock()
+            browser_instance_locks[sender] = lock
+    return lock
+    
 # Function to send a WhatsApp message
 def send_whatsapp_message(message_data):
     print('Setting up message box')
@@ -27,21 +40,22 @@ def send_whatsapp_message(message_data):
     message = message_data['message']
     id = message_data['id']
     try:
-        variables_1 = [receiver]
-        result = server.execute_script('__setup_contact_message_box', sender, 
-                                       inspect.getsource(__setup_contact_message_box)
-                            , variables_1)
-        print(f'Executed and got result {result}')
-        start_time = time.time()  # Record the start time
-        timeout = 30  # Timeout in seconds
+        with obtain_sender_lock(sender):
+            variables_1 = [receiver]
+            result = server.execute_script('__setup_contact_message_box', sender, 
+                                        inspect.getsource(__setup_contact_message_box)
+                                , variables_1)
+            print(f'Executed and got result {result}')
+            start_time = time.time()  # Record the start time
+            timeout = 30  # Timeout in seconds
 
-        variables_2 = [message]
-        while not server.execute_script('__send_message', sender,
-                            inspect.getsource(__send_message), variables_2):
-            if time.time() - start_time > timeout:
-                raise RuntimeError('Unable to send message')
-            time.sleep(1)
-        update_message(id, 'Sent', None)
+            variables_2 = [message]
+            while not server.execute_script('__send_message', sender,
+                                inspect.getsource(__send_message), variables_2):
+                if time.time() - start_time > timeout:
+                    raise RuntimeError('Unable to send message')
+                time.sleep(1)
+            update_message(id, 'Sent', None)
     except Exception as e:
         update_message(id, 'Error', str(e)[:255])
         print(f'Caught {e}')
@@ -54,34 +68,35 @@ def send_media_whatsapp_message(message_data):
     file_url = message_data['message']
     id = message_data['id']
     variables_1 = [receiver]
-    server.execute_script('__setup_contact_message_box', sender,
-                          inspect.getsource(__setup_contact_message_box), variables_1)
     
     try:
-        start_time = time.time()  # Record the start time
-        timeout = 30  # Timeout in seconds
+        with obtain_sender_lock(sender):
+            server.execute_script('__setup_contact_message_box', sender,
+                            inspect.getsource(__setup_contact_message_box), variables_1)
+            start_time = time.time()  # Record the start time
+            timeout = 30  # Timeout in seconds
 
-        print('Attaching Media for sending file')
-        variables_2 = [app_home, file_url]
-        attached = server.execute_script('__attach_media', sender,
-                            inspect.getsource(__attach_media), variables_2)
-        print(f'Attached {attached}')
-        while not attached:
-            if time.time() - start_time > timeout:
-                raise RuntimeError('Unable to send media message')
-            time.sleep(1)
+            print('Attaching Media for sending file')
+            variables_2 = [app_home, file_url]
             attached = server.execute_script('__attach_media', sender,
-                            inspect.getsource(__attach_media), variables_2)
+                                inspect.getsource(__attach_media), variables_2)
+            print(f'Attached {attached}')
+            while not attached:
+                if time.time() - start_time > timeout:
+                    raise RuntimeError('Unable to send media message')
+                time.sleep(1)
+                attached = server.execute_script('__attach_media', sender,
+                                inspect.getsource(__attach_media), variables_2)
 
-        start_time = time.time()  # Record the start time
-        timeout = 30  # Timeout in seconds
+            start_time = time.time()  # Record the start time
+            timeout = 30  # Timeout in seconds
 
-        while not server.execute_script('__send_media', sender,
-                            inspect.getsource(__send_media), []):
-            if time.time() - start_time > timeout:
-                raise RuntimeError('Unable to send media message')
-            time.sleep(1)
-        update_message(id, 'Sent', None)
+            while not server.execute_script('__send_media', sender,
+                                inspect.getsource(__send_media), []):
+                if time.time() - start_time > timeout:
+                    raise RuntimeError('Unable to send media message')
+                time.sleep(1)
+            update_message(id, 'Sent', None)
     except Exception as e:
         update_message(id, 'Error', str(e)[:255])
         print(e)

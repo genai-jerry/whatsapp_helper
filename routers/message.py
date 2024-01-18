@@ -15,8 +15,6 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Get the parent directory
 app_home = os.path.abspath(os.path.join(current_dir, os.pardir))
 
-# Create a lock to synchronize access to a resource
-resource_lock = threading.Lock()
 
 message_blueprint = Blueprint('message', __name__)
 
@@ -84,8 +82,7 @@ def template_message():
                                  json.dumps(message_data).encode('utf-8')
                                   )
                 producer.flush()
-                #with resource_lock:
-                #    send_whatsapp_message(mobile_number, contact_name, message)
+                
                 return jsonify({'status': 'Done', 'id': id})
             except RuntimeError as e:
                 return error_response(400, str(e))
