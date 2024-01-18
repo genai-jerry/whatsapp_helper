@@ -61,7 +61,8 @@ class KafkaConsumerThread(threading.Thread):
         else:
             send_whatsapp_message(message_data)
 
+print('Kafka Consumer Starting')
 consumer_thread = KafkaConsumerThread()
 consumer_thread.start()
-
+print('Kafka Consumer Started')
 

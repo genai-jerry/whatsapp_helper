@@ -8,4 +8,4 @@ sudo systemctl status kafka
 
 echo "Hello, World" | ~/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic whatsapp-messages > /dev/null
 
-./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test-topic --from-beginning
+./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic whatsapp-messages --from-beginning
