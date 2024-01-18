@@ -36,13 +36,15 @@ class KafkaConsumerThread(threading.Thread):
                     else:
                         print(msg.error())
                         break
+                try:
+                    received_message = json.loads(msg.value().decode('utf-8'))
+                    print('Received message:', received_message)
 
-                received_message = json.loads(msg.value().decode('utf-8'))
-                print('Received message:', received_message)
-
-                # Process the message asynchronously
-                asyncio.run(self.process_message(msg))
-                self.consumer.commit(msg)
+                    # Process the message asynchronously
+                    asyncio.run(self.process_message(msg))
+                    self.consumer.commit(msg)
+                except Exception as e:
+                    print(f'Got an error {str(e)}')
 
         except KeyboardInterrupt:
             pass
