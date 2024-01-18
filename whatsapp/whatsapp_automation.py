@@ -57,8 +57,17 @@ def send_whatsapp_message(message_data):
                 time.sleep(1)
             update_message(id, 'Sent', None)
     except Exception as e:
+        if 'retry' in message_data:
+            if message_data['retry'] > 3:
+                update_message(id, 'Error', 'Exceeded retries, giving up')
+                return
+            else:
+                message_data['retry'] = message_data['retry'] + 1
+        else:
+            message_data['retry'] = 1
         update_message(id, 'Error', str(e)[:255])
-        print(f'Caught {e}')
+        time.sleep(5)
+        send_media_whatsapp_message(message_data)
 
 # Function to send a WhatsApp message
 def send_media_whatsapp_message(message_data):
@@ -68,7 +77,7 @@ def send_media_whatsapp_message(message_data):
     file_url = message_data['message']
     id = message_data['id']
     variables_1 = [receiver]
-    
+
     try:
         with obtain_sender_lock(sender):
             server.execute_script('__setup_contact_message_box', sender,
@@ -98,8 +107,17 @@ def send_media_whatsapp_message(message_data):
                 time.sleep(1)
             update_message(id, 'Sent', None)
     except Exception as e:
+        if 'retry' in message_data:
+            if message_data['retry'] > 3:
+                update_message(id, 'Error', 'Exceeded retries, giving up')
+                return
+            else:
+                message_data['retry'] = message_data['retry'] + 1
+        else:
+            message_data['retry'] = 1
         update_message(id, 'Error', str(e)[:255])
-        print(e)
+        time.sleep(5)
+        send_media_whatsapp_message(message_data)
 
 def __check_browser_state(browser):
     print('Checking browser state')
