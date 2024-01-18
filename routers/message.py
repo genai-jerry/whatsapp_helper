@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint, request
 from whatsapp.qr_code_generator import *
 from whatsapp.whatsapp_automation import *
-from driver.update_chrome import *
+from browser.update_chrome import *
 from store.message_store import *
 from store.instance_store import *
 from store.template_store import *
