@@ -6,6 +6,7 @@ from xmlrpc.client import ServerProxy
 import inspect
 from store.message_store import *
 import threading
+import html
 
 # Connect to the server
 server = ServerProxy("http://localhost:8000/", allow_none=True)
@@ -184,10 +185,11 @@ def __send_media(browser):
         return False
 
 def __send_message(browser, message):
-    print('Clicking to write the message')
     message_box = browser.find_element("xpath",'//*[@title="Type a message"]')
     message_box.click()
-    message_box.send_keys(message)
+    encodedHtml = html.escape(message)
+    print(f'Adding encoded message {encodedHtml}')
+    message_box.send_keys(encodedHtml)
     message_box.send_keys(Keys.ENTER)
     print('Sending message to contact')
     return True
@@ -195,7 +197,6 @@ def __send_message(browser, message):
 def __setup_contact_message_box(browser, contact_name):
     print('Opening New Chat')
     def __open_new_chat(browser):
-        print('Opening new chat')
         new_chat = browser.find_element("xpath",'//*[@aria-label="New chat"]')
         print('Clicking to start')
         new_chat.click()
@@ -210,6 +211,12 @@ def __setup_contact_message_box(browser, contact_name):
         search_box.send_keys(contact_name)
         time.sleep(1)
         print('Message box for contact opened')
+        return True
+    
+    def _go_back(browser):
+        print('Going back')
+        back_button = browser.find_element("xpath",'//div[@aria-label="Back"]')
+        back_button.click()
         return True
     
     def __load_contact_message_box(browser):
@@ -232,7 +239,6 @@ def __setup_contact_message_box(browser, contact_name):
             
     start_time = time.time()  # Record the start time
     timeout = 30  # Timeout in seconds
-    print('Opening New Chat')
     while not __open_new_chat(browser):
         if time.time() - start_time > timeout:
             raise RuntimeError('Unable to open new chat')
@@ -249,6 +255,7 @@ def __setup_contact_message_box(browser, contact_name):
     timeout = 30  # Timeout in seconds
     while not __load_contact_message_box(browser):
         if time.time() - start_time > timeout:
+            _go_back(browser)
             raise RuntimeError('Unable to find contact')
         time.sleep(1)
 

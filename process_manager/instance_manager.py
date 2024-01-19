@@ -11,6 +11,7 @@ import os, requests
 import qrcode, time
 from persistent_driver import PersistentWebDriver
 import threading
+import html
 
 # URL for WhatsApp Web
 whatsapp_web_url = "https://web.whatsapp.com/"
@@ -56,7 +57,7 @@ def refresh(mobile_number):
 def create_instance(app_home, mobile_number):
     print('Creating instance')
     options = Options()
-    options.add_argument("--headless=new")
+    #options.add_argument("--headless=new")
     driver_file_path = os.path.join(app_home, driver_path)
     print(f'Driver path is {driver_file_path}. Making it executable')
     try:
