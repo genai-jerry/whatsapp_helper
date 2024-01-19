@@ -58,7 +58,7 @@ def send_whatsapp_message(message_data):
             update_message(id, 'Sent', None)
     except Exception as e:
         if 'retry' in message_data:
-            if message_data['retry'] > 3:
+            if message_data['retry'] > 5:
                 update_message(id, 'Error', 'Exceeded retries, giving up')
                 return
             else:
@@ -67,7 +67,7 @@ def send_whatsapp_message(message_data):
             message_data['retry'] = 1
         update_message(id, 'Error', str(e)[:255])
         time.sleep(5)
-        send_media_whatsapp_message(message_data)
+        send_whatsapp_message(message_data)
 
 # Function to send a WhatsApp message
 def send_media_whatsapp_message(message_data):
