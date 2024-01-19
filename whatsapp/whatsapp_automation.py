@@ -6,7 +6,6 @@ from xmlrpc.client import ServerProxy
 import inspect
 from store.message_store import *
 import threading
-import html
 
 # Connect to the server
 server = ServerProxy("http://localhost:8000/", allow_none=True)
@@ -187,9 +186,7 @@ def __send_media(browser):
 def __send_message(browser, message):
     message_box = browser.find_element("xpath",'//*[@title="Type a message"]')
     message_box.click()
-    encodedHtml = html.escape(message)
-    print(f'Adding encoded message {encodedHtml}')
-    message_box.send_keys(encodedHtml)
+    message_box.send_keys(message)
     message_box.send_keys(Keys.ENTER)
     print('Sending message to contact')
     return True

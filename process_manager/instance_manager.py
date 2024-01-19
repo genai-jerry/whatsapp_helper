@@ -11,7 +11,6 @@ import os, requests
 import qrcode, time
 from persistent_driver import PersistentWebDriver
 import threading
-import html
 
 # URL for WhatsApp Web
 whatsapp_web_url = "https://web.whatsapp.com/"
