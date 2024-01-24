@@ -99,7 +99,8 @@
                               '<td>' + instance.name + '</td>' +
                               '<td>' + instance.status + '</td>' +
                               '<td><a href="/instance/edit?mobile_number='+ instance.mobile_number +'">Edit</a>&nbsp;' +
-                              '<a href="/instance/delete?mobile_number='+ instance.mobile_number +'">Delete</a></td>' +
+                              '<a href="/instance/delete?mobile_number='+ instance.mobile_number +'">Delete</a>&nbsp;' +
+                              '<a href="/instance/refresh?mobile_number='+ instance.mobile_number +'">Refresh</a></td>' +
                               '</tr>';
                     $('#instances-table-body').append(row);
                 });

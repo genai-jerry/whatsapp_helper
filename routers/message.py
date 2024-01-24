@@ -5,7 +5,6 @@ from browser.update_chrome import *
 from store.message_store import *
 from store.instance_store import *
 from store.template_store import *
-import threading
 from .message_producer import producer, topic
 from whatsapp.message_consumer import *
 
@@ -51,6 +50,7 @@ def text_message():
         else:
             return error_response(400, 'Instance is not ready for the number')
     except Exception as e:
+        print(str(e))
         return error_response(500, str(e))
     
 @message_blueprint.route('/template', methods=['POST'])

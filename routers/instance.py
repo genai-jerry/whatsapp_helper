@@ -33,6 +33,14 @@ def edit_instance():
     except Exception as e:
         return error_response(500, str(e))
 
+@instance_blueprint.route('/refresh', methods=['GET'])
+def refresh_instance():
+    try:
+        mobile_number = request.args.get('mobile_number')
+        refresh_browser(mobile_number)
+    except Exception as e:
+        return error_response(500, str(e))
+    
 @instance_blueprint.route('/delete')
 def delete_instance():
     try:

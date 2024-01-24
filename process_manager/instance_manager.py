@@ -30,9 +30,12 @@ def remove_instance(mobile_number):
     # Use mobile number as the key to store data in Redis
     # redis_client.set(user_data['mobile_number'], user_data)
     print('Removing Instance')
-    browser = browser_instances[mobile_number]
-    browser.get_driver().quit()
-    browser_instances.pop(mobile_number)
+    if mobile_number in browser_instances:
+        browser = browser_instances[mobile_number]
+        browser_instances.pop(mobile_number)
+        browser.get_driver().quit()
+    else:
+        print('Instance not found')
 
 def make_file_executable(file_path):
     # Get the current permissions
@@ -56,7 +59,7 @@ def refresh(mobile_number):
 def create_instance(app_home, mobile_number):
     print('Creating instance')
     options = Options()
-    #options.add_argument("--headless=new")
+    options.add_argument("--headless=new")
     driver_file_path = os.path.join(app_home, driver_path)
     print(f'Driver path is {driver_file_path}. Making it executable')
     try:
@@ -116,6 +119,7 @@ def execute_script(function_name, mobile_number, script, variables):
         # Execute the script in the context of locals_dict
         with browser.get_lock():
             exec(script, globals(), locals_dict)
+            browser.record_activity()
         print('Executed')
 
         # Call the function named 'main' in the script and pass variables

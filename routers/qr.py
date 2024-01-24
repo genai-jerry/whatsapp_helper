@@ -72,6 +72,7 @@ def refresh_qr():
 def create_instance(mobile_number, user_name, new_instance):
     print('Creating new instance')
     result = server.create_instance(app_home, mobile_number)
+    print(result)
     if result:
         if new_instance:
             print('Storing Instance')
@@ -93,9 +94,7 @@ def get_qr_code():
             print('Loading the QR Code')
             # In a real application, provide the URL or path to the generated QR code
             load_qr_code(mobile_number, app_home)
-            print('Loaded the QR Code and updating instance')
-            update_instance(mobile_number, {'status': 'Ready'})
-            print('Updated the instance')
+            print('Loaded the QR Code')
             return jsonify({'status': 'ready'})
         else:
             print('Updating instance')
@@ -117,7 +116,7 @@ def check_activation():
 
         # Check if the instance is activated
         instance = retrieve_instance(mobile_number)
-        if instance != None and is_instance_ready(mobile_number):
+        if instance != None and is_whatsapp_ready(mobile_number):
             update_instance(mobile_number, {'status': 'Ready'})
             #read_text_message(mobile_number)
             return jsonify({'status': 'ready'})
