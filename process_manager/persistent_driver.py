@@ -1,5 +1,4 @@
 import threading
-from selenium import webdriver
 import time
 
 class PersistentWebDriver:

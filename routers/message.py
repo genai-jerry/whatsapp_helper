@@ -5,15 +5,16 @@ from browser.update_chrome import *
 from store.message_store import *
 from store.instance_store import *
 from store.template_store import *
-from .message_producer import producer, topic
-from whatsapp.message_consumer import *
+from .message_producer import *
+from .message_consumer import *
 
 # Get the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Get the parent directory
 app_home = os.path.abspath(os.path.join(current_dir, os.pardir))
-
+producer = start_producer()
+start_consumer()
 
 message_blueprint = Blueprint('message', __name__)
 
@@ -40,10 +41,10 @@ def text_message():
                 id = store_message(message_data)
                 message_data['id'] = id
                 print(f'Sending message on queue {message_data}')
-                producer.produce(topic,
+                producer.get_producer().produce(producer.get_topic(),
                                  json.dumps(message_data).encode('utf-8')
                                   )
-                producer.flush()
+                producer.get_producer().flush()
                 return jsonify({'status': 'Done', 'id': id})
             except RuntimeError as e:
                 return error_response(400, str(e))
@@ -78,10 +79,10 @@ def template_message():
                 id = store_message(message_data)
                 message_data['id'] = id
                 print(f'Sending message to producer {message_data}')
-                producer.produce(topic,
+                producer.get_producer().produce(producer.get_topic(),
                                  json.dumps(message_data).encode('utf-8')
                                   )
-                producer.flush()
+                producer.get_producer().flush()
                 
                 return jsonify({'status': 'Done', 'id': id})
             except RuntimeError as e:
@@ -124,10 +125,10 @@ def media_message():
             id = store_message(message_data)
             message_data['id'] = id
             message_data['app_home'] = app_home
-            producer.produce(topic,
+            producer.get_producer().produce(producer.get_topic(),
                                  json.dumps(message_data).encode('utf-8')
                                   )
-            producer.flush()
+            producer.get_producer().flush()
             return jsonify({'status': 'Done', 'id': id})
         else:
             return error_response(400, 'Instance is not ready for the number')

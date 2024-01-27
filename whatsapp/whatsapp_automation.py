@@ -11,7 +11,7 @@ import threading
 # Connect to the server
 server = ServerProxy("http://localhost:8000/", allow_none=True)
 # Create a lock to synchronize access to a resource
-resource_lock = threading.Lock()
+resource_lock = threading.RLock()
 browser_instance_locks = {}
 
 def is_whatsapp_ready(mobile_number):
@@ -36,16 +36,15 @@ def is_instance_ready(mobile_number):
         return False
 
 def obtain_sender_lock(sender):
-    lock = None
     if sender in browser_instance_locks:
         lock = browser_instance_locks[sender]
         print(f'Returning existing lock for {sender}')
-    if lock == None:
-        with resource_lock:
-            lock = threading.Lock()
-            print(f'Creating new lock for {sender}')
-            browser_instance_locks[sender] = lock
-    return lock
+        return lock
+    else:
+        lock = threading.RLock()
+        print(f'Creating new lock for {sender}')
+        browser_instance_locks[sender] = lock
+        return lock
     
 # Function to send a WhatsApp message
 def send_whatsapp_message(message_data):

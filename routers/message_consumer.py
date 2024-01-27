@@ -1,4 +1,4 @@
-from .whatsapp_automation import send_media_whatsapp_message, send_whatsapp_message
+from whatsapp.whatsapp_automation import send_media_whatsapp_message, send_whatsapp_message
 import json
 from confluent_kafka import Consumer, KafkaException, Message
 import asyncio
@@ -9,6 +9,11 @@ config = configparser.ConfigParser()
 config.read('config/config.ini')
 
 class KafkaConsumerThread(threading.Thread):
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(KafkaConsumerThread, cls).__new__(cls)
+        return cls.instance
+    
     def __init__(self):
         threading.Thread.__init__(self)
         self.daemon = True
@@ -56,12 +61,15 @@ class KafkaConsumerThread(threading.Thread):
         message_data = json.loads(msg.value().decode('utf-8'))
         print(f'Received message: {message_data}')
         if message_data['type'] == 'media':
+            print('Sending whatsapp media message')
             send_media_whatsapp_message(message_data)
         else:
+            print('Sending whatsapp text message')
             send_whatsapp_message(message_data)
 
-print('Kafka Consumer Starting')
-consumer_thread = KafkaConsumerThread()
-consumer_thread.start()
-print('Kafka Consumer Started')
+def start_consumer():
+    print('Kafka Consumer Starting')
+    consumer_thread = KafkaConsumerThread()
+    consumer_thread.start()
+    print('Kafka Consumer Started')
 

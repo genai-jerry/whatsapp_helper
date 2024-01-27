@@ -4,7 +4,6 @@ from whatsapp.whatsapp_automation import *
 from browser.update_chrome import *
 from store.instance_store import *
 from xmlrpc.client import ServerProxy
-
 # Get the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
