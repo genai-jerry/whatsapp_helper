@@ -37,14 +37,17 @@ def is_instance_ready(mobile_number):
 
 def obtain_sender_lock(sender):
     if sender in browser_instance_locks:
-        lock = browser_instance_locks[sender]
         print(f'Returning existing lock for {sender}')
-        return lock
+        return browser_instance_locks[sender]
     else:
-        lock = threading.RLock()
-        print(f'Creating new lock for {sender}')
-        browser_instance_locks[sender] = lock
-        return lock
+        with resource_lock:
+            if sender in browser_instance_locks:
+                return browser_instance_locks[sender]
+            else:
+                lock = threading.RLock()
+                print(f'Creating new lock for {sender}')
+                browser_instance_locks[sender] = lock
+                return lock
     
 # Function to send a WhatsApp message
 def send_whatsapp_message(message_data):
