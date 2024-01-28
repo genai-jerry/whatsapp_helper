@@ -12,51 +12,58 @@
     <!-- Navigation Menu -->
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-                <!-- Menu Items -->
-                <div class="position-sticky pt-3">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/instance">
-                                Instances
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/template">
-                                Templates
-                            </a>
-                        </li>
-                        <!-- Additional menu items here -->
-                    </ul>
-                </div>
-            </nav>
-
-            <!-- Main content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Instances</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <a type="button" class="btn btn-sm btn-outline-secondary" id="new-instance-btn" href="/instance">New</a>
+            <!-- Collapsible Navigation Bar Button -->
+            <div class="col-md-2 col-lg-2">
+                <button class="navbar-toggler d-md-none d-sm-block" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="sidebarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon navbar-brand">Menu</span>
+                </button>             
+                <nav class="bg-light d-md-block collapse navbar-collapse" id="navbarSupportedContent">
+                    <!-- Menu Items -->
+                    <div class="position-sticky pt-3">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="/instance">
+                                    Instances
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="/template">
+                                    Templates
+                                </a>
+                            </li>
+                            <!-- Additional menu items here -->
+                        </ul>
                     </div>
-                </div>
+                </nav>
+            </div>
+            <!-- Main content -->
+            <div class="col-md-10 col-lg-10">
+                <main class="ms-sm-auto px-md-4">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Instances</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <a type="button" class="btn btn-sm btn-outline-secondary" id="new-instance-btn" href="/instance">New</a>
+                        </div>
+                    </div>
 
-                <!-- Instances Table -->
-                <div class="table-responsive">
-                    <table class="table table-striped table-sm">
-                        <thead>
-                            <tr>
-                                <th>Mobile Number</th>
-                                <th>Name</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="instances-table-body">
-                            <!-- Rows will be added dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </main>
+                    <!-- Instances Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Mobile Number</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="instances-table-body">
+                                <!-- Rows will be added dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </main>
+            </div>
         </div>
     </div>
 
