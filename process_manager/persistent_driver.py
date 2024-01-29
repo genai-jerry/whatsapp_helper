@@ -20,12 +20,15 @@ class PersistentWebDriver:
     def get_driver(self):
         return self.driver
     
+    def quit(self):
+        print('Quiting the driver')
+        self.driver.quit()
+    
     def record_activity(self):
         try:
             print(f'Recording new activity')
-            print(f'Last activity ')
+            print(f'Last activity {time.ctime(time.time())}')
             self.last_active = time.time()
-            print(f'Time is {self.last_active}')
         except Exception as e:
             print(str(e))
 

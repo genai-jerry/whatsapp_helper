@@ -84,6 +84,7 @@ def send_whatsapp_message(message_data):
             except Exception as e:
                 if 'retry' in message_data:
                     if message_data['retry'] > 5:
+                        print(f"Retrying {message_data['retry']} time")
                         update_message(id, 'Error', 'Exceeded retries, giving up')
                         return
                     else:

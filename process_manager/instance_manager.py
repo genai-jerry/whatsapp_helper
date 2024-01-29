@@ -33,7 +33,7 @@ def remove_instance(mobile_number):
     if mobile_number in browser_instances:
         browser = browser_instances[mobile_number]
         browser_instances.pop(mobile_number)
-        browser.get_driver().quit()
+        browser.quit()
     else:
         print('Instance not found')
 
@@ -109,29 +109,26 @@ def app_loaded(browser):
     
 def execute_script(function_name, mobile_number, script, variables):
     try:
-        print('Executing the script')
         # Create a dictionary for local variables
         locals_dict = {}
-        print('Getting browser instance')
         browser = browser_instances[mobile_number]
-        print('Adding browser to arguments')
         variables.insert(0, browser.get_driver())
         # Execute the script in the context of locals_dict
-        with browser.get_lock():
-            exec(script, globals(), locals_dict)
-            browser.record_activity()
+        print(f'Executing {function_name}')
+        exec(script, globals(), locals_dict)
+        browser.record_activity()
         print('Executed')
 
         # Call the function named 'main' in the script and pass variables
         if function_name in locals_dict and callable(locals_dict[function_name]):
-            print('Getting results from locals_dict')
             result = locals_dict[function_name](*variables)
-            print('Returning result')
+            print(f'Returning result {result}')
             return result
         else:
             return f"Function {function_name} not found or not callable in the script."
     except Exception as e:
-        return f"Error executing script: {str(e)}"
+        print(f"Error executing script: {str(e)}")
+        raise e
 
 def read_text_message(mobile_number):
     # JavaScript code to observe changes within the "Chat List" div
