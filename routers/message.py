@@ -7,6 +7,7 @@ from store.instance_store import *
 from store.template_store import *
 from .message_producer import *
 from .message_consumer import *
+from .utils import error_response
 
 # Get the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,11 +18,6 @@ producer = start_producer()
 start_consumer()
 
 message_blueprint = Blueprint('message', __name__)
-
-def error_response(status_code, message):
-    response = jsonify({'error': message})
-    response.status_code = status_code
-    return response
 
 @message_blueprint.route('/text', methods=['POST'])
 def text_message():

@@ -4,6 +4,7 @@ from whatsapp.whatsapp_automation import *
 from browser.update_chrome import *
 from store.instance_store import *
 from xmlrpc.client import ServerProxy
+from .utils import error_response
 
 instance_blueprint = Blueprint('instance', __name__)
 # Connect to the server
@@ -50,7 +51,3 @@ def delete_instance():
     except Exception as e:
         return error_response(500, str(e))
     
-def error_response(status_code, message):
-    response = jsonify({'error': message})
-    response.status_code = status_code
-    return response

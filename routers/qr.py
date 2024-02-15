@@ -4,6 +4,8 @@ from whatsapp.whatsapp_automation import *
 from browser.update_chrome import *
 from store.instance_store import *
 from xmlrpc.client import ServerProxy
+from .utils import error_response
+
 # Get the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -124,8 +126,3 @@ def check_activation():
             return jsonify({'status': 'not ready'})
     except Exception as e:
         return error_response(500, str(e))
-
-def error_response(status_code, message):
-    response = jsonify({'error': message})
-    response.status_code = status_code
-    return response

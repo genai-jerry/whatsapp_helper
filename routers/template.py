@@ -3,6 +3,7 @@ from whatsapp.qr_code_generator import *
 from whatsapp.whatsapp_automation import *
 from browser.update_chrome import *
 from store.template_store import *
+from .utils import error_response
 
 template_blueprint = Blueprint('template', __name__)
 
@@ -57,7 +58,3 @@ def edit_template():
 def list_templates():
     return get_all_templates()
 
-def error_response(status_code, message):
-    response = jsonify({'error': message})
-    response.status_code = status_code
-    return response

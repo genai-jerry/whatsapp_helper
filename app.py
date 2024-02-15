@@ -5,6 +5,7 @@ from routers.instance import instance_blueprint
 from routers.message import message_blueprint
 from routers.qr import qr_blueprint
 from routers.template import template_blueprint
+from routers.opportunity import opportunity_blueprint
 
 app = Flask(__name__)
 
@@ -14,6 +15,7 @@ app.register_blueprint(driver_blueprint, url_prefix='/driver')
 app.register_blueprint(message_blueprint, url_prefix='/message')
 app.register_blueprint(qr_blueprint, url_prefix='/qr')
 app.register_blueprint(template_blueprint, url_prefix='/template')
+app.register_blueprint(opportunity_blueprint, url_prefix='/opportunity')
 
 @app.route('/')
 def home():
