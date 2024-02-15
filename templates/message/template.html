@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+    WhatsApp Template Manager
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Create New Template</h2>
+    <form id="newTemplateForm" action="/template" method="post">
+        <div class="mb-3">
+            <label for="templateName" class="form-label">Template Name</label>
+            <input type="text" class="form-control" id="templateName" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="templateText">Template Text</label>
+            <textarea class="form-control" id="templateText" rows="3" name="text"></textarea>
+        </div>
+        <button type="submit" class="btn btn-secondary">Save</button>
+        <button type="button" class="btn btn-secondary" onclick="window.history.back();">Cancel</button>
+    </form>
+</div>
+{% endblock %}

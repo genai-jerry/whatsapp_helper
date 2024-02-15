@@ -1,13 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>List of Opportunities</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}
+    WhatsApp Instance Manager
+{% endblock %}
+
+{% block content %}
     <div class="container mt-5">
         <h2>List of Opportunities</h2>
         <table class="table table-striped" id="opportunitiesTable">
@@ -32,9 +29,11 @@
         $(document).ready(function() {
             $.get('/opportunity/list', function(data) {
                 data.forEach(function(opportunity) {
+                    var date = new Date(opportunity.date);
+                    var formattedDate = date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                     var row = '<tr>' +
                         '<td>' + opportunity.name + '</td>' +
-                        '<td>' + opportunity.date + '</td>' +
+                        '<td>' + formattedDate + '</td>' +
                         '<td>' + opportunity.email + '</td>' +
                         '<td>' + opportunity.phone + '</td>' +
                         '<td>' + opportunity.call_status + '</td>' +
@@ -46,7 +45,4 @@
             });
         });
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}

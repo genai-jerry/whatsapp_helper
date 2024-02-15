@@ -113,7 +113,8 @@ def get_opportunities():
             INNER JOIN 
                 opportunity_status os ON o.opportunity_status = os.id
             INNER JOIN 
-                sales_agent sa ON o.sales_agent = sa.id;
+                sales_agent sa ON o.sales_agent = sa.id
+            ORDER BY o.register_time desc
         """
         cursor.execute(sql)
         results = cursor.fetchall()

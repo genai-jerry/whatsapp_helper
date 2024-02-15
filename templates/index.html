@@ -1,80 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Instance Manager</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <!-- Navigation Menu -->
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Collapsible Navigation Bar Button -->
-            <div class="col-md-2 col-lg-2">
-                <button class="navbar-toggler d-md-none d-sm-block" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="sidebarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon navbar-brand">Menu</span>
-                </button>             
-                <nav class="bg-light d-md-block collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Menu Items -->
-                    <div class="position-sticky pt-3">
-                        <ul class="nav flex-column">
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="/instance">
-                                    Instances
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="/template">
-                                    Templates
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="/opportunity">
-                                    List Opportunities
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="/opportunity/import">
-                                    Import Opportunities
-                                </a>
-                            </li>
-                            <!-- Additional menu items here -->
-                        </ul>
-                    </div>
-                </nav>
-            </div>
-            <!-- Main content -->
-            <div class="col-md-10 col-lg-10">
-                <main class="ms-sm-auto px-md-4">
-                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                        <h1 class="h2">Instances</h1>
-                        <div class="btn-toolbar mb-2 mb-md-0">
-                            <a type="button" class="btn btn-sm btn-outline-secondary" id="new-instance-btn" href="/instance">New</a>
-                        </div>
-                    </div>
+{% block title %}
+    WhatsApp Manager
+{% endblock %}
 
-                    <!-- Instances Table -->
-                    <div class="table-responsive">
-                        <table class="table table-striped table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Mobile Number</th>
-                                    <th>Name</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="instances-table-body">
-                                <!-- Rows will be added dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </main>
-            </div>
+{% block content %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Instances</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a type="button" class="btn btn-sm btn-outline-secondary" id="new-instance-btn" href="/instance">New</a>
         </div>
+    </div>
+
+    <!-- Instances Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Mobile Number</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="instances-table-body">
+                <!-- Rows will be added dynamically -->
+            </tbody>
+        </table>
     </div>
 
     <!-- New Instance Modal -->
@@ -124,7 +76,4 @@
             });
         });
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}

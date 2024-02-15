@@ -9,7 +9,7 @@ template_blueprint = Blueprint('template', __name__)
 
 @template_blueprint.route('/')
 def home():
-    return render_template('templates.html')
+    return render_template('message/templates.html')
 
 @template_blueprint.route('/new')
 def new():
@@ -20,14 +20,14 @@ def activate():
     print(f'Updating the template {request.form}')
     id = request.args["id"]
     activate_template(id)
-    return render_template('templates.html')
+    return render_template('message/templates.html')
 
 @template_blueprint.route('/deactivate')
 def deactivate():
     print(f'Updating the template {request.form}')
     id = request.args["id"]
     deactivate_template(id)
-    return render_template('templates.html')
+    return render_template('message/templates.html')
 
 @template_blueprint.route('/', methods=['POST'])
 def save_template():
@@ -36,7 +36,7 @@ def save_template():
     template = request.form['text']
     print(f'Name: {name} : Template : {template}')
     store_template({'name': name, 'template_text': template})
-    return render_template('templates.html')
+    return render_template('message/templates.html')
 
 @template_blueprint.route('/edit')
 def load_edit_template():
@@ -44,7 +44,7 @@ def load_edit_template():
     id = request.args['id']
     template = retrieve_template(id)
     print(template)
-    return render_template('template_edit.html', content=template)
+    return render_template('message/template_edit.html', content=template)
 
 @template_blueprint.route('/edit', methods=['POST'])
 def edit_template():
@@ -52,7 +52,7 @@ def edit_template():
     id = request.form['id']
     template = request.form['text']
     update_template({'id': id, 'template_text': template})
-    return render_template('templates.html')
+    return render_template('message/templates.html')
 
 @template_blueprint.route('/list')
 def list_templates():

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}
+    WhatsApp Instance Manager
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h2>Templates</h2>
+        <table class="table table-striped" id="opportunitiesTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Template</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="templates-table-body">
+                <!-- Table data will be inserted here with JavaScript -->
+            </tbody>
+        </table>
+    </div>
+        
+        
+    <script>
+        $(document).ready(function() {
+            $.getJSON('/template/list', function(data) {
+                $.each(data, function(index, template) {
+                    var status = 'Active'
+                    var active_td = '<td><a href="/template/deactivate?id='+template.id+'">Deactivate</a>'
+                    if(!template.active){
+                        active_td = '<td><a href="/template/activate?id='+template.id+'">Activate</a>'
+                        status = "Inactive"
+                    }
+                    var row = '<tr>' +
+                              '<td><a href="/template/edit?id='+template.id+'">' + template.name + '</a></td>' +
+                              '<td>' + template.template_text + '</td>' +
+                              '<td>' + status + '</td>' +
+                              active_td
+                              '</tr>';
+                    $('#templates-table-body').append(row);
+                });
+            });
+        });
+    </script>
+{% endblock %}
+
+
