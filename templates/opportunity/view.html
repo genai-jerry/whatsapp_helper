@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}
+    View Opportunity
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h2>Opportunity Details</h2>
+
+        <h3>Personal Information</h3>
+        <div id="personalInformation">
+            <p><strong>Name:</strong> {{ opportunity.name }}</p>
+            <p><strong>Email:</strong> {{ opportunity.email }}</p>
+            <p><strong>Phone:</strong> {{ opportunity.phone }}</p>
+            <p><strong>Call Status:</strong> {{ opportunity.call_status }}</p>
+        </div>
+
+        <h3>Messaging Information</h3>
+        <div id="messagingInformation">
+            {% for message in opportunity.messages %}
+                <p><strong>Template:</strong> {{ message.template }}</p>
+                <p><strong>Date Sent:</strong> {{ message.date_sent.strftime('%b %d, %Y, %H:%M') }}</p>
+            {% endfor %}
+        </div>
+        <h3>Communicate</h3>
+        <form id="messageForm">
+            <select id="messageTemplate">
+                {% for template in opportunity.templates %}
+                    <option value="{{ template.id }}">{{ template.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="opportunity_id" value="{{ opportunity.id }}">
+            <button type="submit" id="sendButton">Send Message</button>
+        </form>
+
+        <script>
+            $('#messageForm').submit(function(e) {
+                e.preventDefault();
+                var templateId = $('#messageTemplate').val();
+                var opportunityId = $('input[name="opportunity_id"]').val();
+                $.post('/send_message', { opportunity_id: opportunityId, template_id: templateId }, function(response) {
+                    alert(response.message);
+                });
+            });
+        </script>
+    </div>
+
+{% endblock %}

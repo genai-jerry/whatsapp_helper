@@ -1,6 +1,6 @@
 """Add the APIs for the opportunites. Use Flask-Restful to create the APIs."""
 from flask import jsonify, Blueprint, render_template, request
-from .utils import error_response
+from utils import error_response
 import pandas as pd
 from werkzeug.utils import secure_filename
 from store.opportunity_store import *  # Import the store_opportunity function
@@ -149,6 +149,32 @@ def list_opportunities():
             response_data.append(opportunity_data)
 
         return jsonify(response_data), 200
+    except Exception as e:
+        print(str(e))
+        return error_response(500, str(e))
+    
+@opportunity_blueprint.route('/<int:opportunity_id>', methods=['GET'])
+def get_opportunity_detail(opportunity_id):
+    try:
+        # Retrieve the opportunity detail from your database based on the opportunity_id
+        opportunity = get_opportunity_by_id(opportunity_id)  # Replace with your database query
+
+        # Prepare the response data
+        response_data = {
+            'id': opportunity['id'],
+            'name': opportunity['name'],
+            'email': opportunity['email'],
+            'phone': opportunity['phone'],
+            'comment': opportunity['comment'],
+            'register_time': opportunity['register_time'],
+            'opportunity_status': opportunity['opportunity_status'],
+            'call_status': opportunity['call_status'],
+            'sales_agent': opportunity['sales_agent'],
+            'messages': opportunity['messages'],
+            'templates': opportunity['templates']
+        }
+
+        return render_template('opportunity/view.html', opportunity=response_data)
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))

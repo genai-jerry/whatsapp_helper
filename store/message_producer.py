@@ -11,9 +11,11 @@ class KafkaProducer(object):
         return cls.instance
     
     def __init__(self):
+        print('Initializing Kafka producer')
         self.producer = Producer({'bootstrap.servers': config.get('Producer', 'bootstrap_servers')
                     })
         self.topic = config.get('Producer', 'topic')
+        print('Kafka producer initialized')
 
     def get_producer(self):
         return self.producer
@@ -21,9 +23,3 @@ class KafkaProducer(object):
     def get_topic(self):
         return self.topic
     
-kafka_producer = None
-def start_producer():
-    print('Starting Producer')
-    kafka_producer = KafkaProducer()
-    print('Producer Started')
-    return kafka_producer

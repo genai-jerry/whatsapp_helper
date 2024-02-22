@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-    WhatsApp Instance Manager
+    List Opportunities
 {% endblock %}
 
 {% block content %}
@@ -32,7 +32,7 @@
                     var date = new Date(opportunity.date);
                     var formattedDate = date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                     var row = '<tr>' +
-                        '<td>' + opportunity.name + '</td>' +
+                        '<td><a href="./' + opportunity.id + '">' + opportunity.name + '</a></td>' +
                         '<td>' + formattedDate + '</td>' +
                         '<td>' + opportunity.email + '</td>' +
                         '<td>' + opportunity.phone + '</td>' +

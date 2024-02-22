@@ -138,3 +138,73 @@ def get_opportunities():
     finally:
         if cursor:
             cursor.close()
+
+def get_opportunity_by_id(opportunity_id):
+    try:
+        # Create a cursor
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Fetch opportunity from the database
+        cursor.execute(
+            """
+            SELECT 
+                opportunity.id,
+                opportunity.name,
+                opportunity.email,
+                opportunity.phone,
+                opportunity.comment,
+                opportunity.register_time,
+                opportunity_status.name AS opportunity_status,
+                lead_call_status.name AS call_status,
+                sales_agent.name AS sales_agent
+            FROM 
+                opportunity
+            LEFT JOIN 
+                opportunity_status ON opportunity.opportunity_status = opportunity_status.id
+            LEFT JOIN 
+                lead_call_status ON opportunity.call_status = lead_call_status.id
+            LEFT JOIN 
+                sales_agent ON opportunity.sales_agent = sales_agent.id
+            WHERE 
+                opportunity.id = %s;
+            """, (opportunity_id,)
+        )
+        opportunity = cursor.fetchone()
+
+        if opportunity is None:
+            return None
+
+        # Fetch messages related to the opportunity
+        cursor.execute("""
+            SELECT m.*, t.name 
+            FROM messages m
+            LEFT JOIN templates t ON m.template = t.name
+            WHERE m.receiver_id = %s
+        """, (opportunity_id,))
+        messages = cursor.fetchall()
+
+        # Fetch active templates
+        cursor.execute("SELECT * FROM templates WHERE active = 1")
+        templates = cursor.fetchall()
+
+        # Prepare the data to return
+        data = {
+            'id': opportunity[0],
+            'name': opportunity[1],
+            'email': opportunity[2],
+            'phone': opportunity[3],
+            'comment': opportunity[4],
+            'register_time': opportunity[5],
+            'opportunity_status': opportunity[6],
+            'call_status': opportunity[7],
+            'sales_agent': opportunity[8],
+            'messages': [{'type': message[1], 'sender': message[2], 'receiver': message[3], 'message': message[5], 'template': message[6], 'status': message[7], 'error_message': message[8], 'create_time': message[9], 'update_time': message[10]} for message in messages],
+            'templates': [{'id': template[0], 'name': template[1], 'active': template[2], 'template_text': template[3]} for template in templates]
+        }
+        print(f'Returning {data}')
+        return data
+    finally:
+        if cursor:
+            cursor.close()
+    

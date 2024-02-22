@@ -17,12 +17,14 @@ CREATE TABLE IF NOT EXISTS messages (
                 type VARCHAR(10) NOT NULL,
                 sender VARCHAR(20) NOT NULL,
                 receiver VARCHAR(20) NOT NULL,
+                receiver_id INT,
                 message TEXT NOT NULL,
                 template VARCHAR(255),
                 status VARCHAR(10) NOT NULL,
                 error_message VARCHAR(255),
                 create_time datetime default now(),
-                update_time datetime
+                update_time datetime,
+                FOREIGN KEY (receiver_id) REFERENCES opportunity(id)
             );
 
 CREATE TABLE IF NOT EXISTS opportunity (
