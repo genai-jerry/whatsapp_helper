@@ -107,5 +107,30 @@ def get_all_instances():
         if cursor:
             cursor.close()
     
+def get_senders():
+    # Select data from the specified table and return as JSON
+    try:
+        print('Loading senders')
+        connection = create_connection()
+        cursor = connection.cursor(dictionary=True)
 
+        # Select all data from the specified table
+        cursor.execute("SELECT mobile_number, name FROM instances")
+
+        # Fetch all rows as a list of dictionaries
+        rows = cursor.fetchall()
+        print(f'Rows {rows}')
+        senders = []
+        for row in rows:
+            print(row)
+            sender = {
+                'mobile_number': row['mobile_number'],
+                'name': row['name']
+            }
+            senders.append(sender)
+        print(f'Senders: {senders}')
+        return senders
+    finally:
+        if cursor:
+            cursor.close()
 

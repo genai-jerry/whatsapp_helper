@@ -42,9 +42,13 @@ def update_chrome_driver():
 
     for file in existing_files:
         match = version_pattern.match(file)
-        if match and match.group(1) == latest_version:
-            print(f'Latest ChromeDriver version {latest_version} is already downloaded.')
-            return
+        if match:
+            # If the existing driver is not the latest version, delete it
+            if match.group(1) != latest_version:
+                os.remove(os.path.join(storage_dir, file))
+            else:
+                print(f'Latest ChromeDriver version {latest_version} is already downloaded.')
+                return
 
     # Download the latest version
     download_driver(download_url, latest_version)

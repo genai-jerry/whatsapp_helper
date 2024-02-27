@@ -156,7 +156,7 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.comment,
                 opportunity.register_time,
                 opportunity_status.name AS opportunity_status,
-                lead_call_status.name AS call_status,
+                lead_call_status.id AS call_status,
                 sales_agent.name AS sales_agent
             FROM 
                 opportunity
@@ -180,7 +180,7 @@ def get_opportunity_by_id(opportunity_id):
             SELECT m.*, t.name 
             FROM messages m
             LEFT JOIN templates t ON m.template = t.name
-            WHERE m.receiver_id = %s
+            WHERE m.receiver_id = %s order by m.create_time desc
         """, (opportunity_id,))
         messages = cursor.fetchall()
 
@@ -202,9 +202,76 @@ def get_opportunity_by_id(opportunity_id):
             'messages': [{'type': message[1], 'sender': message[2], 'receiver': message[3], 'message': message[5], 'template': message[6], 'status': message[7], 'error_message': message[8], 'create_time': message[9], 'update_time': message[10]} for message in messages],
             'templates': [{'id': template[0], 'name': template[1], 'active': template[2], 'template_text': template[3]} for template in templates]
         }
-        print(f'Returning {data}')
         return data
     finally:
         if cursor:
             cursor.close()
     
+def get_opportunity_id_by_phone_number(phone_number):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Define the SQL query with placeholders
+        sql = "SELECT id FROM opportunity where phone = %s"
+
+        # Prepare the query and execute it with the provided values
+        cursor.execute(sql, (phone_number,))
+
+        opportunity_id = cursor.fetchone()[0]
+        return opportunity_id
+    finally:
+        if cursor:
+            cursor.close()
+
+def update_opportunity_data(opportunity_id, opportunity_data):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Prepare the SQL query with placeholders
+        sql = """
+        UPDATE opportunity
+        SET name = %s, email = %s, phone = %s, call_status = %s
+        WHERE id = %s
+        """
+
+        # Prepare the values for the query
+        values = (
+            opportunity_data['name'],
+            opportunity_data['email'],
+            opportunity_data['phone'],
+            opportunity_data['call_status'],
+            opportunity_id
+        )
+
+        # Execute the query with the provided values
+        cursor.execute(sql, values)
+
+        connection.commit()
+    finally:
+        if cursor:
+            cursor.close()
+
+def get_all_call_status():
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        sql = "SELECT id, name FROM lead_call_status"
+        cursor.execute(sql)
+        results = cursor.fetchall()
+
+        call_status_list = []
+        for row in results:
+            call_status = {
+                'id': row[0],
+                'name': row[1]
+            }
+            call_status_list.append(call_status)
+
+        return call_status_list
+
+    finally:
+        if cursor:
+            cursor.close()

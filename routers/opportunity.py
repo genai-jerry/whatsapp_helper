@@ -1,9 +1,11 @@
 """Add the APIs for the opportunites. Use Flask-Restful to create the APIs."""
 from flask import jsonify, Blueprint, render_template, request
-from utils import error_response
+from utils import error_response, app_home
 import pandas as pd
 from werkzeug.utils import secure_filename
 from store.opportunity_store import *  # Import the store_opportunity function
+from store.instance_store import get_senders
+from whatsapp.message_sender import send_template_message
 
 # Import your database model and messaging system here
 
@@ -68,21 +70,13 @@ def update_status():
     except Exception as e:
         return error_response(500, str(e))
 
-@opportunity_blueprint.route('/send_message', methods=['POST'])
+@opportunity_blueprint.route('/message', methods=['POST'])
 def send_message():
     try:
         # Extract the message from the request
         data = request.get_json()
-        opportunity_id = data.get('opportunity_id')
-        message = data.get('message')
-
-        # Validate the data
-        if not all([opportunity_id, message]):
-            return error_response(400, 'Both opportunity_id and message are required')
-
-        # TODO: Add code to send the message to the user
-
-        return jsonify({'message': 'Message sent successfully'}), 200
+        print(data)
+        return send_template_message(data, app_home)
     except Exception as e:
         return error_response(500, str(e))
 
@@ -159,6 +153,9 @@ def get_opportunity_detail(opportunity_id):
         # Retrieve the opportunity detail from your database based on the opportunity_id
         opportunity = get_opportunity_by_id(opportunity_id)  # Replace with your database query
 
+        # Get a list of senders
+        senders = get_senders()
+
         # Prepare the response data
         response_data = {
             'id': opportunity['id'],
@@ -171,10 +168,39 @@ def get_opportunity_detail(opportunity_id):
             'call_status': opportunity['call_status'],
             'sales_agent': opportunity['sales_agent'],
             'messages': opportunity['messages'],
-            'templates': opportunity['templates']
+            'templates': opportunity['templates'],
+            'senders': senders  # Add the list of senders to the response data
         }
+        call_statuses = get_all_call_status()
+        print('Response Data:', response_data)
+        return render_template('opportunity/view.html', opportunity=response_data,
+                               call_statuses=call_statuses)
+    except Exception as e:
+        print(str(e))
+        return error_response(500, str(e))
 
-        return render_template('opportunity/view.html', opportunity=response_data)
+@opportunity_blueprint.route('/update', methods=['POST'])
+def update_opportunity_detail():
+    try:
+        # Extract the data from the form
+        opportunity_id = request.form.get('id')
+        name = request.form.get('name')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        call_status = request.form.get('call_status')
+
+        # Prepare the data for the update_opportunity function
+        opportunity_data = {
+            'name': name,
+            'email': email,
+            'phone': phone,
+            'call_status': call_status
+        }
+        print('Updating Opportunity Data:', opportunity_data)
+        # Call the update_opportunity function
+        update_opportunity_data(opportunity_id, opportunity_data)
+
+        return load_opportunities()
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))

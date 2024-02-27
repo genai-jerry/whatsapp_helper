@@ -10,37 +10,146 @@
 
         <h3>Personal Information</h3>
         <div id="personalInformation">
-            <p><strong>Name:</strong> {{ opportunity.name }}</p>
-            <p><strong>Email:</strong> {{ opportunity.email }}</p>
-            <p><strong>Phone:</strong> {{ opportunity.phone }}</p>
-            <p><strong>Call Status:</strong> {{ opportunity.call_status }}</p>
+            <form action="update" method="POST">
+                <input type="hidden" class="form-control" id="id" name="id" value="{{ opportunity.id }}">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ opportunity.name }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ opportunity.email }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="phone">Phone:</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ opportunity.phone }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="callStatus">Call Status:</label>
+                            <select class="form-control" id="callStatus" name="call_status">
+                                {% for status in call_statuses %}
+                                    <option value="{{ status.id }}" {% if opportunity.call_status == status.id %}selected="selected"{% endif %}>{{ status.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
 
-        <h3>Messaging Information</h3>
-        <div id="messagingInformation">
-            {% for message in opportunity.messages %}
-                <p><strong>Template:</strong> {{ message.template }}</p>
-                <p><strong>Date Sent:</strong> {{ message.date_sent.strftime('%b %d, %Y, %H:%M') }}</p>
-            {% endfor %}
+        <h3>Past Communications</h3>
+        <div id="messagingInformation" class="card-deck">
+            <div class="row">
+                {% for message in opportunity.messages %}
+                    <div class="col-md-3">
+                        <div class="card">
+                            <h5 class="card-header">{{ message.template }}</h5>
+                            <div class="card-body">
+                                <p class="card-text">Date Sent: {{ message.create_time.strftime('%b %d, %Y, %H:%M') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
         <h3>Communicate</h3>
-        <form id="messageForm">
-            <select id="messageTemplate">
-                {% for template in opportunity.templates %}
-                    <option value="{{ template.id }}">{{ template.name }}</option>
-                {% endfor %}
-            </select>
-            <input type="hidden" name="opportunity_id" value="{{ opportunity.id }}">
-            <button type="submit" id="sendButton">Send Message</button>
+        <form class="mt-4" id="messageForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="messageTemplate">Message Template</label>
+                        <select class="form-control" id="messageTemplate" name="template_name">
+                            {% for template in opportunity.templates %}
+                                <option value="{{ template.name }}">{{ template.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div id="templateInput"></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="sender">Sender</label>
+                        <select class="form-control" name="sender">
+                            {% for sender in opportunity.senders %}
+                                <option value="{{ sender.mobile_number }}">{{ sender.mobile_number }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <input type="hidden" name="receiver" value="{{ opportunity.phone }}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6"  id="placeholderInputs">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <button class="btn btn-primary" type="submit" id="sendButton">Send Message</button>
+                    </div>
+                </div>
+            </div>
         </form>
-
+        {% raw %}
+        <script>
+            $('#messageTemplate').change(function() {
+                var templateId = $(this).val();
+                $.get('/template/' + templateId, function(template) {
+                    var templateInput = $('#templateInput');
+                    var placeholderInputs = $('#placeholderInputs');
+                    placeholderInputs.empty();
+                    templateInput.empty();
+                    templateInput.append('<p><strong>Template:</strong> ' + template.template_text + '</p>');
+                    var placeholders = [...new Set(template.template_text.match(/{\s*(\w+)\s*}/g))].map(placeholder => placeholder.replace(/[{}]/g, ''));
+                    if (!placeholders) {
+                        return;
+                    }
+                    placeholders.forEach(function(placeholder) {
+                        var inputField = '<input class="form-control" type="text" name="' + placeholder + '" placeholder="' + placeholder + '"></input>';
+                        placeholderInputs.append(inputField);
+                    });
+                });
+            });
+        </script>
+        {% endraw %}
         <script>
             $('#messageForm').submit(function(e) {
                 e.preventDefault();
-                var templateId = $('#messageTemplate').val();
-                var opportunityId = $('input[name="opportunity_id"]').val();
-                $.post('/send_message', { opportunity_id: opportunityId, template_id: templateId }, function(response) {
-                    alert(response.message);
+                var formData = {};
+                $('#messageForm').find('input').each(function() {
+                    formData[$(this).attr('name')] = $(this).val();
+                });
+                $('#messageForm').find('select').each(function() {
+                    formData[$(this).attr('name')] = $(this).val();
+                });
+                var jsonData = JSON.stringify(formData);
+                
+                $.ajax({
+                    url: 'message',
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: jsonData,
+                    success: function(response) {
+                        alert(response.message);
+                    }
                 });
             });
         </script>

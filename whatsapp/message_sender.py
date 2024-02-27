@@ -98,7 +98,7 @@ def send_message_to_producer(message_data):
         producer.get_producer().produce(producer.get_topic(),
                          json.dumps(message_data).encode('utf-8')
                          )
-        producer.get_producer().    flush()
+        producer.get_producer().flush()
         return jsonify({'status': 'Done', 'id': message_data['id']})
     except RuntimeError as e:
         return error_response(400, str(e))

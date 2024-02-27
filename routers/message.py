@@ -7,12 +7,7 @@ from browser.update_chrome import *
 from store.message_store import *
 from store.instance_store import *
 from store.template_store import *
-
-# Get the current script's directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Get the parent directory
-app_home = os.path.abspath(os.path.join(current_dir, os.pardir))
+from utils import app_home
 
 message_blueprint = Blueprint('message', __name__)
 

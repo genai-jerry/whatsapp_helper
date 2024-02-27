@@ -58,3 +58,11 @@ def edit_template():
 def list_templates():
     return get_all_templates()
 
+@template_blueprint.route('/<template_name>')
+def get_template(template_name):
+    template = retrieve_template(template_name)
+    if template:
+        return jsonify(template)
+    else:
+        return error_response('Template not found', 404)
+

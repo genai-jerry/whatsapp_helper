@@ -65,14 +65,14 @@ def update_template_status(id, status):
         if cursor:
             cursor.close()
 
-def retrieve_template(id):
+def retrieve_template(name):
     # Select data from the specified table and return as JSON
     try:
         connection = create_connection()
         cursor = connection.cursor(dictionary=True)
 
         # Select data for the given ID
-        cursor.execute(f"SELECT * FROM templates WHERE id = %s", (id,))
+        cursor.execute(f"SELECT * FROM templates WHERE name = %s", (name,))
 
         # Fetch the result as a dictionary
         template = cursor.fetchone()
