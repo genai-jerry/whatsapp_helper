@@ -75,8 +75,8 @@ def send_message():
     try:
         # Extract the message from the request
         data = request.get_json()
-        print(data)
-        return send_template_message(data, app_home)
+        message = send_template_message(data, app_home)
+        return jsonify(message), 200
     except Exception as e:
         return error_response(500, str(e))
 
@@ -172,7 +172,7 @@ def get_opportunity_detail(opportunity_id):
             'senders': senders  # Add the list of senders to the response data
         }
         call_statuses = get_all_call_status()
-        print('Response Data:', response_data)
+        print('Showing view.html')
         return render_template('opportunity/view.html', opportunity=response_data,
                                call_statuses=call_statuses)
     except Exception as e:

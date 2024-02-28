@@ -43,17 +43,46 @@ def store_message(message_data):
         # Prepare the query and execute it with the provided values
         cursor.execute(sql, (type, sender, receiver, message, template, 'Pending', opportunity_id))
 
-        print('Executed Query')
         # Retrieve the last inserted ID
         last_inserted_id = cursor.lastrowid
         print(f'Got id {last_inserted_id}')
         connection.commit()
-        print("Data inserted successfully.")
+        print("Message inserted successfully.")
         return last_inserted_id
     finally:
         if cursor:
             cursor.close()
 
+def retrieve_message_by_id(id):
+    try:
+        connection = create_connection()
+
+        cursor = connection.cursor()
+
+        # Define the SQL query with placeholders
+        sql = '''SELECT id, receiver, template, status, create_time FROM messages WHERE id = %s'''
+
+        # Execute the query with the provided value
+        cursor.execute(sql, (id,))
+
+        # Fetch the result
+        result = cursor.fetchone()
+
+        if result:
+            # Create a dictionary to store the message data
+            message_data = {
+                'id': result[0],
+                'receiver': result[1],
+                'template': result[2],
+                'status': result[3],
+                'create_time': result[4]
+            }
+            return message_data
+        else:
+            return None
+    finally:
+        if cursor:
+            cursor.close()
 
     
 

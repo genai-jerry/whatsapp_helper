@@ -35,7 +35,29 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="callStatus">Call Status:</label>
+                            <label for="callStatus">Opt-in Call Status:</label>
+                            <select class="form-control" id="callStatus" name="call_status">
+                                {% for status in call_statuses %}
+                                    <option value="{{ status.id }}" {% if opportunity.call_status == status.id %}selected="selected"{% endif %}>{{ status.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="callStatus">Sales Call Status</label>
+                            <select class="form-control" id="callStatus" name="call_status">
+                                {% for status in call_statuses %}
+                                    <option value="{{ status.id }}" {% if opportunity.call_status == status.id %}selected="selected"{% endif %}>{{ status.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="callStatus">Optin Caller</label>
                             <select class="form-control" id="callStatus" name="call_status">
                                 {% for status in call_statuses %}
                                     <option value="{{ status.id }}" {% if opportunity.call_status == status.id %}selected="selected"{% endif %}>{{ status.name }}</option>
@@ -58,12 +80,13 @@
         <div id="messagingInformation" class="card-deck">
             <div class="row">
                 {% for message in opportunity.messages %}
-                    <div class="col-md-3">
+                    <div class="col-md-3 mb-4">
                         <div class="card">
                             <h5 class="card-header">{{ message.template }}</h5>
                             <div class="card-body">
                                 <p class="card-text">Date Sent: {{ message.create_time.strftime('%b %d, %Y, %H:%M') }}</p>
                             </div>
+                            <div class="card-footer {% if message.status == 'Sent' %}bg-success{% elif message.status == 'Pending' %}bg-warning{% else %}bg-danger{% endif %}">{{ message.status }}</div>
                         </div>
                     </div>
                 {% endfor %}
@@ -71,11 +94,13 @@
         </div>
         <h3>Communicate</h3>
         <form class="mt-4" id="messageForm">
+            <input type="hidden" class="form-control" id="id" name="id" value="{{ opportunity.id }}">
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="messageTemplate">Message Template</label>
                         <select class="form-control" id="messageTemplate" name="template_name">
+                            <option value="-1">Select a Template</option>
                             {% for template in opportunity.templates %}
                                 <option value="{{ template.name }}">{{ template.name }}</option>
                             {% endfor %}
@@ -147,8 +172,21 @@
                     dataType: 'json',
                     contentType: 'application/json',
                     data: jsonData,
-                    success: function(response) {
-                        alert(response.message);
+                    success: function(message) {
+                        var newCard = $(
+                            '<div class="col-md-3 mb-4">' +
+                                '<div class="card">' +
+                                    '<h5 class="card-header">' + message.template + '</h5>' +
+                                    '<div class="card-body">' +
+                                        '<p class="card-text">Date Sent: ' + new Date(message.create_time).toLocaleString({ month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + '</p>' +
+                                    '</div>' +
+                                    '<div class="card-footer ' + (message.status == 'Sent' ? 'bg-success' : (message.status == 'Pending' ? 'bg-warning' : 'bg-danger')) + '">' + message.status + '</div>' +
+                                '</div>' +
+                            '</div>'
+                        );
+                        
+                        // Append the new card to the messageinformation card deck
+                        $('#messagingInformation .row').prepend(newCard);
                     }
                 });
             });

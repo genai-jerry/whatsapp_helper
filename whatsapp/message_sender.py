@@ -18,9 +18,7 @@ def prepare_message(data):
     return sender, None
 
 def send_text_message(data, app_home):
-    sender, error = prepare_message(data)
-    if error:
-        return error
+    sender = data.get('sender')
     try:
         receiver = data.get('receiver')
         
@@ -38,9 +36,7 @@ def send_text_message(data, app_home):
         return error_response(400, str(e))
 
 def send_template_message(data, app_home):
-    sender, error = prepare_message(data)
-    if error:
-        return error
+    sender = data.get('sender')
     try:
         receiver = data.get('receiver')
         template_name = data.get('template_name')
@@ -57,7 +53,8 @@ def send_template_message(data, app_home):
         id = store_message(message_data)
         message_data['id'] = id
         message_data['app_home'] = app_home
-        return send_message_to_producer(message_data)
+        send_message_to_producer(message_data)
+        return retrieve_message_by_id(id)
     except RuntimeError as e:
         return error_response(400, str(e))
     
@@ -73,9 +70,7 @@ def find_placeholders(template):
     return re.findall(r'{(.*?)}', template)
 
 def send_media_message(data, app_home):
-    sender, error = prepare_message(data)
-    if error:
-        return error
+    sender = data.get('sender')
     try:
         receiver = data.get('receiver')
         url = data.get('url')
