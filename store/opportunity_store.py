@@ -108,11 +108,11 @@ def get_opportunities():
                 o.id
             FROM 
                 opportunity o
-            INNER JOIN 
+            LEFT JOIN 
                 lead_call_status cs ON o.call_status = cs.id
-            INNER JOIN 
+            LEFT JOIN 
                 opportunity_status os ON o.opportunity_status = os.id
-            INNER JOIN 
+            LEFT JOIN 
                 sales_agent sa ON o.sales_agent = sa.id
             ORDER BY o.register_time desc
         """
@@ -155,17 +155,11 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.phone,
                 opportunity.comment,
                 opportunity.register_time,
-                opportunity_status.name AS opportunity_status,
-                lead_call_status.id AS call_status,
-                sales_agent.name AS sales_agent
+                opportunity.opportunity_status AS opportunity_status,
+                opportunity.call_status AS call_status,
+                opportunity.sales_agent AS sales_agent
             FROM 
                 opportunity
-            LEFT JOIN 
-                opportunity_status ON opportunity.opportunity_status = opportunity_status.id
-            LEFT JOIN 
-                lead_call_status ON opportunity.call_status = lead_call_status.id
-            LEFT JOIN 
-                sales_agent ON opportunity.sales_agent = sales_agent.id
             WHERE 
                 opportunity.id = %s;
             """, (opportunity_id,)
@@ -232,7 +226,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
         # Prepare the SQL query with placeholders
         sql = """
         UPDATE opportunity
-        SET name = %s, email = %s, phone = %s, call_status = %s
+        SET name = %s, email = %s, phone = %s, call_status = %s, opportunity_status = %s, sales_agent = %s
         WHERE id = %s
         """
 
@@ -242,6 +236,8 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             opportunity_data['email'],
             opportunity_data['phone'],
             opportunity_data['call_status'],
+            opportunity_data['opportunity_status'],
+            opportunity_data['sales_agent'],
             opportunity_id
         )
 
@@ -271,6 +267,52 @@ def get_all_call_status():
             call_status_list.append(call_status)
 
         return call_status_list
+
+    finally:
+        if cursor:
+            cursor.close()
+
+def get_all_opportunity_status():
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        sql = "SELECT id, name FROM opportunity_status"
+        cursor.execute(sql)
+        results = cursor.fetchall()
+
+        opportunity_status_list = []
+        for row in results:
+            opportunity_status = {
+                'id': row[0],
+                'name': row[1]
+            }
+            opportunity_status_list.append(opportunity_status)
+
+        return opportunity_status_list
+
+    finally:
+        if cursor:
+            cursor.close()
+
+def get_all_sales_agents():
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        sql = "SELECT id, name FROM sales_agent"
+        cursor.execute(sql)
+        results = cursor.fetchall()
+
+        sales_agents_list = []
+        for row in results:
+            sales_agent = {
+                'id': row[0],
+                'name': row[1]
+            }
+            sales_agents_list.append(sales_agent)
+
+        return sales_agents_list
 
     finally:
         if cursor:

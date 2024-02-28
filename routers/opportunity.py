@@ -172,9 +172,15 @@ def get_opportunity_detail(opportunity_id):
             'senders': senders  # Add the list of senders to the response data
         }
         call_statuses = get_all_call_status()
-        print('Showing view.html')
+         # Get a list of opportunity statuses
+        opportunity_statuses = get_all_opportunity_status()
+        # Get a list of sales agents (optin callers)
+        sales_agents = get_all_sales_agents()
+
+        print(f'Showing {opportunity_statuses} and {opportunity["call_status"]}')
         return render_template('opportunity/view.html', opportunity=response_data,
-                               call_statuses=call_statuses)
+                            call_statuses=call_statuses, opportunity_statuses=opportunity_statuses,
+                            sales_agents=sales_agents)
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
@@ -188,13 +194,17 @@ def update_opportunity_detail():
         email = request.form.get('email')
         phone = request.form.get('phone')
         call_status = request.form.get('call_status')
+        opportunity_status = request.form.get('opportunity_status')
+        sales_agent = request.form.get('optin_caller')
 
         # Prepare the data for the update_opportunity function
         opportunity_data = {
             'name': name,
             'email': email,
             'phone': phone,
-            'call_status': call_status
+            'call_status': call_status,
+            'opportunity_status': opportunity_status,
+            'sales_agent': sales_agent
         }
         print('Updating Opportunity Data:', opportunity_data)
         # Call the update_opportunity function
@@ -204,3 +214,4 @@ def update_opportunity_detail():
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
+

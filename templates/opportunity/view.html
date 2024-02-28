@@ -47,10 +47,10 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="callStatus">Sales Call Status</label>
-                            <select class="form-control" id="callStatus" name="call_status">
-                                {% for status in call_statuses %}
-                                    <option value="{{ status.id }}" {% if opportunity.call_status == status.id %}selected="selected"{% endif %}>{{ status.name }}</option>
+                            <label for="opportunityStatus">Sales Call Status</label>
+                            <select class="form-control" id="opportunityStatus" name="opportunity_status">
+                                {% for status in opportunity_statuses %}
+                                    <option value="{{ status.id }}" {% if opportunity.opportunity_status == status.id %}selected{% endif %}>{{ status.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -58,9 +58,9 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="callStatus">Optin Caller</label>
-                            <select class="form-control" id="callStatus" name="call_status">
-                                {% for status in call_statuses %}
-                                    <option value="{{ status.id }}" {% if opportunity.call_status == status.id %}selected="selected"{% endif %}>{{ status.name }}</option>
+                            <select class="form-control" id="optinCaller" name="optin_caller">
+                                {% for agent in sales_agents %}
+                                    <option value="{{ agent.id }}" {% if opportunity.sales_agent == agent.id %}selected{% endif %}>{{ agent.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
