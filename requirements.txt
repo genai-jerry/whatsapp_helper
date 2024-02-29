@@ -8,4 +8,5 @@ redis
 mysql-connector-python
 confluent-kafka
 pandas
-```
+flask-migrate
+pymysql

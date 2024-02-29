@@ -1,13 +1,27 @@
 import os
 from flask import Flask, render_template
+from flask_sqlalchemy import SQLAlchemy
 from routers.driver import driver_blueprint
 from routers.instance import instance_blueprint
 from routers.message import message_blueprint
 from routers.qr import qr_blueprint
 from routers.template import template_blueprint
 from routers.opportunity import opportunity_blueprint
+from flask_migrate import Migrate
+import configparser
+
+# Read the config.ini file
+config = configparser.ConfigParser()
+config.read('config/config.ini')
+# Get the MySQL configuration
+mysql_config = config['mysql']
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{mysql_config['user']}:{mysql_config['password']}@{mysql_config['host']}/{mysql_config['database']}"
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+from models import *
 
 # Register the blueprints
 app.register_blueprint(instance_blueprint, url_prefix='/instance')

@@ -23,12 +23,26 @@
                 <!-- Table data will be inserted here with JavaScript -->
             </tbody>
         </table>
+        <!-- Pagination control -->
+        <div id="pagination" class="mt-3">
+            <button id="prev" class="btn btn-primary">Previous</button>
+            <span id="page-info" class="mx-2"></span>
+            <button id="next" class="btn btn-primary">Next</button>
+        </div>
     </div>
 
     <script>
-        $(document).ready(function() {
-            $.get('/opportunity/list', function(data) {
-                data.forEach(function(opportunity) {
+    $(document).ready(function() {
+        var page = 1;
+        var totalPages = 1;
+
+        function loadOpportunities() {
+            $.getJSON('/opportunity/list?page=' + page, function(data) {
+                // Clear the current list of opportunities
+                $('#opportunitiesTable tbody').empty();
+
+                // Add the new opportunities to the list
+                data.items.forEach(function(opportunity) {
                     var date = new Date(opportunity.date);
                     var formattedDate = date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                     var row = '<tr>' +
@@ -42,7 +56,31 @@
                         '</tr>';
                     $('#opportunitiesTable tbody').append(row);
                 });
+
+                // Update the pagination info
+                $('#page-info').text('Page ' + data.page + ' of ' + data.total_pages);
+                totalPages = data.total_pages;
             });
+        }
+
+        // Load the first page of opportunities
+        loadOpportunities();
+
+        // Handle the Previous button click
+        $('#prev').click(function() {
+            if (page > 1) {
+                page--;
+                loadOpportunities();
+            }
         });
+
+        // Handle the Next button click
+        $('#next').click(function() {
+            if (page < totalPages) {
+                page++;
+                loadOpportunities();
+            }
+        });
+    });
     </script>
 {% endblock %}

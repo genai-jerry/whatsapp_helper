@@ -104,13 +104,15 @@ def import_opportunities():
             print(row)
             opportunity_data = {
                 'date': row['Date'],
-                'name': row['Opportunity Name'],
-                'email': row['Email Address'],
+                'name': row['Name'],
+                'email': row['Email'],
                 'phone': row['Phone Number'],
-                'call_status': row['Call Status'],
-                'opportunity_status': row['Opportunity Status'],
-                'agent': row['Agent'],
-                'campaign': row['Campaign Name']
+                'opportunity_status': row['Call Status'],
+                'optin_status': row['Status'],
+                'agent': row['Optin Call'],
+                'sale_date': row['Sale Date'],
+                'comment': row['Comments'],
+                'campaign': row['Campaign']
             }
             print('Storing Opportunity')
             store_opportunity(opportunity_data)
@@ -124,8 +126,12 @@ def import_opportunities():
 @opportunity_blueprint.route('/list', methods=['GET'])
 def list_opportunities():
     try:
+        # Get the page number and size from the query parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+
         # Retrieve the list of opportunities from your database
-        opportunities = get_opportunities()  # Replace with your database query
+        opportunities, total_pages, total_items = get_opportunities(page, per_page)  # Replace with your database query
 
         # Prepare the response data
         response_data = []
@@ -142,7 +148,12 @@ def list_opportunities():
             }
             response_data.append(opportunity_data)
 
-        return jsonify(response_data), 200
+        return jsonify({
+            'items': response_data,
+            'page': page,
+            'total_pages': total_pages,
+            'total_items': total_items
+        }), 200
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
