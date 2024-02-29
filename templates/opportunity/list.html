@@ -51,9 +51,9 @@
                         '<td>' + formattedDate + '</td>' +
                         '<td>' + opportunity.email + '</td>' +
                         '<td>' + opportunity.phone + '</td>' +
-                        '<td>' + opportunity.call_status + '</td>' +
-                        '<td>' + opportunity.opportunity_status + '</td>' +
-                        '<td>' + opportunity.agent + '</td>' +
+                        '<td>' + (opportunity.call_status ? opportunity.call_status : 'Not Set') + '</td>' +
+                        '<td>' + (opportunity.opportunity_status ? opportunity.opportunity_status : 'Not Set') + '</td>' +
+                        '<td>' + (opportunity.agent ? opportunity.agent : 'Not Set') + '</td>' +
                         '</tr>';
                     $('#opportunitiesTable tbody').append(row);
                 });
