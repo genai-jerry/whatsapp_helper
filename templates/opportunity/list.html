@@ -25,6 +25,7 @@
         </table>
         <!-- Pagination control -->
         <div id="pagination" class="mt-3">
+            <button id="first" class="btn btn-primary">First</button>
             <button id="prev" class="btn btn-primary">Previous</button>
             <span id="page-info" class="mx-2"></span>
             <button id="next" class="btn btn-primary">Next</button>
@@ -78,6 +79,13 @@
         $('#next').click(function() {
             if (page < totalPages) {
                 page++;
+                loadOpportunities();
+            }
+        });
+        // Handle the First button click
+        $('#first').click(function() {
+            if (page !== 1) {
+                page = 1;
                 loadOpportunities();
             }
         });

@@ -272,9 +272,9 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             opportunity_data['name'],
             opportunity_data['email'],
             opportunity_data['phone'],
-            opportunity_data['call_status'],
-            opportunity_data['opportunity_status'],
-            opportunity_data['sales_agent'],
+            opportunity_data['call_status'] if int(opportunity_data['call_status']) > 0 else None,
+            opportunity_data['opportunity_status'] if int(opportunity_data['opportunity_status']) > 0 else None,
+            opportunity_data['sales_agent'] if int(opportunity_data['sales_agent']) > 0 else None,
             opportunity_id
         )
 
