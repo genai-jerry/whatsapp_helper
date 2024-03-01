@@ -1,6 +1,6 @@
-import pandas as pd
 from db.connection_manager import *
 import json
+from datetime import datetime
 
 opportunities = {}
 
@@ -30,21 +30,21 @@ def get_sales_agent_id(cursor, sales_agent_name):
 
 def store_opportunity(opportunity_data):
     try:
-        date_str = opportunity_data['date'] if not pd.isna(opportunity_data['date']) else None
-        date = pd.to_datetime(date_str).strftime('%Y-%m-%d %H:%M:%S') if date_str != None else None
+        date_str = opportunity_data['date'] if opportunity_data['date'] else None
+        date = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%fZ') if date_str else None
         print(f'Got date {date}')
-        name = opportunity_data['name'] if not pd.isna(opportunity_data['name']) else None
-        email = opportunity_data['email'] if not pd.isna(opportunity_data['email']) else ''
-        phone = opportunity_data['phone'] if not pd.isna(opportunity_data['phone']) else None
+        name = opportunity_data['name'] if opportunity_data['name'] else None
+        email = opportunity_data['email'] if opportunity_data['email'] else ''
+        phone = opportunity_data['phone'] if opportunity_data['phone'] else None
 
-        comment = opportunity_data['comment'] if 'comment' in opportunity_data and not pd.isna(opportunity_data['comment']) else None
-        sale_date_str = opportunity_data['sale_date'] if 'sale_date' in opportunity_data and not pd.isna(opportunity_data['sale_date']) else None
-        sale_date = pd.to_datetime(sale_date_str).strftime('%Y-%m-%d %H:%M:%S') if sale_date_str != None else None
+        comment = opportunity_data['comment'] if 'comment' in opportunity_data and opportunity_data['comment'] else None
+        sale_date_str = opportunity_data['sale_date'] if 'sale_date' in opportunity_data and opportunity_data['sale_date'] else None
+        sale_date = datetime.strptime(sale_date_str, '%d/%m/%Y') if sale_date_str else None
         print(f'Got sale date {sale_date}')
-        optin_status_name = opportunity_data['optin_status'] if 'optin_status' in opportunity_data and not pd.isna(opportunity_data['optin_status']) else None
-        opportunity_status_name = opportunity_data['opportunity_status'] if 'opportunity_status' in opportunity_data and not pd.isna(opportunity_data['opportunity_status']) else None
-        sales_agent_name = opportunity_data['agent'] if 'agent' in opportunity_data and not pd.isna(opportunity_data['agent']) else None
-        campaign = opportunity_data['campaign'] if 'campaign' in opportunity_data and not pd.isna(opportunity_data['campaign']) else None
+        optin_status_name = opportunity_data['optin_status'] if 'optin_status' in opportunity_data and opportunity_data['optin_status'] else None
+        opportunity_status_name = opportunity_data['opportunity_status'] if 'opportunity_status' in opportunity_data and opportunity_data['opportunity_status'] else None
+        sales_agent_name = opportunity_data['agent'] if 'agent' in opportunity_data and opportunity_data['agent'] else None
+        campaign = opportunity_data['campaign'] if 'campaign' in opportunity_data and opportunity_data['campaign'] else None
 
         # Insert the opportunity
         connection = create_connection()

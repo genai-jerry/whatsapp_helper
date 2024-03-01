@@ -1,7 +1,7 @@
 """Add the APIs for the opportunites. Use Flask-Restful to create the APIs."""
 from flask import jsonify, Blueprint, render_template, request
 from utils import error_response, app_home
-import pandas as pd
+import csv
 from werkzeug.utils import secure_filename
 from store.opportunity_store import *  # Import the store_opportunity function
 from store.instance_store import get_senders
@@ -95,25 +95,24 @@ def import_opportunities():
         file.save(filename)
         print('Reading csv file')
         # Read the Excel file
-        df = pd.read_csv(filename)
         print('Loading data')
-        # Iterate over the rows of the DataFrame and create opportunities
-        for index, row in df.iterrows():
-            print(row)
-            opportunity_data = {
-                'date': row['Date'],
-                'name': row['Name'],
-                'email': row['Email'],
-                'phone': row['Phone Number'],
-                'opportunity_status': row['Call Status'],
-                'optin_status': row['Status'],
-                'agent': row['Optin Call'],
-                'sale_date': row['Sale Date'],
-                'comment': row['Comments'],
-                'campaign': row['Campaign']
-            }
-            print('Storing Opportunity')
-            store_opportunity(opportunity_data)
+        with open(filename, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                opportunity_data = {
+                    'date': row['Date'],
+                    'name': row['Name'],
+                    'email': row['Email'],
+                    'phone': row['Phone Number'],
+                    'opportunity_status': row['Call Status'],
+                    'optin_status': row['Status'],
+                    'agent': row['Optin Call'],
+                    'sale_date': row['Sale Date'],
+                    'comment': row['Comments'],
+                    'campaign': row['Campaign']
+                }
+                print('Storing Opportunity')
+                store_opportunity(opportunity_data)
 
         return jsonify({'message': 'Opportunities imported successfully'}), 201
     except Exception as e:
