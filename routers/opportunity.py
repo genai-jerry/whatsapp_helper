@@ -28,19 +28,17 @@ def create_opportunity():
         name = data.get('name')
         email = data.get('email')
         phone = data.get('phone')
-        call_status = data.get('call_status')
         campaign = data.get('campaign')
-
-        # Validate the data
-        if not all([date, name, email, phone, call_status, campaign]):
-            return error_response(400, 'All fields are required')
 
         # Create the opportunity in your database
         opportunity_data = {
             'name': name,
-            'status': call_status
+            'date': date,
+            'email': email,
+            'phone': phone,
+            'campaign': campaign
         }
-        store_opportunity(email, opportunity_data)
+        store_opportunity(opportunity_data)
 
         return jsonify({'message': 'Opportunity created successfully'}), 201
     except Exception as e:

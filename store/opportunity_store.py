@@ -36,14 +36,15 @@ def store_opportunity(opportunity_data):
         name = opportunity_data['name'] if not pd.isna(opportunity_data['name']) else None
         email = opportunity_data['email'] if not pd.isna(opportunity_data['email']) else ''
         phone = opportunity_data['phone'] if not pd.isna(opportunity_data['phone']) else None
-        comment = opportunity_data['comment'] if not pd.isna(opportunity_data['comment']) else None
-        sale_date_str = opportunity_data['sale_date'] if not pd.isna(opportunity_data['sale_date']) else None
+
+        comment = opportunity_data['comment'] if 'comment' in opportunity_data and not pd.isna(opportunity_data['comment']) else None
+        sale_date_str = opportunity_data['sale_date'] if 'sale_date' in opportunity_data and not pd.isna(opportunity_data['sale_date']) else None
         sale_date = pd.to_datetime(sale_date_str).strftime('%Y-%m-%d %H:%M:%S') if sale_date_str != None else None
         print(f'Got sale date {sale_date}')
-        optin_status_name = opportunity_data['optin_status'] if not pd.isna(opportunity_data['optin_status']) else None
-        opportunity_status_name = opportunity_data['opportunity_status'] if not pd.isna(opportunity_data['opportunity_status']) else None
-        sales_agent_name = opportunity_data['agent'] if not pd.isna(opportunity_data['agent']) else None
-        campaign = opportunity_data['campaign'] if not pd.isna(opportunity_data['campaign']) else None
+        optin_status_name = opportunity_data['optin_status'] if 'optin_status' in opportunity_data and not pd.isna(opportunity_data['optin_status']) else None
+        opportunity_status_name = opportunity_data['opportunity_status'] if 'opportunity_status' in opportunity_data and not pd.isna(opportunity_data['opportunity_status']) else None
+        sales_agent_name = opportunity_data['agent'] if 'agent' in opportunity_data and not pd.isna(opportunity_data['agent']) else None
+        campaign = opportunity_data['campaign'] if 'campaign' in opportunity_data and not pd.isna(opportunity_data['campaign']) else None
 
         # Insert the opportunity
         connection = create_connection()
@@ -72,6 +73,9 @@ def store_opportunity(opportunity_data):
             print("Opportunity inserted successfully.")
         else:
             print("Email already exists in the table.")
+    except Exception as e:
+        print(str(e))
+        raise e
     finally:
         if cursor:
             cursor.close()
