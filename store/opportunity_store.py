@@ -253,8 +253,11 @@ def get_opportunity_id_by_phone_number(phone_number):
         # Prepare the query and execute it with the provided values
         cursor.execute(sql, (phone_number,))
 
-        opportunity_id = cursor.fetchone()[0]
-        return opportunity_id
+        opportunity_id = cursor.fetchone()
+        if opportunity_id:
+            return opportunity_id[0]
+        else:
+            return None
     finally:
         if cursor:
             cursor.close()
