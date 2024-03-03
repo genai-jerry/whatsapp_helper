@@ -84,6 +84,109 @@ def retrieve_message_by_id(id):
         if cursor:
             cursor.close()
 
-    
+def get_all_messages(page, per_page):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
 
+        # Count the total number of messages
+        count_sql = "SELECT COUNT(*) FROM messages"
+        cursor.execute(count_sql)
+        total_items = cursor.fetchone()[0]
 
+        # Calculate the total number of pages
+        total_pages = (total_items + per_page - 1) // per_page
+
+        # Retrieve the messages for the current page
+        offset = (page - 1) * per_page
+        select_sql = """
+            SELECT 
+                m.id, 
+                m.receiver, 
+                m.template, 
+                m.status, 
+                m.create_time
+            FROM 
+                messages m
+            ORDER BY m.create_time desc
+            LIMIT %s OFFSET %s
+        """
+        cursor.execute(select_sql, (per_page, offset))
+        results = cursor.fetchall()
+
+        # Prepare the response data
+        messages = []
+        for row in results:
+            message = {
+                'id': row[0],
+                'receiver': row[1],
+                'template': row[2],
+                'status': row[3],
+                'create_time': row[4]
+            }
+            messages.append(message)
+
+        return messages, total_pages, total_items
+
+    finally:
+        if cursor:
+            cursor.close()
+
+def get_message(message_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Retrieve the message from the database
+        select_sql = """
+            SELECT 
+                m.id, 
+                m.receiver, 
+                m.template, 
+                m.status, 
+                m.create_time
+            FROM 
+                messages m
+            WHERE 
+                m.id = %s
+        """
+        cursor.execute(select_sql, (message_id,))
+        row = cursor.fetchone()
+
+        # Prepare the response data
+        if row is not None:
+            message = {
+                'id': row[0],
+                'receiver': row[1],
+                'template': row[2],
+                'status': row[3],
+                'create_time': row[4]
+            }
+            return message
+
+    finally:
+        if cursor:
+            cursor.close()
+
+def update_message_status(message_id, status):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Update the message status in the database
+        update_sql = """
+            UPDATE 
+                messages
+            SET 
+                status = %s
+            WHERE 
+                id = %s
+        """
+        cursor.execute(update_sql, (status, message_id))
+
+        # Commit the transaction
+        connection.commit()
+
+    finally:
+        if cursor:
+            cursor.close()

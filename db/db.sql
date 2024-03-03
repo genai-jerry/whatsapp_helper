@@ -264,7 +264,7 @@ CREATE TABLE `templates` (
 
 LOCK TABLES `templates` WRITE;
 /*!40000 ALTER TABLE `templates` DISABLE KEYS */;
-INSERT INTO `templates` VALUES (1,'new_register',_binary '','Hi there {name} you have an appointment with {sales_person}. See you there {name}'),(3,'new_lead',_binary '','Hi Lead'),(4,'Saturday_Reminder',_binary '','{name}, Happy Saturday! Use the weekend to explore Generative AI through our concise webinar training video. Webinar covers Generative AI roadmap and job opportunities for aspiring GenAI developers/architect\r\nWatch this webinar training  here: https://bit.ly/3 - Jerry Kurian');
+INSERT INTO `templates` VALUES (1,'new_register',1,'Hi there {name} you have an appointment with {sales_person}. See you there {name}'),(3,'new_lead',1,'Hi Lead'),(4,'Saturday_Reminder',1,'{name}, Happy Saturday! Use the weekend to explore Generative AI through our concise webinar training video. Webinar covers Generative AI roadmap and job opportunities for aspiring GenAI developers/architect\r\nWatch this webinar training  here: https://bit.ly/3 - Jerry Kurian');
 /*!40000 ALTER TABLE `templates` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
