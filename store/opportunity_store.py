@@ -1,5 +1,5 @@
 from db.connection_manager import *
-import json
+from utils import format_phone_number
 from datetime import datetime
 
 opportunities = {}
@@ -35,7 +35,7 @@ def store_opportunity(opportunity_data):
         print(f'Got date {date}')
         name = opportunity_data['name'] if opportunity_data['name'] else None
         email = opportunity_data['email'] if opportunity_data['email'] else ''
-        phone = opportunity_data['phone'] if opportunity_data['phone'] else None
+        phone = format_phone_number(opportunity_data['phone']) if opportunity_data['phone'] else None
 
         comment = opportunity_data['comment'] if 'comment' in opportunity_data and opportunity_data['comment'] else None
         sale_date_str = opportunity_data['sale_date'] if 'sale_date' in opportunity_data and opportunity_data['sale_date'] else None
@@ -251,7 +251,7 @@ def get_opportunity_id_by_phone_number(phone_number):
         sql = "SELECT id FROM opportunity where phone = %s"
 
         # Prepare the query and execute it with the provided values
-        cursor.execute(sql, (phone_number,))
+        cursor.execute(sql, (format_phone_number(phone_number),))
 
         opportunity_id = cursor.fetchone()
         if opportunity_id:
@@ -278,7 +278,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
         values = (
             opportunity_data['name'],
             opportunity_data['email'],
-            opportunity_data['phone'],
+            format_phone_number(opportunity_data['phone']),
             opportunity_data['call_status'] if int(opportunity_data['call_status']) > 0 else None,
             opportunity_data['opportunity_status'] if int(opportunity_data['opportunity_status']) > 0 else None,
             opportunity_data['sales_agent'] if int(opportunity_data['sales_agent']) > 0 else None,

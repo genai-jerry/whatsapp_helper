@@ -10,7 +10,6 @@ List of Messages
     <table class="table table-striped" id="messagesTable">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Receiver</th>
                 <th>Template</th>
                 <th>Status</th>
@@ -41,12 +40,11 @@ List of Messages
             $.each(data.items, function(i, message) {
                 $('#messagesTable tbody').append(
                     '<tr>' +
-                    '<td>' + message.id + '</td>' +
                     '<td>' + message.receiver + '</td>' +
                     '<td>' + message.template + '</td>' +
                     '<td>' + message.status + '</td>' +
-                    '<td>' + message.create_time + '</td>' 
-                    
+                    '<td>' + message.create_time + '</td>' +
+                    '</tr>'
                 );
             });
 

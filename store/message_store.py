@@ -1,6 +1,8 @@
 from db.connection_manager import *
 from datetime import datetime
 from store.opportunity_store import get_opportunity_id_by_phone_number
+from utils import format_phone_number
+import re
 
 def update_message(id, status, error):
     try:
@@ -19,11 +21,14 @@ def update_message(id, status, error):
     finally:
         if cursor:
             cursor.close()
-
+    
 def store_message(message_data):
     type = message_data['type']
     sender = message_data['sender']
-    receiver = message_data['receiver']
+
+    # Format the receiver as per international mobile number format standards
+    receiver = format_phone_number(message_data['receiver'])
+
     template = message_data['template'] if type == 'template' else None
     message = message_data['message']
     print(f'Got {template}')
