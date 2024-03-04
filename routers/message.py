@@ -51,6 +51,7 @@ def list_messages():
         message_data = {
             'id': message['id'],
             'receiver': message['receiver'],
+            'receiver_id': message['receiver_id'],
             'template': message['template'],
             'status': message['status'],
             'create_time': message['create_time']
