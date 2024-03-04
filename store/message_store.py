@@ -110,7 +110,8 @@ def get_all_messages(page, per_page):
                 m.receiver, 
                 m.template, 
                 m.status, 
-                m.create_time
+                m.create_time,
+                m.receiver_id
             FROM 
                 messages m
             ORDER BY m.create_time desc
@@ -127,7 +128,8 @@ def get_all_messages(page, per_page):
                 'receiver': row[1],
                 'template': row[2],
                 'status': row[3],
-                'create_time': row[4]
+                'create_time': row[4],
+                'receiver_id': row[5]
             }
             messages.append(message)
 
