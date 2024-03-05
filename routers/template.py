@@ -13,7 +13,7 @@ def home():
 
 @template_blueprint.route('/new')
 def new():
-    return render_template('template.html')
+    return render_template('/message/template.html')
 
 @template_blueprint.route('/activate')
 def activate():
