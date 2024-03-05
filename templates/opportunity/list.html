@@ -7,6 +7,23 @@
 {% block content %}
     <div class="container mt-5">
         <h2>List of Opportunities</h2>
+        <form id="searchForm" class="mt-12">
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="text" id="searchTerm" placeholder="Search term" class="form-control mt-4">
+                </div>
+                <div class="col-md-4">
+                    <select id="searchType" class="form-control mt-4">
+                        <option value="name">Name</option>
+                        <option value="email">Email</option>
+                        <option value="phone">Phone Number</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary mt-4">Search</button>
+                </div>
+            </div>
+        </form>
         <table class="table table-striped" id="opportunitiesTable">
             <thead>
                 <tr>
@@ -37,8 +54,12 @@
         var page = 1;
         var totalPages = 1;
 
-        function loadOpportunities() {
-            $.getJSON('/opportunity/list?page=' + page, function(data) {
+        function loadOpportunities(searchTerm, searchType) {
+            var url = '/opportunity/list?page=' + page;
+            if (searchTerm && searchType) {
+                url += '&searchTerm=' + encodeURIComponent(searchTerm) + '&searchType=' + encodeURIComponent(searchType);
+            }
+            $.getJSON(url, function(data) {
                 // Clear the current list of opportunities
                 $('#opportunitiesTable tbody').empty();
 
@@ -70,28 +91,44 @@
         }
 
         // Load the first page of opportunities
-        loadOpportunities();
+        var searchTerm = $('#searchTerm').val();
+        var searchType = $('#searchType').val();
+        loadOpportunities(searchTerm, searchType);
 
         // Handle the Previous button click
         $('#prev').click(function() {
             if (page > 1) {
                 page--;
-                loadOpportunities();
+                var searchTerm = $('#searchTerm').val();
+                var searchType = $('#searchType').val();
+                loadOpportunities(searchTerm, searchType);
             }
         });
-
+        // Handle the search form submission
+        $('#searchForm').submit(function(event) {
+            event.preventDefault();
+            var searchTerm = $('#searchTerm').val();
+            var searchType = $('#searchType').val();
+            page = 1;  // Reset to the first page
+            loadOpportunities(searchTerm, searchType);
+        });
+        
         // Handle the Next button click
         $('#next').click(function() {
             if (page < totalPages) {
                 page++;
-                loadOpportunities();
+                var searchTerm = $('#searchTerm').val();
+                var searchType = $('#searchType').val();
+                loadOpportunities(searchTerm, searchType);
             }
         });
         // Handle the First button click
         $('#first').click(function() {
             if (page !== 1) {
                 page = 1;
-                loadOpportunities();
+                var searchTerm = $('#searchTerm').val();
+                var searchType = $('#searchType').val();
+                loadOpportunities(searchTerm, searchType);
             }
         });
     });

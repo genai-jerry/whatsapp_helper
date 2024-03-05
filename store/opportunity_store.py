@@ -120,21 +120,14 @@ def update_opportunity(email, opportunity_data):
         if cursor:
             cursor.close()
 
-def get_opportunities(page, per_page):
+def get_opportunities(page, per_page, search_term=None, search_type=None):
     try:
         connection = create_connection()
         cursor = connection.cursor()
+        print("Getting opportiunities")
 
-        # Count the total number of opportunities
+        # Prepare the SQL queries
         count_sql = "SELECT COUNT(*) FROM opportunity"
-        cursor.execute(count_sql)
-        total_items = cursor.fetchone()[0]
-
-        # Calculate the total number of pages
-        total_pages = (total_items + per_page - 1) // per_page
-
-        # Retrieve the opportunities for the current page
-        offset = (page - 1) * per_page
         select_sql = """
             SELECT 
                 o.name, 
@@ -153,10 +146,27 @@ def get_opportunities(page, per_page):
                 opportunity_status os ON o.opportunity_status = os.id
             LEFT JOIN 
                 sales_agent sa ON o.sales_agent = sa.id
-            ORDER BY o.register_time desc
-            LIMIT %s OFFSET %s
         """
-        cursor.execute(select_sql, (per_page, offset))
+        params = []
+
+        # If a search term and search type are provided, add a WHERE clause to the queries
+        if search_term and search_type:
+            count_sql += f" WHERE {search_type} LIKE %s"
+            select_sql += f" WHERE o.{search_type} LIKE %s"
+            params.append("%" + search_term + "%")
+
+        select_sql += " ORDER BY o.register_time desc LIMIT %s OFFSET %s"
+        print(count_sql, params)
+        # Count the total number of opportunities
+        cursor.execute(count_sql, params)  # Only pass the search term to the count query
+        params.extend([per_page, (page - 1) * per_page])
+        total_items = cursor.fetchone()[0]
+
+        # Calculate the total number of pages
+        total_pages = (total_items + per_page - 1) // per_page
+        print(select_sql, params)
+        # Retrieve the opportunities for the current page
+        cursor.execute(select_sql, params)
         results = cursor.fetchall()
 
         # Prepare the response data
@@ -358,6 +368,38 @@ def get_all_sales_agents():
 
         return sales_agents_list
 
+    finally:
+        if cursor:
+            cursor.close()
+
+def search_opportunities(search_term, search_type):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Prepare the SQL query with placeholders
+        sql = f"SELECT * FROM opportunity WHERE {search_type} LIKE %s"
+        formatted_search_term = "%" + search_term + "%"
+
+        # Execute the query with the provided values
+        cursor.execute(sql, (formatted_search_term,))
+
+        # Fetch all matching opportunities
+        results = cursor.fetchall()
+
+        # Prepare the response data
+        opportunities = []
+        for row in results:
+            opportunity = {
+                'id': row[0],
+                'name': row[1],
+                'email': row[2],
+                'phone': row[3],
+                # Add other fields as needed
+            }
+            opportunities.append(opportunity)
+
+        return opportunities
     finally:
         if cursor:
             cursor.close()

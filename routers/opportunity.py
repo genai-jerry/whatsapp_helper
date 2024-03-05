@@ -123,12 +123,14 @@ def import_opportunities():
 @opportunity_blueprint.route('/list', methods=['GET'])
 def list_opportunities():
     try:
-        # Get the page number and size from the query parameters
+        # Get the page number, size, search term, and search type from the query parameters
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
+        search_term = request.args.get('searchTerm', None)
+        search_type = request.args.get('searchType', None)
 
         # Retrieve the list of opportunities from your database
-        opportunities, total_pages, total_items = get_opportunities(page, per_page)  # Replace with your database query
+        opportunities, total_pages, total_items = get_opportunities(page, per_page, search_term, search_type)  # Replace with your database query
 
         # Prepare the response data
         response_data = []
@@ -223,3 +225,9 @@ def update_opportunity_detail():
         print(str(e))
         return error_response(500, str(e))
 
+@opportunity_blueprint.route('/search', methods=['POST'])
+def handle_search_request():
+    search_term = request.form['search_term']
+    search_type = request.form['search_type']
+    results = search_opportunities(search_term, search_type)
+    return render_template('opportunity/list.html', opportunities=results)
