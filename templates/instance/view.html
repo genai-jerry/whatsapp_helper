@@ -49,7 +49,7 @@
                         // Handle success
                         checkQRCode(mobileNumber, 1)
                     }else{
-                        window.location.href = '/'; // Redirect to the instances page
+                        window.location.href = '/instance'; // Redirect to the instances page
                     }
                 },
                 error: function(xhr, status, error) {
@@ -80,7 +80,7 @@
         function checkActivation(mobileNumber, attempt) {
             $.getJSON("/qr/active?mobile_number=" + mobileNumber, function(data) {
                 if (data.status === 'ready') {
-                    window.location.href = '/'; // Redirect to the instances page
+                    window.location.href = '/instance'; // Redirect to the instances page
                 } else {
                     if(attempt>12){
                         $('#refresh').show();

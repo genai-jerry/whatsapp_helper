@@ -12,7 +12,7 @@ server = ServerProxy("http://localhost:8000/", allow_none=True)
 
 @instance_blueprint.route('/')
 def show_instances():
-    return render_template('instance.html', content={})
+    return render_template('/instance/list.html', content={})
 
 @instance_blueprint.route('/list', methods=['GET'])
 def list_instances():
@@ -30,7 +30,7 @@ def edit_instance():
     try:
         mobile_number = request.args.get('mobile_number')
         instance = retrieve_instance(mobile_number)
-        return render_template("instance.html", content=instance)
+        return render_template("/instance/view.html", content=instance)
     except Exception as e:
         return error_response(500, str(e))
 
@@ -47,7 +47,7 @@ def delete_instance():
     try:
         mobile_number = request.args.get('mobile_number')
         instance = remove_instance(mobile_number)
-        return render_template("/index.html")
+        return render_template("/instance/list.html")
     except Exception as e:
         return error_response(500, str(e))
     

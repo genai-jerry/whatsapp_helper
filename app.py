@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, redirect, render_template
 from flask_sqlalchemy import SQLAlchemy
 from routers.driver import driver_blueprint
 from routers.instance import instance_blueprint
@@ -33,7 +33,7 @@ app.register_blueprint(opportunity_blueprint, url_prefix='/opportunity')
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return redirect('/opportunity')
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=30000, debug=True)
