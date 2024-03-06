@@ -23,7 +23,6 @@ def show_opportunities():
     return render_template('opportunity/import.html', content={})
 
 @opportunity_blueprint.route('/create', methods=['POST'])
-@login_required
 def create_opportunity():
     try:
         # Extract the data from the request

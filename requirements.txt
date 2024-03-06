@@ -9,3 +9,4 @@ mysql-connector-python
 confluent-kafka
 flask-migrate
 pymysql
+flask_login
