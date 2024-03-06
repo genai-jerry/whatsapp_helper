@@ -251,6 +251,7 @@ def __setup_contact_message_box(browser, contact_name):
         return True
     
     def __search_and_start_chat(browser, contact_name):
+        contact_name = ''.join(filter(str.isdigit, contact_name))
         print('Opening Search Box')
         search_box = browser.find_element("xpath",'//*[@title="Search input textbox"]')
         search_box.click()
