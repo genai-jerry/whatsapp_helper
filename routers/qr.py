@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, Blueprint, request, render_template, url_for, redirect, make_response
+from flask_login import login_required
 from whatsapp.qr_code_generator import *
 from whatsapp.whatsapp_automation import *
 from browser.update_chrome import *
@@ -17,6 +18,7 @@ qr_blueprint = Blueprint('qr', __name__)
 server = ServerProxy("http://localhost:8000/", allow_none=True)
 
 @qr_blueprint.route('/register', methods=['POST'])
+@login_required
 def register_qr():
     try:
         data = request.json
@@ -41,6 +43,7 @@ def register_qr():
         return error_response(500, f'{app_home} - {str(e)}')
     
 @qr_blueprint.route('/refresh', methods=['POST'])
+@login_required
 def refresh_qr():
     try:
         print('Refreshing QR')
@@ -84,6 +87,7 @@ def create_instance(mobile_number, user_name, new_instance):
         return error_response(400, f'{app_home} - Unable to load page')
 
 @qr_blueprint.route('/register', methods=['GET'])
+@login_required
 def get_qr_code():
     try:
         mobile_number = request.args.get('mobile_number')
@@ -106,11 +110,13 @@ def get_qr_code():
         return error_response(500, str(e))
     
 @qr_blueprint.route('/image', methods=['GET'])
+@login_required
 def redirect_to_home():
     mobile_number = request.args.get('mobile_number')
     return redirect(url_for('static', filename = f'/images/whatsapp_web_qr_{mobile_number}.png'))
 
 @qr_blueprint.route('/active', methods=['GET'])
+@login_required
 def check_activation():
     try:
         mobile_number = request.args.get('mobile_number')

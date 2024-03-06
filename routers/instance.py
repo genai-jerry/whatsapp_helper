@@ -1,4 +1,5 @@
 from flask import jsonify, Blueprint, request, render_template
+from flask_login import login_required
 from whatsapp.qr_code_generator import *
 from whatsapp.whatsapp_automation import *
 from browser.update_chrome import *
@@ -11,10 +12,12 @@ instance_blueprint = Blueprint('instance', __name__)
 server = ServerProxy("http://localhost:8000/", allow_none=True)
 
 @instance_blueprint.route('/')
+@login_required
 def show_instances():
     return render_template('/instance/list.html', content={})
 
 @instance_blueprint.route('/list', methods=['GET'])
+@login_required
 def list_instances():
     try:
         print('Listing instances')
@@ -26,6 +29,7 @@ def list_instances():
         return error_response(500, str(e))
 
 @instance_blueprint.route('/edit', methods=['GET'])
+@login_required
 def edit_instance():
     try:
         mobile_number = request.args.get('mobile_number')
@@ -35,6 +39,7 @@ def edit_instance():
         return error_response(500, str(e))
 
 @instance_blueprint.route('/refresh', methods=['GET'])
+@login_required
 def refresh_instance():
     try:
         mobile_number = request.args.get('mobile_number')
@@ -43,6 +48,7 @@ def refresh_instance():
         return error_response(500, str(e))
     
 @instance_blueprint.route('/delete')
+@login_required
 def delete_instance():
     try:
         mobile_number = request.args.get('mobile_number')

@@ -87,3 +87,12 @@ class Templates(db.Model):
     name = db.Column(db.String(255), nullable=False, unique=True)
     active = db.Column(db.Boolean, nullable=False)
     template_text = db.Column(db.Text)
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255), nullable=False, unique=True)
+    password = db.Column(db.String(255), nullable=False)
+    active = db.Column(db.Boolean, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime)

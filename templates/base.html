@@ -20,6 +20,7 @@
                     <!-- Menu Items -->
                     <div class="position-sticky pt-3">
                         <ul class="nav flex-column">
+                            {% if g.user_logged_in %}
                             <li class="nav-item">
                                 <a class="nav-link active" aria-current="page" href="/opportunity">
                                     Home
@@ -50,7 +51,13 @@
                                     List Messages
                                 </a>
                             </li>
-                            <!-- Additional menu items here -->
+                            
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="/logout">
+                                    Logout
+                                </a>
+                            </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </nav>

@@ -1,0 +1,50 @@
+`{% extends "base.html" %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Login</h1>
+    </div>
+
+    <!-- Login Form -->
+    <div class="container">
+        <form id="loginForm">
+            <!-- Placeholder for the error message -->
+            <div id="errorMessage" class="mt-3 text-danger"></div>
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#loginForm').submit(function(event) {
+                event.preventDefault();
+                var username = $('#username').val();
+                var password = $('#password').val();
+                $('#errorMessage').text('');
+                $.post('/login', { username: username, password: password }, function(data) {
+                    if (data.status === 'success') {
+                        window.location.href = '/';  // Redirect to the home page
+                    } else {
+                        $('#errorMessage').text('Invalid username or password');
+                    }
+                }).fail(function(xhr, textStatus, errorThrown) {
+                    if (xhr.status === 400) {
+                        $('#errorMessage').text('Invalid username or password');
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

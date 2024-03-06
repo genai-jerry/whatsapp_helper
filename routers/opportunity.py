@@ -1,5 +1,6 @@
 """Add the APIs for the opportunites. Use Flask-Restful to create the APIs."""
 from flask import jsonify, Blueprint, render_template, request
+from flask_login import login_required
 from utils import error_response, app_home
 import csv
 from werkzeug.utils import secure_filename
@@ -12,14 +13,17 @@ from whatsapp.message_sender import send_template_message
 opportunity_blueprint = Blueprint('opportunity', __name__)
 
 @opportunity_blueprint.route('/', methods=['GET'])
+@login_required
 def load_opportunities():
     return render_template('opportunity/list.html', content={})
 
 @opportunity_blueprint.route('/import', methods=['GET'])
+@login_required
 def show_opportunities():
     return render_template('opportunity/import.html', content={})
 
 @opportunity_blueprint.route('/create', methods=['POST'])
+@login_required
 def create_opportunity():
     try:
         # Extract the data from the request
@@ -45,6 +49,7 @@ def create_opportunity():
         return error_response(500, str(e))
 
 @opportunity_blueprint.route('/update_status', methods=['PUT'])
+@login_required
 def update_status():
     try:
         # Extract the new status from the request
@@ -69,6 +74,7 @@ def update_status():
         return error_response(500, str(e))
 
 @opportunity_blueprint.route('/message', methods=['POST'])
+@login_required
 def send_message():
     try:
         # Extract the message from the request
@@ -79,6 +85,7 @@ def send_message():
         return error_response(500, str(e))
 
 @opportunity_blueprint.route('/import', methods=['POST'])
+@login_required
 def import_opportunities():
     try:
         # Check if the post request has the file part
@@ -121,6 +128,7 @@ def import_opportunities():
 
        
 @opportunity_blueprint.route('/list', methods=['GET'])
+@login_required
 def list_opportunities():
     try:
         # Get the page number, size, search term, and search type from the query parameters
@@ -158,6 +166,7 @@ def list_opportunities():
         return error_response(500, str(e))
     
 @opportunity_blueprint.route('/<int:opportunity_id>', methods=['GET'])
+@login_required
 def get_opportunity_detail(opportunity_id):
     try:
         # Retrieve the opportunity detail from your database based on the opportunity_id
@@ -196,6 +205,7 @@ def get_opportunity_detail(opportunity_id):
         return error_response(500, str(e))
 
 @opportunity_blueprint.route('/update', methods=['POST'])
+@login_required
 def update_opportunity_detail():
     try:
         # Extract the data from the form
@@ -226,6 +236,7 @@ def update_opportunity_detail():
         return error_response(500, str(e))
 
 @opportunity_blueprint.route('/search', methods=['POST'])
+@login_required
 def handle_search_request():
     search_term = request.form['search_term']
     search_type = request.form['search_type']

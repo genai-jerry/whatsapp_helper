@@ -1,4 +1,5 @@
 from flask import Blueprint, request, render_template
+from flask_login import login_required
 from store.kafka_factory import KafkaConsumerFactory, KafkaProducerFactory
 from whatsapp.qr_code_generator import *
 from whatsapp.whatsapp_automation import *
@@ -15,6 +16,7 @@ KafkaProducerFactory.get_producer()
 KafkaConsumerFactory.get_consumer()
 
 @message_blueprint.route('/text', methods=['POST'])
+@login_required
 def text_message():
     print('Sending text message')
     data = request.json
@@ -22,21 +24,25 @@ def text_message():
     return send_text_message(data, app_home)
 
 @message_blueprint.route('/template', methods=['POST'])
+@login_required
 def template_message():
     data = request.json
     return send_template_message(data, app_home)
 
     
 @message_blueprint.route('/media', methods=['POST'])
+@login_required
 def media_message():
     data = request.json
     return send_media_message(data, app_home)
 
 @message_blueprint.route('/', methods=['GET'])
+@login_required
 def get_messages():
     return render_template('message/list.html'), 200
 
 @message_blueprint.route('/list', methods=['GET'])
+@login_required
 def list_messages():
     # Get the page number and size from the query parameters
     page = request.args.get('page', 1, type=int)
@@ -66,6 +72,7 @@ def list_messages():
     }), 200
         
 @message_blueprint.route('/retry/<int:message_id>', methods=['POST'])
+@login_required
 def retry_message(message_id):
     # Retrieve the message from your database
     message = get_message(message_id)

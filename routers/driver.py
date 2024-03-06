@@ -1,4 +1,5 @@
 from flask import jsonify, Blueprint, request
+from flask_login import login_required
 from whatsapp.qr_code_generator import *
 from whatsapp.whatsapp_automation import *
 from browser.update_chrome import *
@@ -11,6 +12,7 @@ driver_blueprint = Blueprint('driver', __name__)
 server = ServerProxy("http://localhost:8000/", allow_none=True)
 
 @driver_blueprint.route('/update')
+@login_required
 def driver_update():
     try:
         update_chrome_driver()
