@@ -44,6 +44,7 @@ def refresh_instance():
     try:
         mobile_number = request.args.get('mobile_number')
         refresh_browser(mobile_number)
+        return render_template("/instance/list.html")
     except Exception as e:
         return error_response(500, str(e))
     
