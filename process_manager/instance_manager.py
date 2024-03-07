@@ -51,6 +51,7 @@ def refresh(mobile_number):
     try:
         browser = browser_instances[mobile_number]
         with browser.get_lock():
+            print(f'Refreshing {mobile_number}')
             browser.get_driver().refresh()
         return True
     except Exception as e:

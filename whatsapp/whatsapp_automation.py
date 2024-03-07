@@ -23,6 +23,7 @@ def is_whatsapp_ready(mobile_number):
 
 def refresh_browser(mobile_number):
     with obtain_sender_lock(mobile_number):
+        print(f'Refresing {mobile_number}')
         server.refresh(mobile_number)
 
 # Function to send a WhatsApp message
