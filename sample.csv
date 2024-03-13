@@ -1,6 +1,0 @@
-Date,Opportunity Name,Email Address,Phone Number,Call Status,Campaign Name,Opportunity Status,Agent
-2022-01-01,Opportunity 1,test1@example.com,1234567890,Wrong Number,Campaign 1,Sale,Jerry
-2022-01-02,Opportunity 2,test2@example.com,2345678901,Invalid Lead,Campaign 2,Sale,Avinash
-2022-01-03,Opportunity 3,test3@example.com,3456789012,Call Pending,Campaign 3,Sale,Santosh
-2022-01-04,Opportunity 4,test4@example.com,4567890123,Call Pending,Campaign 4,Sale,Jerry
-2022-01-05,Opportunity 5,test5@example.com,5678901234,Call Pending,Campaign 5,Sale,Avinash

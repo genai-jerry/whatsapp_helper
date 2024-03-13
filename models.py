@@ -96,3 +96,8 @@ class User(db.Model):
     active = db.Column(db.Boolean, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime)
+
+class ApiKey(db.Model):
+    __tablename__ = 'api_key'
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(64), index=True, unique=True)

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, g
 from flask_login import login_required
 from store.kafka_factory import KafkaConsumerFactory, KafkaProducerFactory
 from whatsapp.qr_code_generator import *
@@ -8,15 +8,40 @@ from browser.update_chrome import *
 from store.message_store import *
 from store.instance_store import *
 from store.template_store import *
+from store.key_store import generate_new_api_key, retrieve_api_key
 from utils import app_home
+from functools import wraps
 
 message_blueprint = Blueprint('message', __name__)
 
 KafkaProducerFactory.get_producer()
 KafkaConsumerFactory.get_consumer()
 
+def require_api_key(view_function):
+    @wraps(view_function)
+    def decorated_function(*args, **kwargs):
+        from models import ApiKey
+        if 'X-API-KEY' not in request.headers:
+            return jsonify({'error': 'Missing API key'}), 403
+        api_key = request.headers['X-API-KEY']
+        g.api_key = retrieve_api_key(api_key)
+        if g.api_key is None:
+            return jsonify({'error': 'Invalid API key'}), 403
+        return view_function(*args, **kwargs)
+    return decorated_function
+
+@message_blueprint.route('/api_key', methods=['POST'])
+def generate_api_key():
+    # Generate a new API key
+    try:
+        api_key = generate_new_api_key()
+        return jsonify({'status': 'success'}), 200
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+
 @message_blueprint.route('/text', methods=['POST'])
-@login_required
+@require_api_key
 def text_message():
     print('Sending text message')
     data = request.json
@@ -24,14 +49,13 @@ def text_message():
     return send_text_message(data, app_home)
 
 @message_blueprint.route('/template', methods=['POST'])
-@login_required
+@require_api_key
 def template_message():
     data = request.json
     return send_template_message(data, app_home)
 
-    
 @message_blueprint.route('/media', methods=['POST'])
-@login_required
+@require_api_key
 def media_message():
     data = request.json
     return send_media_message(data, app_home)
