@@ -153,7 +153,9 @@ def get_message(message_id):
                 m.template, 
                 m.status, 
                 m.message,
-                m.create_time
+                m.create_time,
+                m.type,
+                m.template
             FROM 
                 messages m
             WHERE 
@@ -168,10 +170,12 @@ def get_message(message_id):
                 'id': row[0],
                 'receiver': row[1],
                 'sender': row[2],
-                'template': row[3],
+                'template_name': row[3],
                 'status': row[4],
                 'message': row[5],
-                'create_time': row[6]
+                'create_time': row[6],
+                'type': row[7],
+                'template': row[8],
             }
             return message
 
