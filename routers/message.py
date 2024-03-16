@@ -99,21 +99,21 @@ def list_messages():
 @login_required
 def retry_message(message_id):
     # Retrieve the message from your database
+    print(f'Retrying message {message_id}')
     message = get_message(message_id)
-
+    print(f'Got the message {message}')
     if not message:
         return jsonify({'error': 'Message not found'}), 404
 
     # Retry sending the message
     try:
-        if message['type'] == 'text':
-            send_text_message(message)
+        if 'type' not in message or message['type'] == 'text':
+            send_text_message(message, app_home)
         elif message['type'] == 'template':
-            send_template_message(message)
+            send_template_message(message, app_home)
         else:
             return jsonify({'error': 'Invalid message type'}), 400
 
-        update_message_status(message['id'], 'sent')
         message['status'] = 'sent'
     except Exception as e:
         update_message_status(message['id'], 'failed')

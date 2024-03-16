@@ -149,8 +149,10 @@ def get_message(message_id):
             SELECT 
                 m.id, 
                 m.receiver, 
+                m.sender,
                 m.template, 
                 m.status, 
+                m.message,
                 m.create_time
             FROM 
                 messages m
@@ -165,9 +167,11 @@ def get_message(message_id):
             message = {
                 'id': row[0],
                 'receiver': row[1],
-                'template': row[2],
-                'status': row[3],
-                'create_time': row[4]
+                'sender': row[2],
+                'template': row[3],
+                'status': row[4],
+                'message': row[5],
+                'create_time': row[6]
             }
             return message
 
