@@ -109,8 +109,6 @@ def retry_message(message_id):
     try:
         if 'type' not in message or message['type'] == 'text':
             send_text_message(message, app_home)
-        elif message['type'] == 'template':
-            send_template_message(message, app_home)
         else:
             return jsonify({'error': 'Invalid message type'}), 400
 
