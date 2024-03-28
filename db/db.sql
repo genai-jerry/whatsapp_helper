@@ -267,6 +267,29 @@ LOCK TABLES `templates` WRITE;
 INSERT INTO `templates` VALUES (1,'new_register',1,'Hi there {name} you have an appointment with {sales_person}. See you there {name}'),(3,'new_lead',1,'Hi Lead'),(4,'Saturday_Reminder',1,'{name}, Happy Saturday! Use the weekend to explore Generative AI through our concise webinar training video. Webinar covers Generative AI roadmap and job opportunities for aspiring GenAI developers/architect\r\nWatch this webinar training  here: https://bit.ly/3 - Jerry Kurian');
 /*!40000 ALTER TABLE `templates` ENABLE KEYS */;
 UNLOCK TABLES;
+
+INSERT INTO configs (name, value) VALUES ('max_possible_score', '10');
+
+INSERT INTO max_scores (score_name, score_value, category) VALUES
+('Salary Growth', 1, 'challenge'),
+('Promotion', 1, 'challenge'),
+('Unable to get into a high-growth product company', 1, 'challenge'),
+('Lack of relevant skills', 1, 'challenge'),
+('RIGHT NOW - I want to get started immediately.', 3, 'urgency'),
+('WITHIN 90 DAYS - I have other things to attend to first.', 1, 'urgency'),
+('MORE THAN 90 DAYS - I want to do this eventually, but I''m not sure when.', 0, 'urgency'),
+('15-25 Lacks', 2, 'salary'),
+('26-40 Lacks', 3, 'salary'),
+('40+ Lacks', 1, 'salary'),
+('50% Increment', 1, 'salary_expectation'),
+('100% Increment', 2, 'salary_expectation'),
+('As per market salary', 1, 'salary_expectation'),
+('I have plenty of cash and credit to invest in growing my career (Rs 1 Lakh or more)', 3, 'financial_status'),
+('I''m living paycheck-to-paycheck, so getting the funds together to grow this career may be a challenge, but possible if that is what is needed.', 2, 'financial_status'),
+('Money is a constant source of stress - I don''t have any funds, or credit at all, and I want to keep my career exactly where it''s at.', 0, 'financial_status'),
+('Yes', 1, 'availability'),
+('No (Please change the date/time if you won''t be available)', 0, 'availability');
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

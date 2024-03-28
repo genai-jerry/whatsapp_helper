@@ -101,3 +101,39 @@ class ApiKey(db.Model):
     __tablename__ = 'api_key'
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(64), index=True, unique=True)
+
+class Appointment(db.Model):
+    __tablename__ = 'appointments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=False)
+    telephone = db.Column(db.String(15), nullable=False)
+    career_challenge = db.Column(db.String(255), nullable=False)
+    challenge_description = db.Column(db.Text, nullable=False)
+    urgency = db.Column(db.String(255), nullable=False)
+    salary_range = db.Column(db.String(255), nullable=False)
+    expected_salary = db.Column(db.String(255), nullable=False)
+    current_employer = db.Column(db.String(255), nullable=False)
+    financial_situation = db.Column(db.String(255), nullable=False)
+    grade = db.Column(db.String(255), nullable=False)
+    mentor_id = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
+    opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'))
+    appointment_time = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    verified = db.Column(db.Boolean, nullable=False)
+
+class MaxScore(db.Model):
+    __tablename__ = 'max_scores'
+
+    id = db.Column(db.Integer, primary_key=True)
+    score_name = db.Column(db.String(255))
+    score_value = db.Column(db.Integer)
+    category = db.Column(db.String(255), nullable=False)
+
+class Config(db.Model):
+    __tablename__ = 'configs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    value = db.Column(db.String(255), nullable=False)

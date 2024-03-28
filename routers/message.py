@@ -8,27 +8,13 @@ from browser.update_chrome import *
 from store.message_store import *
 from store.instance_store import *
 from store.template_store import *
-from store.key_store import generate_new_api_key, retrieve_api_key
-from utils import app_home
-from functools import wraps
+from store.key_store import generate_new_api_key
+from utils import app_home, require_api_key
 
 message_blueprint = Blueprint('message', __name__)
 
 KafkaProducerFactory.get_producer()
 KafkaConsumerFactory.get_consumer()
-
-def require_api_key(view_function):
-    @wraps(view_function)
-    def decorated_function(*args, **kwargs):
-        from models import ApiKey
-        if 'X-API-KEY' not in request.headers:
-            return jsonify({'error': 'Missing API key'}), 403
-        api_key = request.headers['X-API-KEY']
-        g.api_key = retrieve_api_key(api_key)
-        if g.api_key is None:
-            return jsonify({'error': 'Invalid API key'}), 403
-        return view_function(*args, **kwargs)
-    return decorated_function
 
 @message_blueprint.route('/api_key', methods=['POST'])
 def generate_api_key():
@@ -84,7 +70,8 @@ def list_messages():
             'receiver_id': message['receiver_id'],
             'template': message['template'],
             'status': message['status'],
-            'create_time': message['create_time']
+            'create_time': message['create_time'],
+            'opportunity_name': message['opportunity_name']
         }
         response_data.append(message_data)
 

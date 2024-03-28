@@ -1,6 +1,7 @@
 import os
 import re
-from flask import jsonify
+from flask import jsonify, request, g
+from store.key_store import retrieve_api_key
 
 # Get the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -42,3 +43,17 @@ def format_phone_number(phone_number):
     else:
         # Return the original phone number if it does not have a valid length
         return f'+{phone_number}'
+    
+from functools import wraps
+def require_api_key(view_function):
+    @wraps(view_function)
+    def decorated_function(*args, **kwargs):
+        from models import ApiKey
+        if 'X-API-KEY' not in request.headers:
+            return jsonify({'error': 'Missing API key'}), 403
+        api_key = request.headers['X-API-KEY']
+        g.api_key = retrieve_api_key(api_key)
+        if g.api_key is None:
+            return jsonify({'error': 'Invalid API key'}), 403
+        return view_function(*args, **kwargs)
+    return decorated_function

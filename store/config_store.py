@@ -41,7 +41,7 @@ def retrieve_config(key):
         cursor = cnx.cursor()
 
         # Define the SQL query for getting a config
-        query = "SELECT value FROM configs WHERE key = %s"
+        query = "SELECT value FROM configs WHERE name = %s"
 
         # Execute the SQL query
         cursor.execute(query, (key,))
