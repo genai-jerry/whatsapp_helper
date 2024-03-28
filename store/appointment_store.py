@@ -25,6 +25,7 @@ def store_appointment(profile_details, application_form_details, mentor_name):
 
         # Look up the mentor using the mentor name in the mentors table
         query = "SELECT id FROM sales_agent WHERE name = %s"
+        mentor_name = ''.join(c for c in mentor_name if c.isalpha())
         cursor.execute(query, (mentor_name,))
         mentor_id = cursor.fetchone()
         if mentor_id is not None:
