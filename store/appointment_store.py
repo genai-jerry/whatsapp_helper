@@ -37,7 +37,7 @@ def store_appointment(profile_details, application_form_details, mentor_name):
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         date_str = application_form_details['appointment_time']
-        appointment_time = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%fZ') if date_str else None
+        appointment_time = datetime.strptime(date_str, '%A, %d %B %Y %I:%M %p') if date_str else None
         # Define the values for the SQL query
         values = (
             profile_details['name'],
