@@ -1,4 +1,6 @@
 from datetime import datetime
+
+import pytz
 from db.connection_manager import *
 
 def store_appointment(profile_details, application_form_details, mentor_name):
@@ -38,6 +40,9 @@ def store_appointment(profile_details, application_form_details, mentor_name):
         """
         date_str = application_form_details['appointment_time']
         appointment_time = datetime.strptime(date_str, '%A, %d %B %Y %I:%M %p') if date_str else None
+        # Convert appointment_time from IST to GMT
+        if appointment_time:
+            appointment_time = appointment_time.astimezone(pytz.timezone('GMT'))
         # Define the values for the SQL query
         values = (
             profile_details['name'],

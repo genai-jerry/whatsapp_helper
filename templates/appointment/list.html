@@ -44,7 +44,7 @@ List of Appointments
             // Add the new appointments to the list
             $.each(data.appointments, function(i, appointment) {
                 var date = new Date(appointment.appointment_time);
-                var formattedDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })).toLocaleString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                var formattedDate = date.toLocaleString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                 var row = $(
                     '<tr class="grade-' + appointment.grade + '">' +
                     '<td>' + (appointment.opportunity_name ? '<a href="/opportunity/' + appointment.opportunity_id + '">' + appointment.opportunity_name + '</a>' : appointment.name) + '</td>' +
