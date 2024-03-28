@@ -41,7 +41,7 @@ List of Messages
             $.each(data.items, function(i, message) {
                 $('#messagesTable tbody').append(
                     '<tr>' +
-                    '<td>' + (message.receiver_id ? '<a href="/opportunity/' + message.receiver_id + '">' + message.receiver : message.receiver) + '</td>' +
+                    '<td>' + (message.receiver_id ? '<a href="/opportunity/' + message.receiver_id + '">' + message.opportunity_name + '</a>' : message.receiver) + '</td>' +
                     '<td>' + message.template + '</td>' +
                     '<td>' + message.status + '</td>' +
                     '<td>' + message.create_time + '</td>' +

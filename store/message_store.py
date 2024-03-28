@@ -111,9 +111,13 @@ def get_all_messages(page, per_page):
                 m.template, 
                 m.status, 
                 m.create_time,
-                m.receiver_id
+                m.receiver_id,
+                o.name as opportunity_name
             FROM 
                 messages m
+                LEFT JOIN opportunity o ON m.receiver_id = o.id
+            WHERE 
+                m.receiver IS NOT NULL
             ORDER BY m.create_time desc
             LIMIT %s OFFSET %s
         """
@@ -129,7 +133,8 @@ def get_all_messages(page, per_page):
                 'template': row[2],
                 'status': row[3],
                 'create_time': row[4],
-                'receiver_id': row[5]
+                'receiver_id': row[5],
+                'opportunity_name': row[6]
             }
             messages.append(message)
 
