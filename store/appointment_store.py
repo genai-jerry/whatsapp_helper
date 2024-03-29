@@ -36,14 +36,28 @@ def store_appointment(profile_details, application_form_details, mentor_name):
         # Define the SQL query for inserting a new appointment with opportunity_id and mentor_id as foreign keys
         query = """
         INSERT INTO appointments (name, email, telephone, career_challenge, challenge_description, urgency, salary_range, 
-        expected_salary, current_employer, financial_situation, grade, mentor_id, opportunity_id, appointment_time, verified)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        expected_salary, current_employer, financial_situation, grade, mentor_id, opportunity_id, appointment_time, 
+        verified, conflicted)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         date_str = application_form_details['appointment_time']
         appointment_time = datetime.strptime(date_str, '%A, %d %B %Y %I:%M %p') if date_str else None
         # Convert appointment_time from IST to GMT
         if appointment_time:
             appointment_time = appointment_time.astimezone(pytz.timezone('GMT'))
+
+        # Check if there is another appointment with the same appointment time
+        print(f'Checking if appointment exists at time {appointment_time}')
+        conflict_query = "SELECT id FROM appointments WHERE appointment_time = %s"
+        cursor.execute(conflict_query, (appointment_time,))
+        existing_appointment = cursor.fetchone()
+
+        # If there is an existing appointment, set the conflicted column to True
+        if existing_appointment:
+            conflicted = True
+        else:
+            conflicted = False
+        print(f'Appointment is conflicted: {conflicted}')
         # Define the values for the SQL query
         values = (
             profile_details['name'],
@@ -60,7 +74,8 @@ def store_appointment(profile_details, application_form_details, mentor_name):
             mentor_id,
             opportunity_id,
             appointment_time,
-            verified
+            verified,
+            conflicted
         )
 
         # Execute the SQL query
@@ -170,7 +185,8 @@ def retrieve_appointments(page_number, page_size):
     # Define the SQL query for retrieving appointments with associated opportunities and mentors
     query = """
     SELECT a.id, a.name, a.email, a.telephone, o.name AS opportunity_name, o.id AS opportunity_id, m.name AS mentor_name, m.id AS mentor_id, a.appointment_time AS appointment_time,
-    a.career_challenge, a.challenge_description, a.urgency, a.salary_range, a.expected_salary, a.current_employer, a.financial_situation, a.grade, a.verified
+    a.career_challenge, a.challenge_description, a.urgency, a.salary_range, a.expected_salary, a.current_employer, a.financial_situation, a.grade, 
+    a.verified, a.conflicted
     FROM appointments AS a
     LEFT JOIN opportunity AS o ON a.opportunity_id = o.id
     LEFT JOIN sales_agent AS m ON a.mentor_id = m.id
@@ -218,7 +234,8 @@ def retrieve_appointments(page_number, page_size):
                 'current_employer': row[14],
                 'financial_situation': row[15],
                 'grade': row[16],
-                'verified': row[17]
+                'verified': row[17],
+                'conflicted': row[18]
             }
             appointments.append(appointment)
 
