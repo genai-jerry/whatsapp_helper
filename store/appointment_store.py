@@ -16,8 +16,8 @@ def store_appointment(profile_details, application_form_details, mentor_name):
         print(f'Verified: {verified}')
 
         # Look up the opportunity using the name or email in the opportunities table
-        query = "SELECT id FROM opportunity WHERE name = %s OR email = %s"
-        cursor.execute(query, (profile_details['name'], profile_details['email']))
+        query = "SELECT id FROM opportunity WHERE email = %s"
+        cursor.execute(query, (profile_details['email'],))
         opportunity_id = cursor.fetchone()
         cursor.fetchall()
         if opportunity_id is not None:
