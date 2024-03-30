@@ -13,26 +13,29 @@ def store_appointment(profile_details, application_form_details, mentor_name):
         grade = grade_application(application_form_details)
         # Set verified to true if grade is 0, else set it to false
         verified = True if grade == 0 else False
+        print(f'Verified: {verified}')
 
         # Look up the opportunity using the name or email in the opportunities table
         query = "SELECT id FROM opportunity WHERE name = %s OR email = %s"
         cursor.execute(query, (profile_details['name'], profile_details['email']))
         opportunity_id = cursor.fetchone()
+        cursor.fetchall()
         if opportunity_id is not None:
             opportunity_id = opportunity_id[0]
         else:
             opportunity_id = None
-
+        print(f'Opportunity ID: {opportunity_id}')
         # Look up the mentor using the mentor name in the mentors table
         query = "SELECT id FROM sales_agent WHERE name = %s"
         mentor_name = ''.join(c for c in mentor_name if c.isalpha())
         cursor.execute(query, (mentor_name,))
         mentor_id = cursor.fetchone()
+        cursor.fetchall()
         if mentor_id is not None:
             mentor_id = mentor_id[0]
         else:
             mentor_id = None
-
+        print(f'Mentor ID: {mentor_id}')
         # Define the SQL query for inserting a new appointment with opportunity_id and mentor_id as foreign keys
         query = """
         INSERT INTO appointments (name, email, telephone, career_challenge, challenge_description, urgency, salary_range, 
@@ -183,6 +186,7 @@ def calculate_final_score(application_form_details):
 
 def retrieve_appointments(page_number, page_size):
     # Define the SQL query for retrieving appointments with associated opportunities and mentors
+    
     query = """
     SELECT a.id, a.name, a.email, a.telephone, o.name AS opportunity_name, o.id AS opportunity_id, m.name AS mentor_name, m.id AS mentor_id, a.appointment_time AS appointment_time,
     a.career_challenge, a.challenge_description, a.urgency, a.salary_range, a.expected_salary, a.current_employer, a.financial_situation, a.grade, 
@@ -190,11 +194,11 @@ def retrieve_appointments(page_number, page_size):
     FROM appointments AS a
     LEFT JOIN opportunity AS o ON a.opportunity_id = o.id
     LEFT JOIN sales_agent AS m ON a.mentor_id = m.id
-    WHERE a.appointment_time > NOW()
+    WHERE CONVERT_TZ(a.appointment_time, 'GMT', 'IST') > CONVERT_TZ(NOW(), 'GMT', 'IST')
     ORDER BY a.appointment_time ASC
     LIMIT %s OFFSET %s
     """
-    count_query = "SELECT COUNT(*) FROM appointments"
+    count_query = "SELECT COUNT(*) FROM appointments WHERE appointment_time > CONVERT_TZ(NOW(), 'IST', 'GMT')"
     try:
         # Create a new database connection
         cnx = create_connection()
