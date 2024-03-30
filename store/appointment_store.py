@@ -194,7 +194,7 @@ def retrieve_appointments(page_number, page_size):
     FROM appointments AS a
     LEFT JOIN opportunity AS o ON a.opportunity_id = o.id
     LEFT JOIN sales_agent AS m ON a.mentor_id = m.id
-    WHERE CONVERT_TZ(a.appointment_time, 'GMT', 'IST') > CONVERT_TZ(NOW(), 'GMT', 'IST')
+    WHERE a.appointment_time > %s
     ORDER BY a.appointment_time ASC
     LIMIT %s OFFSET %s
     """
@@ -203,6 +203,8 @@ def retrieve_appointments(page_number, page_size):
         # Create a new database connection
         cnx = create_connection()
 
+        # Get the current time in GMT
+        current_time = datetime.now(pytz.timezone('GMT'))
         # Create a new cursor
         cursor = cnx.cursor()
 
@@ -210,7 +212,7 @@ def retrieve_appointments(page_number, page_size):
         offset = (page_number - 1) * page_size
         print(f'Retrieving appointments for page size {page_size} with page offset {offset}')
         # Execute the SQL query with the page size and offset as parameters
-        cursor.execute(query, (page_size, offset))
+        cursor.execute(query, (current_time, page_size, offset))
 
         # Fetch all rows
         rows = cursor.fetchall()
