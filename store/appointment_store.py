@@ -198,7 +198,7 @@ def retrieve_appointments(page_number, page_size):
     ORDER BY a.appointment_time ASC
     LIMIT %s OFFSET %s
     """
-    count_query = "SELECT COUNT(*) FROM appointments WHERE appointment_time > CONVERT_TZ(NOW(), 'IST', 'GMT')"
+    count_query = "SELECT COUNT(*) FROM appointments WHERE appointment_time > %s"
     try:
         # Create a new database connection
         cnx = create_connection()
@@ -246,7 +246,7 @@ def retrieve_appointments(page_number, page_size):
             appointments.append(appointment)
 
         # Calculate the total number of appointments
-        cursor.execute(count_query)
+        cursor.execute(count_query, (current_time,))
         total_appointments = cursor.fetchone()[0]
 
         # Calculate the total number of pages
