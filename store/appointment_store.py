@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from utils import format_phone_number
 import pytz
 from db.connection_manager import *
 
@@ -65,7 +65,7 @@ def store_appointment(profile_details, application_form_details, mentor_name):
         values = (
             profile_details['name'],
             profile_details['email'],
-            profile_details['telephone'],
+            format_phone_number(profile_details['telephone']) if profile_details['telephone'] else None,
             application_form_details['career_challenge'],
             application_form_details['challenge_description'],
             application_form_details['urgency'],
