@@ -53,7 +53,7 @@ def home():
 
 @app.route('/')
 def index():
-    return redirect('/opportunity')
+    return redirect('/appointment')
 
 @app.route('/user', methods=['POST'])
 def create_user():
