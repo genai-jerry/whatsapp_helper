@@ -36,6 +36,21 @@ List of Appointments
 </style>
 <script>
     var currentPage = 1;
+    // Add click event to cancel button
+    function cancelAppointment(appointmentId) {
+        // Call the cancel appointment API
+        url = "/appointment/"+ appointmentId + "/cancel"
+        $.post(url, 
+            function(response) {
+                if (response.status == "success") {
+                    // Reload the appointments list
+                    loadAppointments();
+                } else {
+                    // Show an error message
+                    alert('Failed to cancel appointment. Please try again.');
+                }
+            });
+    }
 
     function loadAppointments() {
         $.get('{{ url_for('appointment.list_appointments') }}', { page: currentPage }, function(data) {
@@ -56,13 +71,15 @@ List of Appointments
             });
 
             // Add the grouped appointments to the table
-            $.each(groupedAppointments, function(date, appointments) {
-                var dateRow = $('<tr><td colspan="6">' + date + '</td></tr>');
+            $.each(groupedAppointments, function(dt, appointments) {
+                var date = new Date(dt);
+                var formattedDate = date.toLocaleString('en-IN', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                var dateRow = $('<tr><td colspan="6">' + formattedDate + '</td></tr>');
                 $('#appointmentsTable tbody').append(dateRow);
 
                 $.each(appointments, function(i, appointment) {
                     var date = new Date(appointment.appointment_time);
-                    var formattedDate = date.toLocaleString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    var formattedDate = date.toLocaleString('en-IN', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                     var row = $(
                         '<tr class="grade-' + appointment.grade + '">' +
                         '<td></td>' +
@@ -80,7 +97,8 @@ List of Appointments
                         '<td style="color: #c8cdd5">' + formattedDate + (appointment.conflicted ? ' <i class="bi bi-exclamation-triangle-fill" style="color: blue;"></i><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="blue" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">' +
                         '<path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>'+
                         '</svg>' : '') + '</td>' +
-                        '<td><button class="btn btn-info btn-sm expand">See Details</button></td>' +
+                        '<td><button class="btn btn-info btn-sm expand mb-2">See Details</button>' +
+                        '<button id="canceled" class="btn btn-danger btn-sm mb-2" onclick="cancelAppointment('+ appointment.id +')">Mark as Canceled</button></td>' +
                         '</tr>'
                     );
 
@@ -109,6 +127,9 @@ List of Appointments
             $('.expand').click(function() {
                 $(this).closest('tr').next('.details').toggle();
             });
+
+            
+           
         });
     }
 

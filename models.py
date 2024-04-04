@@ -123,6 +123,8 @@ class Appointment(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     verified = db.Column(db.Boolean, nullable=False)
     conflicted = db.Column(db.Boolean, nullable=True)
+    canceled = db.Column(db.Boolean, nullable=True)
+    
 
 class MaxScore(db.Model):
     __tablename__ = 'max_scores'

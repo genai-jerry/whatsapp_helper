@@ -54,6 +54,7 @@ def store_appointment(profile_details, application_form_details, mentor_name):
         conflict_query = "SELECT id FROM appointments WHERE appointment_time = %s"
         cursor.execute(conflict_query, (appointment_time,))
         existing_appointment = cursor.fetchone()
+        cursor.fetchall()
 
         # If there is an existing appointment, set the conflicted column to True
         if existing_appointment:
@@ -83,6 +84,14 @@ def store_appointment(profile_details, application_form_details, mentor_name):
 
         # Execute the SQL query
         cursor.execute(query, values)
+
+        # Update the opportunity table if opportunity_id is present
+        if opportunity_id is not None:
+            print(f'Updating the opportunity status for the opportunity {opportunity_id}')
+            update_query = "UPDATE opportunity SET call_status = 8 WHERE id = %s"
+            cursor.execute(update_query, (opportunity_id,))
+        else:
+            print('Opportunity not found. Skipping update of opportunity status')
 
         # Commit the transaction
         cnx.commit()
@@ -190,15 +199,15 @@ def retrieve_appointments(page_number, page_size):
     query = """
     SELECT a.id, a.name, a.email, a.telephone, o.name AS opportunity_name, o.id AS opportunity_id, m.name AS mentor_name, m.id AS mentor_id, a.appointment_time AS appointment_time,
     a.career_challenge, a.challenge_description, a.urgency, a.salary_range, a.expected_salary, a.current_employer, a.financial_situation, a.grade, 
-    a.verified, a.conflicted
+    a.verified, a.conflicted, a.canceled
     FROM appointments AS a
     LEFT JOIN opportunity AS o ON a.opportunity_id = o.id
     LEFT JOIN sales_agent AS m ON a.mentor_id = m.id
-    WHERE a.appointment_time > %s
+    WHERE a.appointment_time > %s and (a.canceled = FALSE OR a.canceled IS NULL)
     ORDER BY a.appointment_time ASC
     LIMIT %s OFFSET %s
     """
-    count_query = "SELECT COUNT(*) FROM appointments WHERE appointment_time > %s"
+    count_query = "SELECT COUNT(*) FROM appointments WHERE appointment_time > %s and (canceled = FALSE OR canceled IS NULL)"
     try:
         # Create a new database connection
         cnx = create_connection()
@@ -241,7 +250,8 @@ def retrieve_appointments(page_number, page_size):
                 'financial_situation': row[15],
                 'grade': row[16],
                 'verified': row[17],
-                'conflicted': row[18]
+                'conflicted': row[18],
+                'canceled': row[19]
             }
             appointments.append(appointment)
 
@@ -258,6 +268,33 @@ def retrieve_appointments(page_number, page_size):
         print(f"Error: {err}")
         return None
 
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+
+def cancel_saved_appointment(appointment_id):
+    try:
+        # Create a new database connection
+        cnx = create_connection()
+
+        # Create a new cursor
+        cursor = cnx.cursor()
+
+        # Define the SQL query for updating the appointment with the given ID
+        query = "UPDATE appointments SET canceled = TRUE WHERE id = %s"
+
+        # Execute the SQL query with the appointment ID as a parameter
+        cursor.execute(query, (appointment_id,))
+
+        # Commit the transaction
+        cnx.commit()
+
+        # Return True to indicate success
+        return True
+
+    except Exception as err:
+        raise err
     finally:
         # Close the cursor and connection
         if cursor:

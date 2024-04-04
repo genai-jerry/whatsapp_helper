@@ -61,12 +61,11 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="opportunityStatus">Sales Call Status</label>
-                            <select class="form-control" id="opportunityStatus" name="opportunity_status">
-                                <option value="-1">Select a Status</option>
+                            <div class="form-control" role="group" aria-label="Opportunity Status">
                                 {% for status in opportunity_statuses %}
-                                    <option value="{{ status.id }}" {% if opportunity.opportunity_status == status.id %}selected{% endif %}>{{ status.name }}</option>
+                                    <button type="button" id="status-{{ status.id }}" class="btn btn-primary {% if opportunity.opportunity_status == status.id %}btn-success{% endif %}" onclick="update_status({{opportunity.id}}, {{status.id}})" >{{ status.name }}</button>
                                 {% endfor %}
-                            </select>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -167,6 +166,16 @@
         </form>
         {% raw %}
         <script>
+            function update_status(opportunity_id, status_id){
+                $.post('/opportunity/' + opportunity_id + '/status/' + status_id, function(response){
+                    if (response.status == 'success') {
+                        location.reload();
+                    } else {
+                        alert('Failed to update status. Please try again.');
+                    }
+                });
+            }            
+
             $('#messageTemplate').change(function() {
                 var templateId = $(this).val();
                 $.get('/template/' + templateId, function(template) {

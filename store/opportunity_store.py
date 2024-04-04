@@ -88,7 +88,7 @@ def remove_opportunity(email):
         cursor = connection.cursor()
 
         # Define the SQL query with placeholders
-        sql = "DELETE FROM opportunities where email = %s"
+        sql = "DELETE FROM opportunity where email = %s"
 
         # Prepare the query and execute it with the provided values
         cursor.execute(sql, (email,))
@@ -99,20 +99,26 @@ def remove_opportunity(email):
         if cursor:
             cursor.close()
 
-def update_opportunity(email, opportunity_data):
+def update_opportunity(opportunity_data):
     status = opportunity_data['status']
     # Update data in 'opportunities' table using a prepared statement
     try:
-        print('Modifying opportunity')
+        print(f'Modifying opportunity with status {status}')
         connection = create_connection()
         
         cursor = connection.cursor()
 
         # Define the SQL query with placeholders
-        sql = "UPDATE opportunities set status=%s where email=%s"
+        sql = "UPDATE opportunity set opportunity_status=%s where id=%s"
 
         # Prepare the query and execute it with the provided values
-        cursor.execute(sql, (status, email))
+        cursor.execute(sql, (status, opportunity_data['id']))
+
+        if status == "2":
+            # Update the sale_date to current date
+            print('Updating sale date')
+            sql_update_sale_date = "UPDATE opportunity SET sales_date = CURRENT_DATE() WHERE id = %s"
+            cursor.execute(sql_update_sale_date, (opportunity_data['id'],))
 
         connection.commit()
         print("Opportunity updated successfully.")

@@ -47,28 +47,20 @@ def create_opportunity():
     except Exception as e:
         return error_response(500, str(e))
 
-@opportunity_blueprint.route('/update_status', methods=['PUT'])
+@opportunity_blueprint.route('/<opportunity_id>/status/<status_id>', methods=['POST'])
 @login_required
-def update_status():
+def update_status(opportunity_id, status_id):
     try:
-        # Extract the new status from the request
-        data = request.get_json()
-        opportunity_id = data.get('opportunity_id')
-        new_status = data.get('call_status')
-
-        # Validate the data
-        if not all([opportunity_id, new_status]):
-            return error_response(400, 'Both opportunity_id and call_status are required')
-
         # Prepare the data for the update_opportunity function
         opportunity_data = {
-            'status': new_status
+            'status': status_id,
+            'id': opportunity_id
         }
 
         # Call the update_opportunity function
-        update_opportunity(opportunity_id, opportunity_data)
+        update_opportunity(opportunity_data)
 
-        return jsonify({'message': 'Opportunity status updated successfully'}), 200
+        return jsonify({'status': 'success', 'message': 'Opportunity status updated successfully'}), 200
     except Exception as e:
         return error_response(500, str(e))
 
