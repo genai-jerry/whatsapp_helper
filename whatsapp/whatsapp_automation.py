@@ -1,6 +1,5 @@
 from selenium.webdriver.common.keys import Keys
 import time
-from bs4 import BeautifulSoup
 import os, requests
 from xmlrpc.client import ServerProxy
 import inspect
@@ -172,13 +171,8 @@ def __close_chat(browser):
 
 def __check_browser_state(browser):
     print('Checking browser state')
-    # Get the HTML of the page
-    html = browser.page_source
-
-    # Parse the HTML with BeautifulSoup
-    soup = BeautifulSoup(html, 'html.parser')
-    # Find the element using BeautifulSoup and get the 'data-ref' attribute
-    profile = soup.find('div', {"aria-label":"profile photo"})
+    # Find the element using the 'aria-label' attribute
+    profile = browser.find_element("xpath",'//div[@aria-label="Profile photo"]')
     print(f'Profile is {profile}')
     return profile != None
 
