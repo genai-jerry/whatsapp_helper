@@ -29,9 +29,9 @@ def __generate_qr_code(browser, app_home, host_number):
         try:
             print('Waiting for data-ref')
             # Get the canvas as a PNG base64 string
-            qr_div = browser.find_element("xpath",'//div[@class="_19vUU"]')
+            qr_div = browser.find_element("xpath",'//div[@data-ref]')
             data_ref = qr_div.get_attribute("data-ref")
-            if data_ref != None:
+            if data_ref != None and data_ref != '':
                 print(f'Got data {data_ref}')
                 qr.add_data(data_ref)
                 print('Fitting qr')
