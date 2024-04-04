@@ -1,5 +1,6 @@
 from selenium.webdriver.common.keys import Keys
 import time
+from bs4 import BeautifulSoup
 import os, requests
 from xmlrpc.client import ServerProxy
 import inspect
@@ -172,9 +173,12 @@ def __close_chat(browser):
 def __check_browser_state(browser):
     print('Checking browser state')
     # Find the element using the 'aria-label' attribute
-    profile = browser.find_element("xpath",'//div[@aria-label="Profile photo"]')
-    print(f'Profile is {profile}')
-    return profile != None
+    try:
+        profile = browser.find_element("xpath",'//div[@aria-label="Profile photo"]')
+        print(f'Profile is {profile}')
+        return profile != None
+    except:
+        return False
 
 
 def __attach_media(browser, app_home, file_url):
