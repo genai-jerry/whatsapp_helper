@@ -38,18 +38,21 @@ List of Appointments
     var currentPage = 1;
     // Add click event to cancel button
     function cancelAppointment(appointmentId) {
-        // Call the cancel appointment API
-        url = "/appointment/"+ appointmentId + "/cancel"
-        $.post(url, 
-            function(response) {
-                if (response.status == "success") {
-                    // Reload the appointments list
-                    loadAppointments();
-                } else {
-                    // Show an error message
-                    alert('Failed to cancel appointment. Please try again.');
-                }
-            });
+        // Ask for confirmation before canceling the appointment
+        if (confirm("Are you sure you want to cancel this appointment?")) {
+            // Call the cancel appointment API
+            url = "/appointment/"+ appointmentId + "/cancel"
+            $.post(url, 
+                function(response) {
+                    if (response.status == "success") {
+                        // Reload the appointments list
+                        loadAppointments();
+                    } else {
+                        // Show an error message
+                        alert('Failed to cancel appointment. Please try again.');
+                    }
+                });
+        }
     }
 
     function loadAppointments() {
