@@ -215,6 +215,7 @@ def update_opportunity_detail():
         call_status = request.form.get('call_status')
         opportunity_status = request.form.get('opportunity_status')
         sales_agent = request.form.get('optin_caller')
+        comment = request.form.get('comment')
 
         # Prepare the data for the update_opportunity function
         opportunity_data = {
@@ -223,7 +224,8 @@ def update_opportunity_detail():
             'phone': phone,
             'call_status': call_status,
             'opportunity_status': opportunity_status,
-            'sales_agent': sales_agent
+            'sales_agent': sales_agent,
+            'comment': comment
         }
         print('Updating Opportunity Data:', opportunity_data)
         # Call the update_opportunity function

@@ -280,7 +280,8 @@ def update_opportunity_data(opportunity_id, opportunity_data):
         # Prepare the SQL query with placeholders
         sql = """
         UPDATE opportunity
-        SET name = %s, email = %s, phone = %s, call_status = %s, opportunity_status = %s, sales_agent = %s
+        SET name = %s, email = %s, phone = %s, call_status = %s, opportunity_status = %s, sales_agent = %s,
+        comment = %s
         WHERE id = %s
         """
 
@@ -292,6 +293,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             opportunity_data['call_status'] if int(opportunity_data['call_status']) > 0 else None,
             opportunity_data['opportunity_status'] if int(opportunity_data['opportunity_status']) > 0 else None,
             opportunity_data['sales_agent'] if int(opportunity_data['sales_agent']) > 0 else None,
+            opportunity_data['comment'],
             opportunity_id
         )
 
