@@ -167,11 +167,18 @@
         {% raw %}
         <script>
             function update_status(opportunity_id, status_id){
-                $.post('/opportunity/' + opportunity_id + '/status/' + status_id, function(response){
-                    if (response.status == 'success') {
-                        location.reload();
-                    } else {
-                        alert('Failed to update status. Please try again.');
+                $.ajax({
+                    url: '/opportunity/status/' + opportunity_id + '/opportunity_status',
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ status: status_id }),
+                    success: function(response) {
+                        if (response.status == 'success') {
+                            location.reload();
+                        } else {
+                            alert('Failed to update status. Please try again.');
+                        }
                     }
                 });
             }            
