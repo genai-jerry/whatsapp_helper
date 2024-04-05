@@ -22,7 +22,7 @@ class LeadCallStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     color_code = db.Column(db.String(25))
-
+    text_color = db.Column(db.String(25))
 
 class LeadCommunication(db.Model):
     __tablename__ = 'lead_communication'
@@ -70,7 +70,7 @@ class OpportunityStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     color_code = db.Column(db.String(25))
-
+    text_color = db.Column(db.String(25))
 
 class SalesAgent(db.Model):
     __tablename__ = 'sales_agent'
@@ -78,7 +78,7 @@ class SalesAgent(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False, unique=True)
     color_code = db.Column(db.String(25))
-
+    text_color = db.Column(db.String(25))
 
 class Templates(db.Model):
     __tablename__ = 'templates'

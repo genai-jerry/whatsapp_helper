@@ -1,5 +1,5 @@
 """Add the APIs for the opportunites. Use Flask-Restful to create the APIs."""
-from flask import jsonify, Blueprint, render_template, request
+from flask import jsonify, Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required
 from utils import error_response, app_home
 import csv
@@ -142,15 +142,28 @@ def list_opportunities():
                 'phone': opportunity['phone'],
                 'call_status': opportunity['call_status'],
                 'opportunity_status': opportunity['opportunity_status'],
-                'agent': opportunity['agent']
+                'agent': opportunity['agent'],
+                'opportunity_status_color': opportunity['opportunity_status_color'],
+                'call_status_color': opportunity['call_status_color'],
+                'sales_agent_color': opportunity['sales_agent_color'],
+                'opportunity_status_text_color': opportunity['opportunity_status_text_color'],
+                'call_status_text_color': opportunity['call_status_text_color'],
+                'sales_agent_text_color': opportunity['sales_agent_text_color']
             }
             response_data.append(opportunity_data)
-
+        call_statuses = get_all_call_status()
+         # Get a list of opportunity statuses
+        opportunity_statuses = get_all_opportunity_status()
+        # Get a list of sales agents (optin callers)
+        sales_agents = get_all_sales_agents()
         return jsonify({
             'items': response_data,
             'page': page,
             'total_pages': total_pages,
-            'total_items': total_items
+            'total_items': total_items,
+            'call_statuses': call_statuses,
+            'opportunity_statuses': opportunity_statuses,
+            'sales_agents': sales_agents
         }), 200
     except Exception as e:
         print(str(e))
@@ -205,7 +218,7 @@ def update_opportunity_detail():
         email = request.form.get('email')
         phone = request.form.get('phone')
         call_status = request.form.get('call_status')
-        opportunity_status = request.form.get('opportunity_status')
+        # opportunity_status = request.form.get('opportunity_status')
         sales_agent = request.form.get('optin_caller')
         comment = request.form.get('comment')
 
@@ -215,7 +228,7 @@ def update_opportunity_detail():
             'email': email,
             'phone': phone,
             'call_status': call_status,
-            'opportunity_status': opportunity_status,
+            #'opportunity_status': opportunity_status,
             'sales_agent': sales_agent,
             'comment': comment
         }
@@ -223,7 +236,7 @@ def update_opportunity_detail():
         # Call the update_opportunity function
         update_opportunity_data(opportunity_id, opportunity_data)
 
-        return load_opportunities()
+        return redirect(url_for('opportunity.load_opportunities'))
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
@@ -235,3 +248,24 @@ def handle_search_request():
     search_type = request.form['search_type']
     results = search_opportunities(search_term, search_type)
     return render_template('opportunity/list.html', opportunities=results)
+
+@opportunity_blueprint.route('/status/<int:opportunity_id>/<string:status_type>', methods=['POST'])
+@login_required
+def update_opportunity_status(opportunity_id, status_type):
+    try:
+        # Extract the status from the request
+        data = request.get_json()
+        status = data.get('status')
+        opportunity_data = {
+            'status': status,
+            'opportunity_id': opportunity_id,
+            'status_type': status_type
+        }
+        
+        # Call the update_opportunity function
+        update_opportunity(opportunity_data)
+        
+        return jsonify({'status': 'success', 'message': 'Opportunity status updated successfully'}), 200
+    except Exception as e:
+        print(str(e))
+        return error_response(500, str(e))

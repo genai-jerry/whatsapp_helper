@@ -105,20 +105,26 @@ def update_opportunity(opportunity_data):
     try:
         print(f'Modifying opportunity with status {status}')
         connection = create_connection()
-        
         cursor = connection.cursor()
-
+        status_type = opportunity_data['status_type']
         # Define the SQL query with placeholders
-        sql = "UPDATE opportunity set opportunity_status=%s where id=%s"
+        if status_type == "call_status":
+            sql = "UPDATE opportunity SET call_status = %s WHERE id = %s"
+        elif status_type == "opportunity_status":
+            sql = "UPDATE opportunity SET opportunity_status = %s WHERE id = %s"
+        elif status_type == "agent":
+            sql = "UPDATE opportunity SET sales_agent = %s WHERE id = %s"
+        else:
+            raise ValueError("Invalid status type")
 
         # Prepare the query and execute it with the provided values
-        cursor.execute(sql, (status, opportunity_data['id']))
+        cursor.execute(sql, (status, opportunity_data['opportunity_id']))
 
-        if status == "2":
+        if status_type == "opportunity_status" and status == "2":
             # Update the sale_date to current date
             print('Updating sale date')
             sql_update_sale_date = "UPDATE opportunity SET sales_date = CURRENT_DATE() WHERE id = %s"
-            cursor.execute(sql_update_sale_date, (opportunity_data['id'],))
+            cursor.execute(sql_update_sale_date, (opportunity_data['opportunity_id'],))
 
         connection.commit()
         print("Opportunity updated successfully.")
@@ -142,16 +148,22 @@ def get_opportunities(page, per_page, search_term=None, search_type=None):
                 o.register_time, 
                 os.name AS opportunity_status, 
                 cs.name AS call_status, 
-                sa.name AS sales_agent, 
-                o.id
+                sa.name AS sales_agent,
+                o.id,
+                os.color_code AS opportunity_status_color,
+                cs.color_code AS call_status_color,
+                sa.color_code AS sales_agent_color,
+                os.text_color AS opportunity_status_text_color,
+                cs.text_color AS call_status_text_color,
+                sa.text_color AS sales_agent_text_color
             FROM 
-                opportunity o
+            opportunity o
             LEFT JOIN 
-                lead_call_status cs ON o.call_status = cs.id
+            lead_call_status cs ON o.call_status = cs.id
             LEFT JOIN 
-                opportunity_status os ON o.opportunity_status = os.id
+            opportunity_status os ON o.opportunity_status = os.id
             LEFT JOIN 
-                sales_agent sa ON o.sales_agent = sa.id
+            sales_agent sa ON o.sales_agent = sa.id
         """
         params = []
 
@@ -186,7 +198,13 @@ def get_opportunities(page, per_page, search_term=None, search_type=None):
                 'opportunity_status': row[4],
                 'call_status': row[5],
                 'agent': row[6],
-                'id': row[7]
+                'id': row[7],
+                'opportunity_status_color': row[8],
+                'call_status_color': row[9],
+                'sales_agent_color': row[10],
+                'opportunity_status_text_color': row[11],
+                'call_status_text_color': row[12],
+                'sales_agent_text_color': row[13]
             }
             opportunities.append(opportunity)
 
@@ -286,7 +304,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
         # Prepare the SQL query with placeholders
         sql = """
         UPDATE opportunity
-        SET name = %s, email = %s, phone = %s, call_status = %s, opportunity_status = %s, sales_agent = %s,
+        SET name = %s, email = %s, phone = %s, call_status = %s, sales_agent = %s,
         comment = %s
         WHERE id = %s
         """
@@ -297,7 +315,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             opportunity_data['email'],
             format_phone_number(opportunity_data['phone']),
             opportunity_data['call_status'] if int(opportunity_data['call_status']) > 0 else None,
-            opportunity_data['opportunity_status'] if int(opportunity_data['opportunity_status']) > 0 else None,
+            #opportunity_data['opportunity_status'] if int(opportunity_data['opportunity_status']) > 0 else None,
             opportunity_data['sales_agent'] if int(opportunity_data['sales_agent']) > 0 else None,
             opportunity_data['comment'],
             opportunity_id
@@ -316,7 +334,7 @@ def get_all_call_status():
         connection = create_connection()
         cursor = connection.cursor()
 
-        sql = "SELECT id, name FROM lead_call_status"
+        sql = "SELECT id, name, color_code, text_color FROM lead_call_status"
         cursor.execute(sql)
         results = cursor.fetchall()
 
@@ -324,7 +342,9 @@ def get_all_call_status():
         for row in results:
             call_status = {
                 'id': row[0],
-                'name': row[1]
+                'name': row[1],
+                'color_code': row[2],
+                'text_color': row[3]
             }
             call_status_list.append(call_status)
 
@@ -339,7 +359,7 @@ def get_all_opportunity_status():
         connection = create_connection()
         cursor = connection.cursor()
 
-        sql = "SELECT id, name FROM opportunity_status"
+        sql = "SELECT id, name, color_code, text_color FROM opportunity_status"
         cursor.execute(sql)
         results = cursor.fetchall()
 
@@ -347,7 +367,9 @@ def get_all_opportunity_status():
         for row in results:
             opportunity_status = {
                 'id': row[0],
-                'name': row[1]
+                'name': row[1],
+                'color_code': row[2],
+                'text_color': row[3]
             }
             opportunity_status_list.append(opportunity_status)
 
@@ -362,7 +384,7 @@ def get_all_sales_agents():
         connection = create_connection()
         cursor = connection.cursor()
 
-        sql = "SELECT id, name FROM sales_agent"
+        sql = "SELECT id, name, color_code, text_color FROM sales_agent"
         cursor.execute(sql)
         results = cursor.fetchall()
 
@@ -370,7 +392,9 @@ def get_all_sales_agents():
         for row in results:
             sales_agent = {
                 'id': row[0],
-                'name': row[1]
+                'name': row[1],
+                'color_code': row[2],
+                'text_color': row[3]
             }
             sales_agents_list.append(sales_agent)
 

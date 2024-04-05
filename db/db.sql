@@ -301,3 +301,9 @@ INSERT INTO max_scores (score_name, score_value, category) VALUES
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2024-02-29 10:40:05
+update lead_call_status set text_color="#f8f8f8";
+update lead_call_status set text_color="#131211" where id=1 or id=3 or id=5 or id=9 or id=10;
+update lead_call_status set text_color="#131211" where id=1 or id=3 or id=5 or id=9 or id=10 or id=11;
+update sales_agent set text_color="#f8f8f8";
+update opportunity_status set text_color="#f8f8f8" where id<>4;
+
