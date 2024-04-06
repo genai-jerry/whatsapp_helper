@@ -213,7 +213,7 @@ def retrieve_appointments(page_number, page_size):
         cnx = create_connection()
 
         # Get the current time in GMT
-        current_time = datetime.now(pytz.timezone('GMT'))
+        current_time = datetime.now(pytz.timezone('GMT')).date()
         # Create a new cursor
         cursor = cnx.cursor()
 
