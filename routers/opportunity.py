@@ -97,6 +97,7 @@ def import_opportunities():
         with open(filename, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
+                print(f'Processing row {row["Name"]}')
                 opportunity_data = {
                     'date': row['Date'],
                     'name': row['Name'],

@@ -73,6 +73,15 @@ def store_opportunity(opportunity_data):
             print("Opportunity inserted successfully.")
         else:
             print("Email already exists in the table.")
+            # Update the opportunity
+            sql_update = """
+                UPDATE opportunity 
+                SET opportunity_status = %s, call_status = %s, sales_agent = %s, sales_date = %s , comment = %s, campaign = %s
+                WHERE email = %s or phone = %s
+            """
+            cursor.execute(sql_update, (opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, email, phone))
+            connection.commit()
+            print("Opportunity updated successfully.")
     except Exception as e:
         print(str(e))
         raise e
