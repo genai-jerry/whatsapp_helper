@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required
 from utils import require_api_key
-from store.appointment_store import store_appointment, retrieve_appointments, cancel_saved_appointment
+from store.appointment_store import store_appointment, retrieve_appointments, cancel_saved_appointment, confirm_saved_appointment
 
 appointment_blueprint = Blueprint('appointment', __name__)
 
@@ -66,4 +66,12 @@ def list_appointments():
 @login_required
 def cancel_appointment(appointment_id):
     cancel_saved_appointment(appointment_id)
+    return jsonify({'status': 'success'}), 200
+
+@appointment_blueprint.route('/<int:appointment_id>/confirm', methods=['POST'])
+@login_required
+def confirm_appointment(appointment_id):
+    # Add your logic to confirm the appointment
+    # You can update the appointment status in the database or perform any other necessary actions
+    confirm_saved_appointment(appointment_id)
     return jsonify({'status': 'success'}), 200

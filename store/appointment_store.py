@@ -199,7 +199,7 @@ def retrieve_appointments(page_number, page_size):
     query = """
     SELECT a.id, a.name, a.email, a.telephone, o.name AS opportunity_name, o.id AS opportunity_id, m.name AS mentor_name, m.id AS mentor_id, a.appointment_time AS appointment_time,
     a.career_challenge, a.challenge_description, a.urgency, a.salary_range, a.expected_salary, a.current_employer, a.financial_situation, a.grade, 
-    a.verified, a.conflicted, a.canceled
+    a.verified, a.conflicted, a.canceled, a.confirmed
     FROM appointments AS a
     LEFT JOIN opportunity AS o ON a.opportunity_id = o.id
     LEFT JOIN sales_agent AS m ON a.mentor_id = m.id
@@ -251,7 +251,8 @@ def retrieve_appointments(page_number, page_size):
                 'grade': row[16],
                 'verified': row[17],
                 'conflicted': row[18],
-                'canceled': row[19]
+                'canceled': row[19],
+                'confirmed': row[20]
             }
             appointments.append(appointment)
 
@@ -293,6 +294,27 @@ def cancel_saved_appointment(appointment_id):
         # Return True to indicate success
         return True
 
+    except Exception as err:
+        raise err
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+
+def confirm_saved_appointment(appointment_id):
+    try:
+        # Create a new database connection
+        cnx = create_connection()
+        # Create a new cursor
+        cursor = cnx.cursor()
+        # Define the SQL query for updating the appointment with the given ID
+        query = "UPDATE appointments SET confirmed = TRUE WHERE id = %s"
+        # Execute the SQL query with the appointment ID as a parameter
+        cursor.execute(query, (appointment_id,))
+        # Commit the transaction
+        cnx.commit()
+        # Return True to indicate success
+        return True
     except Exception as err:
         raise err
     finally:

@@ -124,6 +124,7 @@ class Appointment(db.Model):
     verified = db.Column(db.Boolean, nullable=False)
     conflicted = db.Column(db.Boolean, nullable=True)
     canceled = db.Column(db.Boolean, nullable=True)
+    confirmed = db.Column(db.Boolean, nullable=False, default=False)
     
 
 class MaxScore(db.Model):
