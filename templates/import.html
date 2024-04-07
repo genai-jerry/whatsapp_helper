@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Import Opportunities
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h2>Import Opportunities</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            
+            <div class="mb-3">
+                <label for="excelFile" class="form-label">CSV File</label>
+                <input type="file" class="form-control" id="oppFile" required>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="uploadExcel('opportunities')">Upload</button>
+            <button type="button" class="btn btn-secondary" onclick="window.history.back();">Cancel</button>
+        </form>
+        <h2>Import Appointments</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            
+            <div class="mb-3">
+                <label for="excelFile" class="form-label">CSV File</label>
+                <input type="file" class="form-control" id="appFile" required>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="uploadExcel('appointments')">Upload</button>
+            <button type="button" class="btn btn-secondary" onclick="window.history.back();">Cancel</button>
+        </form>
+    </div>
+
+    <script>
+        function uploadExcel(type){
+            var formData = new FormData();
+            
+            var base_url = 'opportunity';
+            if(type == 'appointments'){
+                base_url = 'appointment';
+                formData.append('file', $('#appFile')[0].files[0]);
+            }else{
+                formData.append('file', $('#oppFile')[0].files[0]);
+            }
+            $.ajax({
+                url: '/' + base_url + '/import',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if(response.message == 'Opportunities imported successfully'){
+                        // Handle success
+                        window.location.href = '/'; // Redirect to the instances page
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Handle error
+                    alert('An error occurred: ' + error);
+                }
+            });
+        }
+    </script>
+{% endblock %}

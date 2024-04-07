@@ -17,11 +17,6 @@ opportunity_blueprint = Blueprint('opportunity', __name__)
 def load_opportunities():
     return render_template('opportunity/list.html', content={})
 
-@opportunity_blueprint.route('/import', methods=['GET'])
-@login_required
-def show_opportunities():
-    return render_template('opportunity/import.html', content={})
-
 @opportunity_blueprint.route('/create', methods=['POST'])
 def create_opportunity():
     try:

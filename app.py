@@ -71,6 +71,11 @@ def load_user(user_id):
     else:
         return None
 
+@app.route('/import', methods=['GET'])
+@login_required
+def show_import():
+    return render_template('import.html', content={})
+
 @app.route('/login', methods=['POST'])
 def login():
     # Authenticate the user and start a session

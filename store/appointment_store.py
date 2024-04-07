@@ -3,7 +3,7 @@ from utils import format_phone_number
 import pytz
 from db.connection_manager import *
 
-def store_appointment(profile_details, application_form_details, mentor_name):
+def store_appointment(profile_details, application_form_details, mentor_name, import_app=False):
     try:
         # Create a new database connection
         cnx = create_connection()
@@ -40,11 +40,14 @@ def store_appointment(profile_details, application_form_details, mentor_name):
         query = """
         INSERT INTO appointments (name, email, telephone, career_challenge, challenge_description, urgency, salary_range, 
         expected_salary, current_employer, financial_situation, grade, mentor_id, opportunity_id, appointment_time, 
-        verified, conflicted)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        verified, conflicted, canceled, confirmed)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, False)
         """
         date_str = application_form_details['appointment_time']
-        appointment_time = datetime.strptime(date_str, '%A, %d %B %Y %I:%M %p') if date_str else None
+        if import_app:
+            appointment_time = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+        else:
+            appointment_time = datetime.strptime(date_str, '%A, %d %B %Y %I:%M %p') if date_str else None
         # Convert appointment_time from IST to GMT
         if appointment_time:
             appointment_time = appointment_time.astimezone(pytz.timezone('GMT'))
@@ -62,24 +65,30 @@ def store_appointment(profile_details, application_form_details, mentor_name):
         else:
             conflicted = False
         print(f'Appointment is conflicted: {conflicted}')
+        outcome = application_form_details.get('outcome')
+        if outcome == 'Canceled':
+            canceled = True
+        else:
+            canceled = False
         # Define the values for the SQL query
         values = (
-            profile_details['name'],
-            profile_details['email'],
-            format_phone_number(profile_details['telephone']) if profile_details['telephone'] else None,
-            application_form_details['career_challenge'],
-            application_form_details['challenge_description'],
-            application_form_details['urgency'],
-            application_form_details['salary_range'],
-            application_form_details['expected_salary'],
-            application_form_details['current_employer'],
-            application_form_details['financial_situation'],
+            profile_details.get('name', ''),
+            profile_details.get('email', ''),
+            format_phone_number(profile_details.get('telephone', '')) if profile_details.get('telephone') else None,
+            application_form_details.get('career_challenge', ''),
+            application_form_details.get('challenge_description', ''),
+            application_form_details.get('urgency', ''),
+            application_form_details.get('salary_range', ''),
+            application_form_details.get('expected_salary', ''),
+            application_form_details.get('current_employer', ''),
+            application_form_details.get('financial_situation', ''),
             grade,
             mentor_id,
             opportunity_id,
             appointment_time,
             verified,
-            conflicted
+            conflicted,
+            canceled
         )
 
         # Execute the SQL query

@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required
 from utils import require_api_key
+import csv
+from werkzeug.utils import secure_filename
 from store.appointment_store import store_appointment, retrieve_appointments, cancel_saved_appointment, confirm_saved_appointment
 
 appointment_blueprint = Blueprint('appointment', __name__)
@@ -74,4 +76,36 @@ def confirm_appointment(appointment_id):
     # Add your logic to confirm the appointment
     # You can update the appointment status in the database or perform any other necessary actions
     confirm_saved_appointment(appointment_id)
+    return jsonify({'status': 'success'}), 200
+
+@appointment_blueprint.route('/import', methods=['POST'])
+@login_required
+def import_appointments():
+    print('Importing appointments')
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part in the request'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected for uploading'}), 400
+
+    filename = secure_filename(file.filename)
+    file.save(filename)
+
+    with open(filename, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            profile_details = {
+                'name': row['Contact Name'],
+                'email': row['Email'],
+                'telephone': row['Phone'],
+            }
+            application_form_details = {
+                'appointment_time': row['Requested Time'],
+                'outcome': row['Outcome']
+                # add other fields from the CSV file as needed
+            }
+            mentor_name = row['Appointment Owner']
+            store_appointment(profile_details, application_form_details, mentor_name, True)
+
     return jsonify({'status': 'success'}), 200
