@@ -444,3 +444,38 @@ def search_opportunities(search_term, search_type):
     finally:
         if cursor:
             cursor.close()
+
+def generate_report(start_date, end_date):
+    try:
+        conn = create_connection()
+        cursor = conn.cursor()
+
+        query = """
+            SELECT call_status, lcs.name, COUNT(*)  
+            FROM opportunity 
+            LEFT JOIN lead_call_status as lcs on lcs.id=call_status
+            WHERE register_time BETWEEN %s AND %s
+            GROUP BY call_status
+        """
+        cursor.execute(query, (start_date, end_date))
+
+        report = []
+        total = 0
+        for row in cursor.fetchall():
+            status, name, count = row
+            total += count
+            report.append({
+                'name': name,
+                'count': count,
+            })
+
+        for item in report:
+            item['percentage'] = f"{round((item['count'] / total) * 100, 2)}%"
+
+        # Sort the report by count in descending order
+        report.sort(key=lambda item: item['count'], reverse=True)
+
+        return report
+    finally:
+        if cursor:
+            cursor.close()

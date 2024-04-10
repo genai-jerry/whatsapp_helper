@@ -8,6 +8,7 @@ from routers.models import SystemUser
 from routers.appointment import appointment_blueprint
 from routers.qr import qr_blueprint
 from routers.template import template_blueprint
+from routers.dashboard import dashboard_blueprint
 from routers.opportunity import opportunity_blueprint
 from flask_migrate import Migrate
 import configparser
@@ -38,6 +39,7 @@ app.register_blueprint(qr_blueprint, url_prefix='/qr')
 app.register_blueprint(template_blueprint, url_prefix='/template')
 app.register_blueprint(opportunity_blueprint, url_prefix='/opportunity')
 app.register_blueprint(appointment_blueprint, url_prefix='/appointment')
+app.register_blueprint(dashboard_blueprint, url_prefix='/dashboard')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -53,7 +55,7 @@ def home():
 
 @app.route('/')
 def index():
-    return redirect('/appointment')
+    return redirect('/dashboard')
 
 @app.route('/user', methods=['POST'])
 def create_user():
