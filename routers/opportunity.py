@@ -188,6 +188,7 @@ def get_opportunity_detail(opportunity_id):
             'sales_agent': opportunity['sales_agent'],
             'messages': opportunity['messages'],
             'templates': opportunity['templates'],
+            'sales_date': opportunity['sales_date'].date(),  # Add .date() to get only the date part
             'senders': senders  # Add the list of senders to the response data
         }
         call_statuses = get_all_call_status()
@@ -196,7 +197,7 @@ def get_opportunity_detail(opportunity_id):
         # Get a list of sales agents (optin callers)
         sales_agents = get_all_sales_agents()
 
-        print(f'Showing {opportunity_statuses} and {opportunity["call_status"]}')
+        print(f'Showing {opportunity_statuses} and {opportunity["call_status"]} and {opportunity["sales_date"]}')
         return render_template('opportunity/view.html', opportunity=response_data,
                             call_statuses=call_statuses, opportunity_statuses=opportunity_statuses,
                             sales_agents=sales_agents)
@@ -217,6 +218,7 @@ def update_opportunity_detail():
         # opportunity_status = request.form.get('opportunity_status')
         sales_agent = request.form.get('optin_caller')
         comment = request.form.get('comment')
+        sales_date = request.form.get('sales_date')
 
         # Prepare the data for the update_opportunity function
         opportunity_data = {
@@ -226,7 +228,8 @@ def update_opportunity_detail():
             'call_status': call_status,
             #'opportunity_status': opportunity_status,
             'sales_agent': sales_agent,
-            'comment': comment
+            'comment': comment,
+            'sales_date': sales_date
         }
         print('Updating Opportunity Data:', opportunity_data)
         # Call the update_opportunity function

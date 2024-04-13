@@ -8,6 +8,19 @@ Report
 
 <div class="row">
     <div class="col-md-6">
+        <h2>Overall Metrics</h2>
+        <table class="table table-striped" id="overallMetrics">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Count </th>
+                    <th>Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Metrics data will be inserted here -->
+            </tbody>
+        </table>
         <h2>Overall Report</h2>
         <table class="table table-striped" id="overallReportTable">
             <thead>
@@ -23,16 +36,30 @@ Report
         </table>
     </div>
     <div class="col-md-6">
-        <h2>Custom Report</h2>
-        <label for="start_date">Start Date:</label>
-        <input type="date" id="start_date">
-
-        <label for="end_date">End Date:</label>
-        <input type="date" id="end_date">
-
-        <button id="generate_report">Generate Report</button>
-
+     
         <div class="table-responsive">
+            <h2>Metrics</h2>
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date">
+    
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date">
+    
+            <button id="generate_report">Generate Report</button>
+           <table class="table table-striped" id="periodicMetrics">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Count</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Metrics data will be inserted here -->
+                </tbody>
+            </table>
+            <h2>Custom Report</h2>
+ 
             <table class="table table-striped" id="customReportTable">
                 <thead>
                     <tr>
@@ -50,7 +77,43 @@ Report
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+function fetchAndDisplayMetrics(startDate, endDate, tableBody) {
+    $.ajax({
+        url: `/dashboard/metrics?start_date=${startDate}&end_date=${endDate}`,
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: function() {
+            // Show loading feedback
+            tableBody.html('<tr><td colspan="2">Loading...</td></tr>');
+        },
+        success: function(data) {
+            // Clear table body
+            tableBody.html('');
+            report = JSON.parse(data);
+            // Insert a new row for each metric
+            
+            for (const [key, value] of Object.entries(report)) {
+                const row = $('<tr></tr>');
+                row.append($('<td></td>').text(key));
+                row.append($('<td></td>').text(value[0]));
+                row.append($('<td></td>').text(value[1]));
+                tableBody.append(row);
+            }
+        },
+        error: function() {
+            // Show error feedback
+            tableBody.html('<tr><td colspan="2">Error loading data</td></tr>');
+        },
+        complete: function() {
+            // Hide loading feedback
+            tableBody.find('tr:contains("Loading...")').remove();
+        }
+    });
+}
 function fetchAndDisplayReport(startDate, endDate, tableBody) {
+    // Show loading feedback
+    tableBody.html('<tr><td colspan="3">Loading...</td></tr>');
+    
     $.ajax({
         url: `/dashboard/report?start_date=${startDate}&end_date=${endDate}`,
         method: 'GET',
@@ -65,14 +128,23 @@ function fetchAndDisplayReport(startDate, endDate, tableBody) {
                 row.append($('<td></td>').text(data.percentage));
                 tableBody.append(row);
             }
+        },
+        error: function() {
+            // Show error feedback
+            tableBody.html('<tr><td colspan="3">Error loading data</td></tr>');
+        },
+        complete: function() {
+            // Hide loading feedback
+            tableBody.find('tr:contains("Loading...")').remove();
         }
     });
 }
 
 $(document).ready(function() {
     currentDate = new Date();
+    endDate = new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), currentDate.getDate());
     startDate = new Date(2023, 0, 1);
-    endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+    // endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
     overallReportTable = $('#overallReportTable');
     customReportTable = $('#customReportTable');
     startDateInput = $('#start_date');
@@ -81,14 +153,22 @@ $(document).ready(function() {
     startDateInput.val(formatDate(startDate));
     endDateInput.val(formatDate(endDate));
     // Fetch overall report data
-    fetchAndDisplayReport(formatDate(startDate), formatDate(endDate), overallReportTable.find('tbody'));
+    formattedStartDate = formatDate(startDate);
+    formattedEndDate = formatDate(endDate);
+    fetchAndDisplayReport(formattedStartDate, formattedEndDate, overallReportTable.find('tbody'));
+    metricsTable = $('#overallMetrics');
+    fetchAndDisplayMetrics(formattedStartDate, formattedEndDate, metricsTable.find('tbody'));
     // Fetch custom report data for the last 7 days
-    last7DaysStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7);
-    last7DaysEndDate = currentDate;
-    fetchAndDisplayReport(formatDate(last7DaysStartDate), formatDate(last7DaysEndDate), customReportTable.find('tbody'));
+    rangeStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7);
+    rangeEndDate = currentDate;
+    formattedRangeStartDate = formatDate(rangeStartDate)
+    formattedRangeEndDate = formatDate(rangeEndDate)
+    fetchAndDisplayReport(formattedRangeStartDate, formattedRangeEndDate, customReportTable.find('tbody'));
+    periodicMetrics = $('#periodicMetrics');
+    fetchAndDisplayMetrics(formattedRangeStartDate, formattedRangeEndDate, periodicMetrics.find('tbody'));
     // Set last 7 days start and end date as the default values for start and end date inputs
-    startDateInput.val(formatDate(last7DaysStartDate));
-    endDateInput.val(formatDate(last7DaysEndDate));
+    startDateInput.val(formattedRangeStartDate);
+    endDateInput.val(formattedRangeEndDate);
     function formatDate(date) {
         year = date.getFullYear();
         month = String(date.getMonth() + 1).padStart(2, '0');
@@ -103,6 +183,8 @@ $('#generate_report').click(function() {
     tableBody = $('#customReportTable').find('tbody');
 
     fetchAndDisplayReport(startDate, endDate, tableBody);
+    fetchAndDisplayMetrics(startDate, endDate, $('#periodicMetrics').find('tbody'));
 });
+
 </script>
 {% endblock %}
