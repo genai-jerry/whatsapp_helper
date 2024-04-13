@@ -188,7 +188,7 @@ def get_opportunity_detail(opportunity_id):
             'sales_agent': opportunity['sales_agent'],
             'messages': opportunity['messages'],
             'templates': opportunity['templates'],
-            'sales_date': opportunity['sales_date'].date(),  # Add .date() to get only the date part
+            'sales_date': opportunity['sales_date'].date() if opportunity['sales_date'] is not None else None,
             'senders': senders  # Add the list of senders to the response data
         }
         call_statuses = get_all_call_status()
