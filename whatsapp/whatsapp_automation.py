@@ -236,6 +236,7 @@ def __send_message(browser, message):
     print('Sending text Message')
     message_box = browser.find_element("xpath",'//*[@title="Type a message"]')
     message_box.click()
+    message = ''.join(c if c <= '\uffff' else '' for c in message)
     message_box.send_keys(message)
     message_box.send_keys(Keys.ENTER)
     return True
@@ -248,6 +249,7 @@ def __setup_contact_message_box(browser, contact_name):
         new_chat.click()
         print('Ready to chat')
         return True
+    
     
     def __search_and_start_chat(browser, contact_name):
         contact_name = ''.join(filter(str.isdigit, contact_name))
