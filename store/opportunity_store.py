@@ -195,13 +195,19 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             params.append("%" + search_term + "%")
 
         # If a filter type and filter value are provided, add a WHERE clause to the queries
+        print(f'Filter params {filter_type} and {filter_value}')
+        
         if filter_type and filter_value:
             if search_term or search_type:
                 count_sql += " AND"
                 select_sql += " AND"
-            count_sql += f" {filter_type} = %s"
-            select_sql += f" {filter_type} = %s"
-            params.append(int(filter_value))
+            if int(filter_value) == 11:
+                count_sql += f" {filter_type} IS NULL"
+                select_sql += f" {filter_type} IS NULL"
+            else:
+                count_sql += f" {filter_type} = %s"
+                select_sql += f" {filter_type} = %s"
+                params.append(int(filter_value))
 
         select_sql += " ORDER BY o.register_time desc LIMIT %s OFFSET %s"
         print(select_sql)
