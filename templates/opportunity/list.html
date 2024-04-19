@@ -57,19 +57,7 @@
         var filterValue = null;
         var filterName = null;
         function loadOpportunities(searchTerm, searchType, filterType, filterValue) {
-            // Load the initial data
-            $.getJSON('/opportunity/call_status', function(data) {
-                var callStatusFilter = createFilterDropdown(null, filterType=="cs.id" ? filterName: null, data, 
-                    'name', 'color_code', 'text_color', 'cs.id', 'Call Status');
-                $('#call_status_heading').empty();
-                $('#call_status_heading').append(callStatusFilter);
-            });
-            $.getJSON('/opportunity/opportunity_status', function(data) {
-                var opportunityStatusFilter = createFilterDropdown(null, filterType=="os.id" ? filterName: null, data, 
-                    'name', 'color_code', 'text_color', 'os.id', 'Opportunity Status');
-                $('#opportunity_status_heading').empty();
-                $('#opportunity_status_heading').append(opportunityStatusFilter);
-            });
+            
             var url = '/opportunity/list?page=' + page;
             if (searchTerm && searchType) {
                 url += '&searchTerm=' + encodeURIComponent(searchTerm) + '&searchType=' + encodeURIComponent(searchType);
@@ -111,6 +99,19 @@
                 // Update the pagination info
                 $('#page-info').text('Page ' + data.page + ' of ' + data.total_pages);
                 totalPages = data.total_pages;
+                // Load the initial data
+                $.getJSON('/opportunity/call_status', function(data) {
+                    var callStatusFilter = createFilterDropdown(null, filterType=="cs.id" ? filterName: null, data, 
+                        'name', 'color_code', 'text_color', 'cs.id', 'Call Status');
+                    $('#call_status_heading').empty();
+                    $('#call_status_heading').append(callStatusFilter);
+                });
+                $.getJSON('/opportunity/opportunity_status', function(data) {
+                    var opportunityStatusFilter = createFilterDropdown(null, filterType=="os.id" ? filterName: null, data, 
+                        'name', 'color_code', 'text_color', 'os.id', 'Opportunity Status');
+                    $('#opportunity_status_heading').empty();
+                    $('#opportunity_status_heading').append(opportunityStatusFilter);
+                });
             });
         }
         function filterOpportunity(fType, fValue, fName){
