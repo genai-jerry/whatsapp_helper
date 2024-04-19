@@ -141,30 +141,38 @@ def update_opportunity(opportunity_data):
         if cursor:
             cursor.close()
 
-def get_opportunities(page, per_page, search_term=None, search_type=None):
+def get_opportunities(page, per_page, search_term=None, search_type=None, filter_type=None, filter_value=None):
     try:
         connection = create_connection()
         cursor = connection.cursor()
         print("Getting opportiunities")
 
         # Prepare the SQL queries
-        count_sql = "SELECT COUNT(*) FROM opportunity"
+        count_sql = """
+            SELECT COUNT(*) FROM opportunity o
+            LEFT JOIN 
+            lead_call_status cs ON o.call_status = cs.id
+            LEFT JOIN 
+            opportunity_status os ON o.opportunity_status = os.id
+            LEFT JOIN 
+            sales_agent sa ON o.sales_agent = sa.id
+            """
         select_sql = """
             SELECT 
-                o.name, 
-                o.email, 
-                o.phone, 
-                o.register_time, 
-                os.name AS opportunity_status, 
-                cs.name AS call_status, 
-                sa.name AS sales_agent,
-                o.id,
-                os.color_code AS opportunity_status_color,
-                cs.color_code AS call_status_color,
-                sa.color_code AS sales_agent_color,
-                os.text_color AS opportunity_status_text_color,
-                cs.text_color AS call_status_text_color,
-                sa.text_color AS sales_agent_text_color
+            o.name, 
+            o.email, 
+            o.phone, 
+            o.register_time, 
+            os.name AS opportunity_status, 
+            cs.name AS call_status, 
+            sa.name AS sales_agent,
+            o.id,
+            os.color_code AS opportunity_status_color,
+            cs.color_code AS call_status_color,
+            sa.color_code AS sales_agent_color,
+            os.text_color AS opportunity_status_text_color,
+            cs.text_color AS call_status_text_color,
+            sa.text_color AS sales_agent_text_color
             FROM 
             opportunity o
             LEFT JOIN 
@@ -177,15 +185,29 @@ def get_opportunities(page, per_page, search_term=None, search_type=None):
         params = []
 
         # If a search term and search type are provided, add a WHERE clause to the queries
+        if search_term or search_type or filter_type or filter_value:
+            count_sql += " WHERE"
+            select_sql += " WHERE"
+
         if search_term and search_type:
-            count_sql += f" WHERE {search_type} LIKE %s"
-            select_sql += f" WHERE o.{search_type} LIKE %s"
+            count_sql += f" o.{search_type} LIKE %s"
+            select_sql += f" o.{search_type} LIKE %s"
             params.append("%" + search_term + "%")
 
+        # If a filter type and filter value are provided, add a WHERE clause to the queries
+        if filter_type and filter_value:
+            if search_term or search_type:
+                count_sql += " AND"
+                select_sql += " AND"
+            count_sql += f" {filter_type} = %s"
+            select_sql += f" {filter_type} = %s"
+            params.append(int(filter_value))
+
         select_sql += " ORDER BY o.register_time desc LIMIT %s OFFSET %s"
+        print(select_sql)
         print(count_sql, params)
         # Count the total number of opportunities
-        cursor.execute(count_sql, params)  # Only pass the search term to the count query
+        cursor.execute(count_sql, params)  # Only pass the search term and filter value to the count query
         params.extend([per_page, (page - 1) * per_page])
         total_items = cursor.fetchone()[0]
 
@@ -200,20 +222,20 @@ def get_opportunities(page, per_page, search_term=None, search_type=None):
         opportunities = []
         for row in results:
             opportunity = {
-                'name': row[0],
-                'email': row[1],
-                'phone': row[2],
-                'date': row[3],
-                'opportunity_status': row[4],
-                'call_status': row[5],
-                'agent': row[6],
-                'id': row[7],
-                'opportunity_status_color': row[8],
-                'call_status_color': row[9],
-                'sales_agent_color': row[10],
-                'opportunity_status_text_color': row[11],
-                'call_status_text_color': row[12],
-                'sales_agent_text_color': row[13]
+            'name': row[0],
+            'email': row[1],
+            'phone': row[2],
+            'date': row[3],
+            'opportunity_status': row[4],
+            'call_status': row[5],
+            'agent': row[6],
+            'id': row[7],
+            'opportunity_status_color': row[8],
+            'call_status_color': row[9],
+            'sales_agent_color': row[10],
+            'opportunity_status_text_color': row[11],
+            'call_status_text_color': row[12],
+            'sales_agent_text_color': row[13]
             }
             opportunities.append(opportunity)
 

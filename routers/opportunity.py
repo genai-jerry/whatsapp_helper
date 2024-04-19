@@ -123,35 +123,38 @@ def list_opportunities():
         per_page = request.args.get('per_page', 10, type=int)
         search_term = request.args.get('searchTerm', None)
         search_type = request.args.get('searchType', None)
-
-        # Retrieve the list of opportunities from your database
-        opportunities, total_pages, total_items = get_opportunities(page, per_page, search_term, search_type)  # Replace with your database query
-
-        # Prepare the response data
+        # Get the filter type and value from the query parameters
+        filter_type = request.args.get('filterType', None)
+        filter_value = request.args.get('filterValue', None)
+        
+        # Retrieve the list of opportunities from your database based on the filter type and value
+        opportunities, total_pages, total_items = get_opportunities(page, per_page, search_term, search_type, filter_type, filter_value)
+        
+        # Prepare the response dataa
         response_data = []
         for opportunity in opportunities:
             opportunity_data = {
-                'id': opportunity['id'],
-                'name': opportunity['name'],
-                'date': opportunity['date'],
-                'email': opportunity['email'],
-                'phone': opportunity['phone'],
-                'call_status': opportunity['call_status'],
-                'opportunity_status': opportunity['opportunity_status'],
-                'agent': opportunity['agent'],
-                'opportunity_status_color': opportunity['opportunity_status_color'],
-                'call_status_color': opportunity['call_status_color'],
-                'sales_agent_color': opportunity['sales_agent_color'],
-                'opportunity_status_text_color': opportunity['opportunity_status_text_color'],
-                'call_status_text_color': opportunity['call_status_text_color'],
-                'sales_agent_text_color': opportunity['sales_agent_text_color']
+            'id': opportunity['id'],
+            'name': opportunity['name'],
+            'date': opportunity['date'],
+            'email': opportunity['email'],
+            'phone': opportunity['phone'],
+            'call_status': opportunity['call_status'],
+            'opportunity_status': opportunity['opportunity_status'],
+            'agent': opportunity['agent'],
+            'opportunity_status_color': opportunity['opportunity_status_color'],
+            'call_status_color': opportunity['call_status_color'],
+            'sales_agent_color': opportunity['sales_agent_color'],
+            'opportunity_status_text_color': opportunity['opportunity_status_text_color'],
+            'call_status_text_color': opportunity['call_status_text_color'],
+            'sales_agent_text_color': opportunity['sales_agent_text_color']
             }
             response_data.append(opportunity_data)
+        
         call_statuses = get_all_call_status()
-         # Get a list of opportunity statuses
         opportunity_statuses = get_all_opportunity_status()
-        # Get a list of sales agents (optin callers)
         sales_agents = get_all_sales_agents()
+        
         return jsonify({
             'items': response_data,
             'page': page,
@@ -265,6 +268,28 @@ def update_opportunity_status(opportunity_id, status_type):
         update_opportunity(opportunity_data)
         
         return jsonify({'status': 'success', 'message': 'Opportunity status updated successfully'}), 200
+    except Exception as e:
+        print(str(e))
+        return error_response(500, str(e))
+    
+@opportunity_blueprint.route('/opportunity_status', methods=['GET'])
+@login_required
+def get_opportunity_statuses():
+    try:
+        # Retrieve all opportunity statuses from your database
+        opportunity_statuses = get_all_opportunity_status()  # Replace with your database query
+        return jsonify(opportunity_statuses), 200
+    except Exception as e:
+        print(str(e))
+        return error_response(500, str(e))
+
+@opportunity_blueprint.route('/call_status', methods=['GET'])
+@login_required
+def get_call_statuses():
+    try:
+        # Retrieve all call statuses from your database
+        call_statuses = get_all_call_status()  # Replace with your database query
+        return jsonify(call_statuses), 200
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
