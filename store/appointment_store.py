@@ -206,7 +206,7 @@ def retrieve_appointments(page_number, page_size):
     # Define the SQL query for retrieving appointments with associated opportunities and mentors
     
     query = """
-    SELECT a.id, a.name, a.email, a.telephone, o.name AS opportunity_name, o.id AS opportunity_id, m.name AS mentor_name, m.id AS mentor_id, a.appointment_time AS appointment_time,
+    SELECT a.id, o.name, o.email, o.phone, o.name AS opportunity_name, o.id AS opportunity_id, m.name AS mentor_name, m.id AS mentor_id, a.appointment_time AS appointment_time,
     a.career_challenge, a.challenge_description, a.urgency, a.salary_range, a.expected_salary, a.current_employer, a.financial_situation, a.grade, 
     a.verified, a.conflicted, a.canceled, a.confirmed
     FROM appointments AS a
