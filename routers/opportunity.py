@@ -191,6 +191,7 @@ def get_opportunity_detail(opportunity_id):
             'sales_agent': opportunity['sales_agent'],
             'messages': opportunity['messages'],
             'templates': opportunity['templates'],
+            'appointments': opportunity['appointments'],
             'sales_date': opportunity['sales_date'].date() if opportunity['sales_date'] is not None else None,
             'senders': senders  # Add the list of senders to the response data
         }

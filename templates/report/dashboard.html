@@ -96,7 +96,7 @@ function fetchAndDisplayMetrics(startDate, endDate, tableBody) {
                 const row = $('<tr></tr>');
                 row.append($('<td></td>').text(key));
                 row.append($('<td></td>').text(value[0]));
-                row.append($('<td></td>').text(value[1]));
+                row.append($('<td></td>').text(value[1] !== -1 ? value[1] : 'N/A'));
                 tableBody.append(row);
             }
         },

@@ -109,22 +109,17 @@
                 
             </form>
         </div>
-
-        <h3>Past Communications</h3>
-        <div id="messagingInformation" class="card-deck">
+        <h3>Appointments</h3>
+        <div class="card-deck">
             <div class="row">
-                {% for message in opportunity.messages %}
+                {% for appointment in opportunity.appointments %}
                     <div class="col-md-3 mb-4">
                         <div class="card">
-                            {% if message.template %}
-                                <h5 class="card-header">{{ message.template }}</h5>
-                            {% else %}
-                                <h5 class="card-header">No Template</h5>
-                            {% endif %}
+                            <h5 class="card-header">Date: {{ appointment.time.strftime('%b %d, %Y, %H:%M') }}</h5>
                             <div class="card-body">
-                                <p class="card-text">Date Sent: {{ message.create_time.strftime('%b %d, %Y, %H:%M') }}</p>
+                                <p class="card-text">Call Status: <b>{{ appointment.call_status }}</b></p>
                             </div>
-                            <div class="card-footer {% if message.status == 'Sent' %}bg-success{% elif message.status == 'Pending' %}bg-warning{% else %}bg-danger{% endif %}">{{ message.status }}</div>
+                            <div class="card-footer {% if appointment.opportunity_status == 'Sale' %}bg-success{% elif appointment.opportunity_status == 'Follow up' %}bg-warning{% else %}bg-danger{% endif %}">{{ appointment.opportunity_status }}</div>
                         </div>
                     </div>
                 {% endfor %}
@@ -170,6 +165,26 @@
                 </div>
             </div>
         </form>
+        <h3>Past Communications</h3>
+        <div id="messagingInformation" class="card-deck">
+            <div class="row">
+                {% for message in opportunity.messages %}
+                    <div class="col-md-3 mb-4">
+                        <div class="card">
+                            {% if message.template %}
+                                <h5 class="card-header">{{ message.template }}</h5>
+                            {% else %}
+                                <h5 class="card-header">No Template</h5>
+                            {% endif %}
+                            <div class="card-body">
+                                <p class="card-text">Date Sent: {{ message.create_time.strftime('%b %d, %Y, %H:%M') }}</p>
+                            </div>
+                            <div class="card-footer {% if message.status == 'Sent' %}bg-success{% elif message.status == 'Pending' %}bg-warning{% else %}bg-danger{% endif %}">{{ message.status }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
         {% raw %}
         <script>
             function update_status(opportunity_id, status_id){
