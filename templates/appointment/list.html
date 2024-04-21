@@ -14,8 +14,10 @@ List of Appointments
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Mentor</th>
-                <th>Appointment Time</th> <!-- Column for the expand icon -->
-                <th></th>
+                <th>Appointment Time</th>
+                <th style="text-align: right;"><a href="#" onclick="loadAppointments(-1)" id="view_setting">View All</a></th>
+            </tr>
+            </tr>
             </tr>
         </thead>
         <tbody>
@@ -36,6 +38,8 @@ List of Appointments
 </style>
 <script>
     var currentPage = 1;
+    var max_setting = 0;
+    var current_max_setting = 0;
     // Add click event to cancel button
     function cancelAppointment(appointmentId) {
         // Ask for confirmation before canceling the appointment
@@ -46,7 +50,7 @@ List of Appointments
                 function(response) {
                     if (response.status == "success") {
                         // Reload the appointments list
-                        loadAppointments();
+                        loadAppointments(max_setting);
                     } else {
                         // Show an error message
                         alert('Failed to cancel appointment. Please try again.');
@@ -61,7 +65,7 @@ List of Appointments
             function(response) {
                 if (response.status == "success") {
                     // Reload the appointments list
-                    loadAppointments();
+                    loadAppointments(max_setting);
                 } else {
                     // Show an error message
                     alert('Failed to confirm appointment. Please try again.');
@@ -69,8 +73,15 @@ List of Appointments
             });
     }
 
-    function loadAppointments() {
-        $.get('{{ url_for('appointment.list_appointments') }}', { page: currentPage }, function(data) {
+    function loadAppointments(max) {
+        if(max == -1){
+            max = max_setting;
+            current_max_setting = max_setting;
+            max_setting = max_setting === 0 ? 1 : 0;
+            currentPage = 1;
+        }
+
+        $.get('{{ url_for('appointment.list_appointments') }}', { page: currentPage, max: max }, function(data) {
             // Clear the current list of appointments
             $('#appointmentsTable tbody').empty();
 
@@ -137,33 +148,33 @@ List of Appointments
                     $('#appointmentsTable tbody').append(row, details);
                 });
             });
-
+            // Set the view setting based on max_setting value
+            var viewSetting = current_max_setting === 0 ? 'View All' : 'View Pending';
+            // Update the view setting element
+            $('#view_setting').text(viewSetting);
             // Update the pagination info
             $('#page-info').text('Page ' + data.page + ' of ' + data.total_pages);
 
             // Add click event to expand buttons
             $('.expand').click(function() {
                 $(this).closest('tr').next('.details').toggle();
-            });
-
-            
-           
+            });           
         });
     }
 
     $(document).ready(function() {
-        loadAppointments();
+        loadAppointments(-1);
 
         $('#prev').click(function() {
             if (currentPage > 1) {
                 currentPage--;
-                loadAppointments();
+                loadAppointments(current_max_setting);
             }
         });
 
         $('#next').click(function() {
             currentPage++;
-            loadAppointments();
+            loadAppointments(current_max_setting);
         });
     });
 </script>

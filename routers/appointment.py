@@ -56,8 +56,10 @@ def list_appointments():
     # Add your logic to retrieve appointments
     page = request.args.get('page', default=1, type=int)
     per_page = request.args.get('per_page', default=10, type=int)
-    pages, total_items, appointments = retrieve_appointments(page_number=page, page_size=per_page)
-    print(f'Appointments: {appointments}, page: {page}, total_pages: {pages}, total_items: {total_items}')
+    max_appointments = request.args.get('max', default=0, type=int)
+    print(f'Page: {page}, per_page: {per_page}, max_appointments: {max_appointments}')
+    pages, total_items, appointments = retrieve_appointments(page, per_page, 
+                                                             max_appointments)
     return jsonify({
         'appointments': appointments, 
         'page': page,

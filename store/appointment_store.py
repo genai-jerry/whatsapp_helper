@@ -202,7 +202,7 @@ def calculate_final_score(application_form_details):
     # Return the final score
     return final_score
 
-def retrieve_appointments(page_number, page_size):
+def retrieve_appointments(page_number, page_size, max=0):
     # Define the SQL query for retrieving appointments with associated opportunities and mentors
     
     query = """
@@ -213,8 +213,6 @@ def retrieve_appointments(page_number, page_size):
     LEFT JOIN opportunity AS o ON a.opportunity_id = o.id
     LEFT JOIN sales_agent AS m ON a.mentor_id = m.id
     WHERE a.appointment_time > %s and (a.canceled = FALSE OR a.canceled IS NULL)
-    ORDER BY a.appointment_time ASC
-    LIMIT %s OFFSET %s
     """
     count_query = "SELECT COUNT(*) FROM appointments WHERE appointment_time > %s and (canceled = FALSE OR canceled IS NULL)"
     try:
@@ -222,7 +220,18 @@ def retrieve_appointments(page_number, page_size):
         cnx = create_connection()
 
         # Get the current time in GMT
-        current_time = datetime.now(pytz.timezone('GMT')).date()
+        if max == 1:
+            current_time = datetime(2023, 1, 1).date()
+            query = query + '''
+                ORDER BY a.appointment_time DESC
+                LIMIT %s OFFSET %s
+            '''
+        else:
+            current_time = datetime.now(pytz.timezone('GMT')).date()
+            query = query + '''
+                ORDER BY a.appointment_time ASC
+                LIMIT %s OFFSET %s
+            '''
         # Create a new cursor
         cursor = cnx.cursor()
 
