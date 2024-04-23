@@ -5,6 +5,8 @@
 {% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <div class="container mt-5">
         <h2>List of Opportunities</h2>
         <form id="searchForm" class="mt-12">
@@ -28,7 +30,17 @@
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Date</th>
+                    <th>
+                        <div class="d-flex align-items-center">
+                            <span id="opp_registered_date">
+                                Date<i class="bi bi-calendar-date"></i>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-date" viewBox="0 0 16 16">
+                                    <path d="M6.445 11.688V6.354h-.633A13 13 0 0 0 4.5 7.16v.695c.375-.257.969-.62 1.258-.777h.012v4.61zm1.188-1.305c.047.64.594 1.406 1.703 1.406 1.258 0 2-1.066 2-2.871 0-1.934-.781-2.668-1.953-2.668-.926 0-1.797.672-1.797 1.809 0 1.16.824 1.77 1.676 1.77.746 0 1.23-.376 1.383-.79h.027c-.004 1.316-.461 2.164-1.305 2.164-.664 0-1.008-.45-1.05-.82zm2.953-2.317c0 .696-.559 1.18-1.184 1.18-.601 0-1.144-.383-1.144-1.2 0-.823.582-1.21 1.168-1.21.633 0 1.16.398 1.16 1.23"/>
+                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                                </svg> 
+                            </span>
+                        </div>
+                    </th>
                     <th>Phone</th>
                     <th>Email</th>
                     <th id="call_status_heading">
@@ -49,7 +61,6 @@
             <button id="next" class="btn btn-primary">Next</button>
         </div>
     </div>
-
     <script>
         var page = 1;
         var totalPages = 1;
@@ -193,6 +204,19 @@
             var searchType = $('#searchType').val();
             loadOpportunities(searchTerm, searchType);
 
+            // Initialize the flatpickr calendar
+            flatpickr("#opp_registered_date", {
+                dateFormat: "Y-m-d",
+                onClose: function(selectedDates, dateStr, instance) {
+                    var searchTerm = $('#searchTerm').val();
+                    var searchType = $('#searchType').val();
+                    page = 1;  // Reset to the first page
+                    filterType = "DATE(o.register_time)";
+                    filterValue = dateStr;
+                    loadOpportunities(searchTerm, searchType, filterType, filterValue);
+                }
+            });
+
             // Handle the Previous button click
             $('#prev').click(function() {
                 if (page > 1) {
@@ -231,4 +255,5 @@
             });
         });
     </script>
+    
 {% endblock %}

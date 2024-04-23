@@ -201,13 +201,16 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             if search_term or search_type:
                 count_sql += " AND"
                 select_sql += " AND"
-            if int(filter_value) == 11:
+            if isinstance(filter_value, int) and int(filter_value) == 11:
                 count_sql += f" {filter_type} IS NULL"
                 select_sql += f" {filter_type} IS NULL"
             else:
                 count_sql += f" {filter_type} = %s"
                 select_sql += f" {filter_type} = %s"
-                params.append(int(filter_value))
+                if isinstance(filter_value, int):
+                    params.append(int(filter_value))
+                else:
+                    params.append(filter_value)
 
         select_sql += " ORDER BY o.register_time desc LIMIT %s OFFSET %s"
         print(select_sql)
@@ -323,7 +326,6 @@ def get_opportunity_by_id(opportunity_id):
             'messages': [{'type': message[1], 'sender': message[2], 'receiver': message[3], 'message': message[5], 'template': message[6], 'status': message[7], 'error_message': message[8], 'create_time': message[9], 'update_time': message[10]} for message in messages],
             'templates': [{'id': template[0], 'name': template[1], 'active': template[2], 'template_text': template[3]} for template in templates]
         }
-        print(f'Appointment data is {appointment_data}')
         return data
     finally:
         if cursor:
