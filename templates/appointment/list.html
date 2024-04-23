@@ -50,7 +50,7 @@ List of Appointments
                 function(response) {
                     if (response.status == "success") {
                         // Reload the appointments list
-                        loadAppointments(max_setting);
+                        loadAppointments(current_max_setting);
                     } else {
                         // Show an error message
                         alert('Failed to cancel appointment. Please try again.');
@@ -65,7 +65,7 @@ List of Appointments
             function(response) {
                 if (response.status == "success") {
                     // Reload the appointments list
-                    loadAppointments(max_setting);
+                    loadAppointments(current_max_setting);
                 } else {
                     // Show an error message
                     alert('Failed to confirm appointment. Please try again.');
