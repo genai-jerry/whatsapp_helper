@@ -294,3 +294,14 @@ def get_call_statuses():
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
+    
+@opportunity_blueprint.route('/sales_agents', methods=['GET'])
+@login_required
+def get_sales_agents():
+    try:
+        # Retrieve all sales agents from your database
+        sales_agents = get_all_sales_agents()  # Replace with your database query
+        return jsonify(sales_agents), 200
+    except Exception as e:
+        print(str(e))
+        return error_response(500, str(e))

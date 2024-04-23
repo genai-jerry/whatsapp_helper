@@ -46,7 +46,7 @@
                     <th id="call_status_heading">
                     </th>
                     <th id="opportunity_status_heading"></th>
-                    <th>Agent</th>
+                    <th id="agent_heading">Agent</th>
                 </tr>
             </thead>
             <tbody>
@@ -123,6 +123,12 @@
                     $('#opportunity_status_heading').empty();
                     $('#opportunity_status_heading').append(opportunityStatusFilter);
                 });
+                $.getJSON('/opportunity/sales_agents', function(data) {
+                    var opportunityStatusFilter = createFilterDropdown(null, filterType=="sa.id" ? filterName: null, data, 
+                        'name', 'color_code', 'text_color', 'sa.id', 'Sales Agent');
+                    $('#agent_heading').empty();
+                    $('#agent_heading').append(opportunityStatusFilter);
+                });
             });
         }
         function filterOpportunity(fType, fValue, fName){
@@ -145,7 +151,7 @@
                     status: status
                 }),
                 success: function(response) {
-                   loadOpportunities($('#searchTerm').val(), $('#searchType').val());
+                   loadOpportunities($('#searchTerm').val(), $('#searchType').val(), filterType, filterValue);
                 },
                 error: function(xhr, status, error) {
                     // Handle the error response
@@ -214,7 +220,8 @@
                     filterType = "DATE(o.register_time)";
                     filterValue = dateStr;
                     loadOpportunities(searchTerm, searchType, filterType, filterValue);
-                }
+                },
+                disableMobile: true // Add this line to disable the dropdown on mobile
             });
 
             // Handle the Previous button click
