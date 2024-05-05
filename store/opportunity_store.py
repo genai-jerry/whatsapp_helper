@@ -501,7 +501,7 @@ def generate_report(start_date, end_date):
             SELECT call_status, lcs.name, COUNT(*)  
             FROM opportunity 
             LEFT JOIN lead_call_status as lcs on lcs.id=call_status
-            WHERE register_time BETWEEN %s AND %s
+            WHERE register_time >= %s AND register_time <= %s
             GROUP BY call_status
         """
         cursor.execute(query, (start_date, end_date))
@@ -539,12 +539,12 @@ def generate_metrics(start_date, end_date):
         load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (o.call_status !=9)'
         queries = {
             'total_leads': load_total_opportunities,
-            'call_booked_follow_up': f"{load_followup_opportunities} and a.appointment_time BETWEEN %s AND %s",
-            'call_show_up_follow_up': f"{load_followup_opportunities} AND o.opportunity_status != 1 AND a.appointment_time BETWEEN %s AND %s",
-            'call_booked_vsl': f"{load_self_opportunities} AND a.appointment_time BETWEEN %s AND %s",
-            'call_show_up_self': f"{load_self_opportunities} AND o.opportunity_status != 1 AND a.appointment_time BETWEEN %s AND %s",
-            'sale_conversion': f"{load_opportunities_not_canceled} AND o.opportunity_status = 2 AND o.sales_date BETWEEN %s AND %s",
-            'total_calls_booked': f"{load_opportunities_not_canceled} AND a.appointment_time BETWEEN %s AND %s",
+            'call_booked_follow_up': f"{load_followup_opportunities} and a.appointment_time >= %s AND a.appointment_time <= %s",
+            'call_show_up_follow_up': f"{load_followup_opportunities} AND o.opportunity_status != 1 AND a.appointment_time >= %s AND a.appointment_time <= %s",
+            'call_booked_vsl': f"{load_self_opportunities} AND a.appointment_time >= %s AND a.appointment_time <= %s",
+            'call_show_up_self': f"{load_self_opportunities} AND o.opportunity_status != 1 AND a.appointment_time >= %s AND a.appointment_time <= %s",
+            'sale_conversion': f"{load_opportunities_not_canceled} AND o.opportunity_status = 2 AND o.sales_date >= %s AND o.sales_date <= %s",
+            'total_calls_booked': f"{load_opportunities_not_canceled} AND a.appointment_time >= %s AND a.appointment_time <= %s",
         }
 
         metrics = {}
