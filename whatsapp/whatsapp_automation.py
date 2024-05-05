@@ -56,6 +56,17 @@ def send_whatsapp_message(message_data):
     receiver = message_data['receiver']
     message = message_data['message']
     id = message_data['id']
+    # Get the message status
+    status = retrieve_message_by_id(id)
+
+    # Check if the status is "Abandon"
+    if status.status == "Abandon":
+        # Update message status to "Abandoned"
+        print(f'Abandoning {id}')
+        update_message(id, "Abandoned", None)
+        return
+
+    # Continue with the rest of the code
     with obtain_sender_lock(sender):
         if is_whatsapp_ready(sender):
             try:
