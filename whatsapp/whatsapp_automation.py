@@ -60,7 +60,7 @@ def send_whatsapp_message(message_data):
     status = retrieve_message_by_id(id)
 
     # Check if the status is "Abandon"
-    if status.status == "Abandon":
+    if status['status'] == "Abandon":
         # Update message status to "Abandoned"
         print(f'Abandoning {id}')
         update_message(id, "Abandoned", None)
