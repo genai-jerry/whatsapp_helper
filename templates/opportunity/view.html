@@ -115,7 +115,7 @@
                 {% for appointment in opportunity.appointments %}
                     <div class="col-md-3 mb-4">
                         <div class="card">
-                            <h5 class="card-header">Date: {{ appointment.time.strftime('%b %d, %Y, %I:%M %p') }}</h5>
+                            <h5 class="card-header">Date: {{ appointment.time.strftime('%b %d, %Y, %H:%M') }}</h5>
                             <div class="card-body">
                                 <p class="card-text">Call Status: <b>{{ appointment.call_status }}</b></p>
                             </div>
