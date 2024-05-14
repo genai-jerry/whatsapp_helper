@@ -197,7 +197,7 @@ def __attach_media(browser, app_home, file_url):
     media_home = 'static/media/'
     def __attach_media_file(media_path, browser, file_name):
         print('Attaching media file')
-        attach_link = browser.find_element("xpath",'//*[@title="Attach"]')
+        attach_link = browser.find_element("xpath",'//*[@aria-label="Attach"]')
         attach_link.click()
 
         # Locate the file input element (assuming it's hidden)
@@ -245,7 +245,7 @@ def __send_media(browser):
 
 def __send_message(browser, message):
     print('Sending text Message')
-    message_box = browser.find_element("xpath",'//*[@title="Type a message"]')
+    message_box = browser.find_element("xpath",'//*[@aria-label="Type a message"]')
     message_box.click()
     message = ''.join(c if c <= '\uffff' else '' for c in message)
     message_box.send_keys(message)
@@ -265,7 +265,7 @@ def __setup_contact_message_box(browser, contact_name):
     def __search_and_start_chat(browser, contact_name):
         contact_name = ''.join(filter(str.isdigit, contact_name))
         print('Opening Search Box')
-        search_box = browser.find_element("xpath",'//*[@title="Search input textbox"]')
+        search_box = browser.find_element("xpath",'//*[@aria-label="Search input textbox"]')
         search_box.click()
         print('Searching for the contact')
         search_box.send_keys(contact_name)
