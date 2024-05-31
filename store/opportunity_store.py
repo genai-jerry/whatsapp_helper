@@ -45,6 +45,8 @@ def store_opportunity(opportunity_data):
         opportunity_status_name = opportunity_data['opportunity_status'] if 'opportunity_status' in opportunity_data and opportunity_data['opportunity_status'] else None
         sales_agent_name = opportunity_data['agent'] if 'agent' in opportunity_data and opportunity_data['agent'] else None
         campaign = opportunity_data['campaign'] if 'campaign' in opportunity_data and opportunity_data['campaign'] else None
+        ad_name = opportunity_data['ad_name'] if 'ad_name' in opportunity_data and opportunity_data['ad_name'] else None
+        ad_id = opportunity_data['ad_id'] if 'ad_id' in opportunity_data and opportunity_data['ad_id'] else None
 
         # Insert the opportunity
         connection = create_connection()
@@ -65,10 +67,10 @@ def store_opportunity(opportunity_data):
         if email_exists == 0:
             # Insert the opportunity
             sql_insert = """
-                INSERT INTO opportunity (name, email, phone, register_time, opportunity_status, call_status, sales_agent, sales_date, comment, campaign)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO opportunity (name, email, phone, register_time, opportunity_status, call_status, sales_agent, sales_date, comment, campaign, ad_name, ad_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(sql_insert, (name, email, phone, date, opportunity_status, optin_status, sales_agent, sale_date, comment, campaign))
+            cursor.execute(sql_insert, (name, email, phone, date, opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, ad_name, ad_id))
             connection.commit()
             print("Opportunity inserted successfully.")
         else:
@@ -172,7 +174,9 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             sa.color_code AS sales_agent_color,
             os.text_color AS opportunity_status_text_color,
             cs.text_color AS call_status_text_color,
-            sa.text_color AS sales_agent_text_color
+            sa.text_color AS sales_agent_text_color,
+            o.campaign,
+            o.ad_name
             FROM 
             opportunity o
             LEFT JOIN 
@@ -244,7 +248,9 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             'sales_agent_color': row[10],
             'opportunity_status_text_color': row[11],
             'call_status_text_color': row[12],
-            'sales_agent_text_color': row[13]
+            'sales_agent_text_color': row[13],
+            'campaign': row[14],
+            'ad_name': row[15]
             }
             opportunities.append(opportunity)
 

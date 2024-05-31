@@ -7,260 +7,260 @@
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <div class="container mt-5">
-        <h2>List of Opportunities</h2>
-        <form id="searchForm" class="mt-12">
-            <div class="row">
-                <div class="col-md-4">
-                    <input type="text" id="searchTerm" placeholder="Search term" class="form-control mt-4">
-                </div>
-                <div class="col-md-4">
-                    <select id="searchType" class="form-control mt-4">
-                        <option value="name">Name</option>
-                        <option value="email">Email</option>
-                        <option value="phone">Phone Number</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <button type="submit" class="btn btn-primary mt-4">Search</button>
-                </div>
+<div class="container mt-5">
+    <h2>List of Opportunities</h2>
+    <form id="searchForm" class="mt-12">
+        <div class="row">
+            <div class="col-md-4">
+                <input type="text" id="searchTerm" placeholder="Search term" class="form-control mt-4">
             </div>
-        </form>
-        <table class="table table-striped" id="opportunitiesTable">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>
-                        <div class="d-flex align-items-center">
-                            <span id="opp_registered_date">
-                                Date<i class="bi bi-calendar-date"></i>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-date" viewBox="0 0 16 16">
-                                    <path d="M6.445 11.688V6.354h-.633A13 13 0 0 0 4.5 7.16v.695c.375-.257.969-.62 1.258-.777h.012v4.61zm1.188-1.305c.047.64.594 1.406 1.703 1.406 1.258 0 2-1.066 2-2.871 0-1.934-.781-2.668-1.953-2.668-.926 0-1.797.672-1.797 1.809 0 1.16.824 1.77 1.676 1.77.746 0 1.23-.376 1.383-.79h.027c-.004 1.316-.461 2.164-1.305 2.164-.664 0-1.008-.45-1.05-.82zm2.953-2.317c0 .696-.559 1.18-1.184 1.18-.601 0-1.144-.383-1.144-1.2 0-.823.582-1.21 1.168-1.21.633 0 1.16.398 1.16 1.23"/>
-                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
-                                </svg> 
-                            </span>
-                        </div>
-                    </th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th id="call_status_heading">
-                    </th>
-                    <th id="opportunity_status_heading"></th>
-                    <th id="agent_heading">Agent</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Table data will be inserted here with JavaScript -->
-            </tbody>
-        </table>
-        <!-- Pagination control -->
-        <div id="pagination" class="mt-3">
-            <button id="first" class="btn btn-primary">First</button>
-            <button id="prev" class="btn btn-primary">Previous</button>
-            <span id="page-info" class="mx-2"></span>
-            <button id="next" class="btn btn-primary">Next</button>
+            <div class="col-md-4">
+                <select id="searchType" class="form-control mt-4">
+                    <option value="name">Name</option>
+                    <option value="email">Email</option>
+                    <option value="phone">Phone Number</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary mt-4">Search</button>
+            </div>
         </div>
+    </form>
+    <table class="table table-striped" id="opportunitiesTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>
+                    <div class="d-flex align-items-center">
+                        <span id="opp_registered_date">
+                            Date<i class="bi bi-calendar-date"></i>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-date" viewBox="0 0 16 16">
+                                <path d="M6.445 11.688V6.354h-.633A13 13 0 0 0 4.5 7.16v.695c.375-.257.969-.62 1.258-.777h.012v4.61zm1.188-1.305c.047.64.594 1.406 1.703 1.406 1.258 0 2-1.066 2-2.871 0-1.934-.781-2.668-1.953-2.668-.926 0-1.797.672-1.797 1.809 0 1.16.824 1.77 1.676 1.77.746 0 1.23-.376 1.383-.79h.027c-.004 1.316-.461 2.164-1.305 2.164-.664 0-1.008-.45-1.05-.82zm2.953-2.317c0 .696-.559 1.18-1.184 1.18-.601 0-1.144-.383-1.144-1.2 0-.823.582-1.21 1.168-1.21.633 0 1.16.398 1.16 1.23"/>
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                            </svg> 
+                        </span>
+                    </div>
+                </th>
+                <th>Phone</th>
+                <th>Ad Details</th>
+                <th id="call_status_heading">
+                </th>
+                <th id="opportunity_status_heading"></th>
+                <th id="agent_heading">Agent</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Table data will be inserted here with JavaScript -->
+        </tbody>
+    </table>
+    <!-- Pagination control -->
+    <div id="pagination" class="mt-3">
+        <button id="first" class="btn btn-primary">First</button>
+        <button id="prev" class="btn btn-primary">Previous</button>
+        <span id="page-info" class="mx-2"></span>
+        <button id="next" class="btn btn-primary">Next</button>
     </div>
-    <script>
-        var page = 1;
-        var totalPages = 1;
-        var filterType = null;
-        var filterValue = null;
-        var filterName = null;
-        function loadOpportunities(searchTerm, searchType, filterType, filterValue) {
-            
-            var url = '/opportunity/list?page=' + page;
-            if (searchTerm && searchType) {
-                url += '&searchTerm=' + encodeURIComponent(searchTerm) + '&searchType=' + encodeURIComponent(searchType);
+</div>
+<script>
+    var page = 1;
+    var totalPages = 1;
+    var filterType = null;
+    var filterValue = null;
+    var filterName = null;
+    function loadOpportunities(searchTerm, searchType, filterType, filterValue) {
+        
+        var url = '/opportunity/list?page=' + page;
+        if (searchTerm && searchType) {
+            url += '&searchTerm=' + encodeURIComponent(searchTerm) + '&searchType=' + encodeURIComponent(searchType);
+        }
+        if (filterType && filterValue) {
+            url += '&filterType=' + encodeURIComponent(filterType) + '&filterValue=' + encodeURIComponent(filterValue);
+        }
+        $.getJSON(url, function(data) {
+            // Clear the current list of opportunities
+            $('#opportunitiesTable tbody').empty();
+
+            // Add the new opportunities to the list
+            data.items.forEach(function(opportunity, index) {
+                var date = new Date(opportunity.date);
+                var callStatusSelect = createDataDropdown(opportunity.id, opportunity.call_status, data.call_statuses, 'name', 'color_code', 'text_color', 'call_status', 'Not Set');
+                var opportunityStatusSelect = createDataDropdown(opportunity.id, opportunity.opportunity_status, data.opportunity_statuses, 'name', 'color_code', 'text_color', 'opportunity_status', 'Not Set');
+                var agentSelect = createDataDropdown(opportunity.id, opportunity.agent, data.sales_agents, 'name', 'color_code', 'text_color', 'agent', 'Not Set');
+                var formattedDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })).toLocaleString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                var row = '<tr>' +
+                    '<td><a href="./' + opportunity.id + '">' + opportunity.name + '</a><br>' + opportunity.phone + '<br>' 
+                        + opportunity.email + '</td>' +
+                    '<td>' + formattedDate + '</td>' +
+                    '<td><ul class="list-inline mb-1"><li class="list-inline-item mb-1"><span><a type="button" class="btn btn-success" href="tel:' + opportunity.phone + '"><i class="bi bi-telephone"></i>' + 
+                            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-telephone" viewBox="0 0 16 16">' 
+                                +'<path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>' 
+                            +'</svg>' +
+                        '</span></a></li><li class="list-inline-item mb-1"><span>' +
+                            '<a type="button" class="btn btn-success" target="WhatsApp" href="https://wa.me/' + opportunity.phone + '"><i class="bi bi-whatsapp"></i>' +
+                            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-whatsapp" viewBox="0 0 16 16">' +
+                        '<path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>' +
+                        '</svg></a></span></li></ul></td>'+
+                    '<td>' + (opportunity.ad_name ? opportunity.ad_name : 'Not Available')+ '</td>' +
+                    '<td>' + callStatusSelect + '</td>' +
+                    '<td>' + opportunityStatusSelect + '</td>' +
+                    '<td>' + agentSelect + '</td>' +
+                    '</tr>';
+                $('#opportunitiesTable tbody').append(row);
+            });
+
+            // Update the pagination info
+            $('#page-info').text('Page ' + data.page + ' of ' + data.total_pages);
+            totalPages = data.total_pages;
+            // Load the initial data
+            $.getJSON('/opportunity/call_status', function(data) {
+                var callStatusFilter = createFilterDropdown(null, filterType=="cs.id" ? filterName: null, data, 
+                    'name', 'color_code', 'text_color', 'cs.id', 'Call Status');
+                $('#call_status_heading').empty();
+                $('#call_status_heading').append(callStatusFilter);
+            });
+            $.getJSON('/opportunity/opportunity_status', function(data) {
+                var opportunityStatusFilter = createFilterDropdown(null, filterType=="os.id" ? filterName: null, data, 
+                    'name', 'color_code', 'text_color', 'os.id', 'Opportunity Status');
+                $('#opportunity_status_heading').empty();
+                $('#opportunity_status_heading').append(opportunityStatusFilter);
+            });
+            $.getJSON('/opportunity/sales_agents', function(data) {
+                var opportunityStatusFilter = createFilterDropdown(null, filterType=="sa.id" ? filterName: null, data, 
+                    'name', 'color_code', 'text_color', 'sa.id', 'Sales Agent');
+                $('#agent_heading').empty();
+                $('#agent_heading').append(opportunityStatusFilter);
+            });
+        });
+    }
+    function filterOpportunity(fType, fValue, fName){
+        var searchTerm = $('#searchTerm').val();
+        var searchType = $('#searchType').val();
+        filterType = fType;
+        filterValue = fValue;
+        filterName = fName;
+        loadOpportunities(searchTerm, searchType, filterType, filterValue);
+        
+    }
+    function updateOpportunityStatus(opportunityId, status, statusType, option_color_key, option_text_color_key, option_name_key) {
+        // Make an AJAX request to update the opportunity status
+        console.log('Updating opportunity status:', opportunityId, status, statusType)
+        $.ajax({
+            url: '/opportunity/status/'+opportunityId+"/"+statusType,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                status: status
+            }),
+            success: function(response) {
+                loadOpportunities($('#searchTerm').val(), $('#searchType').val(), filterType, filterValue);
+            },
+            error: function(xhr, status, error) {
+                // Handle the error response
+                console.error('Error updating opportunity status:', error);
             }
-            if (filterType && filterValue) {
-                url += '&filterType=' + encodeURIComponent(filterType) + '&filterValue=' + encodeURIComponent(filterValue);
-            }
-            $.getJSON(url, function(data) {
-                // Clear the current list of opportunities
-                $('#opportunitiesTable tbody').empty();
-
-                // Add the new opportunities to the list
-                data.items.forEach(function(opportunity, index) {
-                    var date = new Date(opportunity.date);
-                    var callStatusSelect = createDataDropdown(opportunity.id, opportunity.call_status, data.call_statuses, 'name', 'color_code', 'text_color', 'call_status', 'Not Set');
-                    var opportunityStatusSelect = createDataDropdown(opportunity.id, opportunity.opportunity_status, data.opportunity_statuses, 'name', 'color_code', 'text_color', 'opportunity_status', 'Not Set');
-                    var agentSelect = createDataDropdown(opportunity.id, opportunity.agent, data.sales_agents, 'name', 'color_code', 'text_color', 'agent', 'Not Set');
-                    var formattedDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })).toLocaleString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                    var row = '<tr>' +
-                        '<td><a href="./' + opportunity.id + '">' + opportunity.name + '</a><br>' + opportunity.phone + '</td>' +
-                        '<td>' + formattedDate + '</td>' +
-                        '<td><ul class="list-inline mb-1"><li class="list-inline-item mb-1"><span><a type="button" class="btn btn-success" href="tel:' + opportunity.phone + '"><i class="bi bi-telephone"></i>' + 
-                                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-telephone" viewBox="0 0 16 16">' 
-                                    +'<path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>' 
-                                +'</svg>' +
-                            '</span></a></li><li class="list-inline-item mb-1"><span>' +
-                                '<a type="button" class="btn btn-success" target="WhatsApp" href="https://wa.me/' + opportunity.phone + '"><i class="bi bi-whatsapp"></i>' +
-                                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-whatsapp" viewBox="0 0 16 16">' +
-                            '<path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>' +
-                            '</svg></a></span></li></ul></td>'+
-                        '<td>' + opportunity.email + '</td>' +
-                        '<td>' + callStatusSelect + '</td>' +
-                        '<td>' + opportunityStatusSelect + '</td>' +
-                        '<td>' + agentSelect + '</td>' +
-                        '</tr>';
-                    $('#opportunitiesTable tbody').append(row);
-                });
-
-                // Update the pagination info
-                $('#page-info').text('Page ' + data.page + ' of ' + data.total_pages);
-                totalPages = data.total_pages;
-                // Load the initial data
-                $.getJSON('/opportunity/call_status', function(data) {
-                    var callStatusFilter = createFilterDropdown(null, filterType=="cs.id" ? filterName: null, data, 
-                        'name', 'color_code', 'text_color', 'cs.id', 'Call Status');
-                    $('#call_status_heading').empty();
-                    $('#call_status_heading').append(callStatusFilter);
-                });
-                $.getJSON('/opportunity/opportunity_status', function(data) {
-                    var opportunityStatusFilter = createFilterDropdown(null, filterType=="os.id" ? filterName: null, data, 
-                        'name', 'color_code', 'text_color', 'os.id', 'Opportunity Status');
-                    $('#opportunity_status_heading').empty();
-                    $('#opportunity_status_heading').append(opportunityStatusFilter);
-                });
-                $.getJSON('/opportunity/sales_agents', function(data) {
-                    var opportunityStatusFilter = createFilterDropdown(null, filterType=="sa.id" ? filterName: null, data, 
-                        'name', 'color_code', 'text_color', 'sa.id', 'Sales Agent');
-                    $('#agent_heading').empty();
-                    $('#agent_heading').append(opportunityStatusFilter);
-                });
-            });
-        }
-        function filterOpportunity(fType, fValue, fName){
-            var searchTerm = $('#searchTerm').val();
-            var searchType = $('#searchType').val();
-            filterType = fType;
-            filterValue = fValue;
-            filterName = fName;
-            loadOpportunities(searchTerm, searchType, filterType, filterValue);
+        });
+    }
+    function setupDropdown(opportunity_id, selectedValue, options, nameKey, colorKey, textColorKey, status_type) {
+        var dropdown = '<div class="btn-group">';
+        var optionColor = getOptionColor(selectedValue, options, colorKey);
+        var textColor = getOptionColor(selectedValue, options, textColorKey);
+        dropdown += '<span id="status-' + status_type + '-'+ opportunity_id +'">';
+        dropdown += '<button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: ' 
+            + (optionColor ? optionColor : 'gray') + '; color: ' + (textColor ? textColor : 'black') + '">';
+        dropdown += selectedValue ? selectedValue : status_type;
+        dropdown += '</button>';
+        dropdown += '<ul class="dropdown-menu">';
+        return dropdown;
+    }
+    function createDataDropdown(opportunity_id, selectedValue, options, nameKey, colorKey, textColorKey, status_type, default_value) {
+        var dropdown = setupDropdown(opportunity_id, selectedValue, options, nameKey, colorKey, textColorKey, default_value);
+        options.forEach(function(option) {
+            var selected = option[nameKey] === selectedValue ? 'active' : '';
+            dropdown += '<li><a class="dropdown-item ' + selected + '" href="#" style="background-color: ' + option[colorKey] + '; color: ' + option[textColorKey] + '" onclick="updateOpportunityStatus(' + opportunity_id + ',\'' + option["id"] + '\',\'' + status_type + '\',\'' + option[colorKey] + '\',\'' +  option[textColorKey] + '\',\'' +  option[nameKey] + '\')">' + option[nameKey] + '</a></li>';
             
-        }
-        function updateOpportunityStatus(opportunityId, status, statusType, option_color_key, option_text_color_key, option_name_key) {
-            // Make an AJAX request to update the opportunity status
-            console.log('Updating opportunity status:', opportunityId, status, statusType)
-            $.ajax({
-                url: '/opportunity/status/'+opportunityId+"/"+statusType,
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    status: status
-                }),
-                success: function(response) {
-                   loadOpportunities($('#searchTerm').val(), $('#searchType').val(), filterType, filterValue);
-                },
-                error: function(xhr, status, error) {
-                    // Handle the error response
-                    console.error('Error updating opportunity status:', error);
-                }
-            });
-        }
-        function setupDropdown(opportunity_id, selectedValue, options, nameKey, colorKey, textColorKey, status_type) {
-            var dropdown = '<div class="btn-group">';
-            var optionColor = getOptionColor(selectedValue, options, colorKey);
-            var textColor = getOptionColor(selectedValue, options, textColorKey);
-            dropdown += '<span id="status-' + status_type + '-'+ opportunity_id +'">';
-            dropdown += '<button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: ' 
-                + (optionColor ? optionColor : 'gray') + '; color: ' + (textColor ? textColor : 'black') + '">';
-            dropdown += selectedValue ? selectedValue : status_type;
-            dropdown += '</button>';
-            dropdown += '<ul class="dropdown-menu">';
-            return dropdown;
-        }
-        function createDataDropdown(opportunity_id, selectedValue, options, nameKey, colorKey, textColorKey, status_type, default_value) {
-            var dropdown = setupDropdown(opportunity_id, selectedValue, options, nameKey, colorKey, textColorKey, default_value);
-            options.forEach(function(option) {
-                var selected = option[nameKey] === selectedValue ? 'active' : '';
-                dropdown += '<li><a class="dropdown-item ' + selected + '" href="#" style="background-color: ' + option[colorKey] + '; color: ' + option[textColorKey] + '" onclick="updateOpportunityStatus(' + opportunity_id + ',\'' + option["id"] + '\',\'' + status_type + '\',\'' + option[colorKey] + '\',\'' +  option[textColorKey] + '\',\'' +  option[nameKey] + '\')">' + option[nameKey] + '</a></li>';
-                
-            });
-            dropdown += '</ul>';
-            dropdown += '</div>';
-            dropdown += '</span>';
-            return dropdown;
-        }
-        function createFilterDropdown(opportunity_id, selectedValue, options, nameKey, colorKey, textColorKey, status_type, status_name) {
-            var dropdown = setupDropdown(opportunity_id, selectedValue, options, nameKey, colorKey, textColorKey, status_name);
-            options.forEach(function(option) {
-                var selected = option[nameKey] === selectedValue ? 'active' : '';
-                dropdown += '<li><a class="dropdown-item ' + selected + '" href="#" style="background-color: ' + option[colorKey] + '; color: ' + option[textColorKey] + '" onclick="filterOpportunity(\'' + status_type + '\',' + option["id"] + ',\'' + option[nameKey] + '\')">' + option[nameKey] + '</a></li>';
-                
-            });
-            dropdown += '</ul>';
-            dropdown += '</div>';
-            dropdown += '</span>';
-            return dropdown;
-        }
-
-
-        function getOptionColor(selectedValue, options, colorKey) {
-            var selectedOption = options.find(function(option) {
-                return option.name === selectedValue;
-            });
-            return selectedOption ? selectedOption[colorKey] : null;
-        }
-        $(document).ready(function() {
+        });
+        dropdown += '</ul>';
+        dropdown += '</div>';
+        dropdown += '</span>';
+        return dropdown;
+    }
+    function createFilterDropdown(opportunity_id, selectedValue, options, nameKey, colorKey, textColorKey, status_type, status_name) {
+        var dropdown = setupDropdown(opportunity_id, selectedValue, options, nameKey, colorKey, textColorKey, status_name);
+        options.forEach(function(option) {
+            var selected = option[nameKey] === selectedValue ? 'active' : '';
+            dropdown += '<li><a class="dropdown-item ' + selected + '" href="#" style="background-color: ' + option[colorKey] + '; color: ' + option[textColorKey] + '" onclick="filterOpportunity(\'' + status_type + '\',' + option["id"] + ',\'' + option[nameKey] + '\')">' + option[nameKey] + '</a></li>';
             
-            // Load the first page of opportunities
-            var searchTerm = $('#searchTerm').val();
-            var searchType = $('#searchType').val();
-            loadOpportunities(searchTerm, searchType);
+        });
+        dropdown += '</ul>';
+        dropdown += '</div>';
+        dropdown += '</span>';
+        return dropdown;
+    }
+    
 
-            // Initialize the flatpickr calendar
-            flatpickr("#opp_registered_date", {
-                dateFormat: "Y-m-d",
-                onClose: function(selectedDates, dateStr, instance) {
-                    var searchTerm = $('#searchTerm').val();
-                    var searchType = $('#searchType').val();
-                    page = 1;  // Reset to the first page
-                    filterType = "DATE(o.register_time)";
-                    filterValue = dateStr;
-                    loadOpportunities(searchTerm, searchType, filterType, filterValue);
-                },
-                disableMobile: true // Add this line to disable the dropdown on mobile
-            });
+    function getOptionColor(selectedValue, options, colorKey) {
+        var selectedOption = options.find(function(option) {
+            return option.name === selectedValue;
+        });
+        return selectedOption ? selectedOption[colorKey] : null;
+    }
+    $(document).ready(function() {
+        
+        // Load the first page of opportunities
+        var searchTerm = $('#searchTerm').val();
+        var searchType = $('#searchType').val();
+        loadOpportunities(searchTerm, searchType);
 
-            // Handle the Previous button click
-            $('#prev').click(function() {
-                if (page > 1) {
-                    page--;
-                    var searchTerm = $('#searchTerm').val();
-                    var searchType = $('#searchType').val();
-                    loadOpportunities(searchTerm, searchType, filterType, filterValue);
-                }
-            });
-            // Handle the search form submission
-            $('#searchForm').submit(function(event) {
-                event.preventDefault();
+        // Initialize the flatpickr calendar
+        flatpickr("#opp_registered_date", {
+            dateFormat: "Y-m-d",
+            onClose: function(selectedDates, dateStr, instance) {
                 var searchTerm = $('#searchTerm').val();
                 var searchType = $('#searchType').val();
                 page = 1;  // Reset to the first page
+                filterType = "DATE(o.register_time)";
+                filterValue = dateStr;
                 loadOpportunities(searchTerm, searchType, filterType, filterValue);
-            });
-            
-            // Handle the Next button click
-            $('#next').click(function() {
-                if (page < totalPages) {
-                    page++;
-                    var searchTerm = $('#searchTerm').val();
-                    var searchType = $('#searchType').val();
-                    loadOpportunities(searchTerm, searchType, filterType, filterValue);
-                }
-            });
-            // Handle the First button click
-            $('#first').click(function() {
-                if (page !== 1) {
-                    page = 1;
-                    var searchTerm = $('#searchTerm').val();
-                    var searchType = $('#searchType').val();
-                    loadOpportunities(searchTerm, searchType, filterType, filterValue);
-                }
-            });
+            },
+            disableMobile: true // Add this line to disable the dropdown on mobile
         });
-    </script>
-    
+
+        // Handle the Previous button click
+        $('#prev').click(function() {
+            if (page > 1) {
+                page--;
+                var searchTerm = $('#searchTerm').val();
+                var searchType = $('#searchType').val();
+                loadOpportunities(searchTerm, searchType, filterType, filterValue);
+            }
+        });
+        // Handle the search form submission
+        $('#searchForm').submit(function(event) {
+            event.preventDefault();
+            var searchTerm = $('#searchTerm').val();
+            var searchType = $('#searchType').val();
+            page = 1;  // Reset to the first page
+            loadOpportunities(searchTerm, searchType, filterType, filterValue);
+        });
+        
+        // Handle the Next button click
+        $('#next').click(function() {
+            if (page < totalPages) {
+                page++;
+                var searchTerm = $('#searchTerm').val();
+                var searchType = $('#searchType').val();
+                loadOpportunities(searchTerm, searchType, filterType, filterValue);
+            }
+        });
+        // Handle the First button click
+        $('#first').click(function() {
+            if (page !== 1) {
+                page = 1;
+                var searchTerm = $('#searchTerm').val();
+                var searchType = $('#searchType').val();
+                loadOpportunities(searchTerm, searchType, filterType, filterValue);
+            }
+        });
+    });
+</script>
 {% endblock %}

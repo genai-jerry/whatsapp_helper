@@ -1,23 +1,25 @@
 """Add the APIs for the opportunites. Use Flask-Restful to create the APIs."""
 from flask import jsonify, Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required
-from utils import error_response, app_home
+from utils import error_response, app_home, require_api_key
 import csv
 from werkzeug.utils import secure_filename
 from store.opportunity_store import *  # Import the store_opportunity function
 from store.instance_store import get_senders
 from whatsapp.message_sender import send_template_message
+import datetime
 
 # Import your database model and messaging system here
-
 opportunity_blueprint = Blueprint('opportunity', __name__)
 
 @opportunity_blueprint.route('/', methods=['GET'])
 @login_required
 def load_opportunities():
-    return render_template('opportunity/list.html', content={})
+    tomorrow_date = (datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M')
+    return render_template('opportunity/list.html', content={}, tomorrow=tomorrow_date)
 
 @opportunity_blueprint.route('/create', methods=['POST'])
+@require_api_key
 def create_opportunity():
     try:
         # Extract the data from the request
@@ -27,6 +29,8 @@ def create_opportunity():
         email = data.get('email')
         phone = data.get('phone')
         campaign = data.get('campaign')
+        ad_name = data.get('ad_name')
+        ad_id = data.get('ad_id')
 
         # Create the opportunity in your database
         opportunity_data = {
@@ -34,7 +38,9 @@ def create_opportunity():
             'date': date,
             'email': email,
             'phone': phone,
-            'campaign': campaign
+            'campaign': campaign,
+            'ad_name': ad_name,
+            'ad_id': ad_id
         }
         store_opportunity(opportunity_data)
 
@@ -147,7 +153,8 @@ def list_opportunities():
             'sales_agent_color': opportunity['sales_agent_color'],
             'opportunity_status_text_color': opportunity['opportunity_status_text_color'],
             'call_status_text_color': opportunity['call_status_text_color'],
-            'sales_agent_text_color': opportunity['sales_agent_text_color']
+            'sales_agent_text_color': opportunity['sales_agent_text_color'],
+            'ad_name': opportunity['ad_name'],
             }
             response_data.append(opportunity_data)
         
