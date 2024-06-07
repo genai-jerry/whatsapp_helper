@@ -15,6 +15,7 @@ import configparser
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_login import current_user
 from store.user_store import create_new_user, load_user_by_username
+from utils import require_api_key
 
 # Read the config.ini file
 config = configparser.ConfigParser()
@@ -58,6 +59,7 @@ def index():
     return redirect('/dashboard')
 
 @app.route('/user', methods=['POST'])
+@require_api_key
 def create_user():
     username = request.form['username']
     password = request.form['password']

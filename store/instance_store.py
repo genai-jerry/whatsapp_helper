@@ -25,7 +25,6 @@ def store_instance(mobile_number, user_data):
             cursor.close()
 
 def remove_instance(mobile_number):
-    server.remove_instance(mobile_number)
     # Insert data into 'instances' table using a prepared statement
     try:
         connection = create_connection()
@@ -58,6 +57,27 @@ def update_instance(mobile_number, user_data):
 
         # Prepare the query and execute it with the provided values
         cursor.execute(sql, (status, mobile_number))
+
+        connection.commit()
+        print("Data updated successfully.")
+    finally:
+        if cursor:
+            cursor.close()
+
+def update_instance_api_key(mobile_number, user_data):
+    sms_idea_api_key = user_data['smsidea_api_key']
+    # Update data into 'instances' table using a prepared statement
+    try:
+        print('Modifying instance')
+        connection = create_connection()
+        
+        cursor = connection.cursor()
+
+        # Define the SQL query with placeholders
+        sql = "UPDATE instances set sms_idea_api_key=%s where mobile_number=%s"
+
+        # Prepare the query and execute it with the provided values
+        cursor.execute(sql, (sms_idea_api_key, mobile_number))
 
         connection.commit()
         print("Data updated successfully.")

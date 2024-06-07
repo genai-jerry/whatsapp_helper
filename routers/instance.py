@@ -53,7 +53,7 @@ def refresh_instance():
 def delete_instance():
     try:
         mobile_number = request.args.get('mobile_number')
-        instance = remove_instance(mobile_number)
+        remove_instance(mobile_number)
         return render_template("/instance/list.html")
     except Exception as e:
         return error_response(500, str(e))

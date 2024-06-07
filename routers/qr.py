@@ -1,10 +1,9 @@
 from flask import Flask, jsonify, Blueprint, request, render_template, url_for, redirect, make_response
 from flask_login import login_required
-from whatsapp.qr_code_generator import *
-from whatsapp.whatsapp_automation import *
+from smsidea.qr_code_generator import *
+from smsidea.whatsapp_automation import *
 from browser.update_chrome import *
 from store.instance_store import *
-from xmlrpc.client import ServerProxy
 from utils import error_response
 
 # Get the current script's directory
@@ -15,7 +14,7 @@ app_home = os.path.abspath(os.path.join(current_dir, os.pardir))
 
 qr_blueprint = Blueprint('qr', __name__)
 # Connect to the server
-server = ServerProxy("http://localhost:8000/", allow_none=True)
+# server = ServerProxy("http://localhost:8000/", allow_none=True)
 
 @qr_blueprint.route('/register', methods=['POST'])
 @login_required
@@ -26,13 +25,10 @@ def register_qr():
         user_name = data.get('userName')
         instance = retrieve_instance(mobile_number)
         if instance == None:
-            print('Creating new instance')
-            result = server.create_instance(app_home, mobile_number)
-            if result:
-                print('Storing Instance')
-                store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
-            else:
-                return error_response(400, f'{app_home} - Unable to load page')
+            print('Storing Instance')
+            store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
+            #else:
+             #   return error_response(400, f'{app_home} - Unable to load page')
         else:
             if is_instance_ready(mobile_number):
                 return jsonify({'status': 'ready', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
@@ -65,7 +61,7 @@ def refresh_qr():
                     return jsonify({'status': 'ready', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
                 else:
                     print('Refreshing Browser')
-                    server.refresh(mobile_number)
+                    # server.refresh(mobile_number)
             except:
                 return create_instance(mobile_number, user_name, False)
         # Respond with a successful creation message or similar
@@ -75,16 +71,12 @@ def refresh_qr():
 
 def create_instance(mobile_number, user_name, new_instance):
     print('Creating new instance')
-    result = server.create_instance(app_home, mobile_number)
-    print(result)
-    if result:
-        if new_instance:
-            print('Storing Instance')
-            store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
-        # Respond with a successful creation message or similar
-        return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
-    else:
-        return error_response(400, f'{app_home} - Unable to load page')
+    if new_instance:
+        print('Storing Instance')
+        store_instance(mobile_number, {'status': 'Pending', 'name': user_name, 'mobile_number': mobile_number})
+    # Respond with a successful creation message or similar
+    print('Instance is created')
+    return jsonify({'status': 'pending', 'message': 'Instance creation initiated', 'mobileNumber': mobile_number})
 
 @qr_blueprint.route('/register', methods=['GET'])
 @login_required
@@ -98,7 +90,8 @@ def get_qr_code():
         if instance != None:
             print('Loading the QR Code')
             # In a real application, provide the URL or path to the generated QR code
-            load_qr_code(mobile_number, app_home)
+            smsidea_api_key = load_qr_code(mobile_number, app_home)
+            update_instance_api_key(mobile_number, {'smsidea_api_key': smsidea_api_key})
             print('Loaded the QR Code')
             return jsonify({'status': 'ready'})
         else:

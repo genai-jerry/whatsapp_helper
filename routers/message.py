@@ -1,9 +1,9 @@
 from flask import Blueprint, request, render_template, g
 from flask_login import login_required
 from store.kafka_factory import KafkaConsumerFactory, KafkaProducerFactory
-from whatsapp.qr_code_generator import *
-from whatsapp.whatsapp_automation import *
-from whatsapp.message_sender import *
+from smsidea.qr_code_generator import *
+from smsidea.whatsapp_automation import *
+from smsidea.message_sender import *
 from browser.update_chrome import *
 from store.message_store import *
 from store.instance_store import *

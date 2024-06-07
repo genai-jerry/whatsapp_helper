@@ -1,4 +1,4 @@
-from whatsapp.whatsapp_automation import send_media_whatsapp_message, send_whatsapp_message
+from smsidea.whatsapp_automation import send_media_whatsapp_message, send_whatsapp_message
 import json
 from confluent_kafka import Consumer, KafkaException, Message
 import asyncio
