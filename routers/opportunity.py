@@ -200,18 +200,26 @@ def get_opportunity_detail(opportunity_id):
             'templates': opportunity['templates'],
             'appointments': opportunity['appointments'],
             'sales_date': opportunity['sales_date'].date() if opportunity['sales_date'] is not None else None,
-            'senders': senders  # Add the list of senders to the response data
+            'senders': senders,  # Add the list of senders to the response data,
+            'gender': opportunity['gender'],
+            'challenge_type': opportunity['challenge_type'],
+            'company_type': opportunity['company_type'],
         }
         call_statuses = get_all_call_status()
          # Get a list of opportunity statuses
         opportunity_statuses = get_all_opportunity_status()
         # Get a list of sales agents (optin callers)
         sales_agents = get_all_sales_agents()
+        # Get a list of challenge types
+        challenge_types = get_all_challenge_types()  # Replace with your database query
 
-        print(f'Showing {opportunity_statuses} and {opportunity["call_status"]} and {opportunity["sales_date"]}')
+        # Get a list of company types
+        company_types = get_all_company_types()  # Replace with your database query
+
         return render_template('opportunity/view.html', opportunity=response_data,
-                            call_statuses=call_statuses, opportunity_statuses=opportunity_statuses,
-                            sales_agents=sales_agents)
+                       call_statuses=call_statuses, opportunity_statuses=opportunity_statuses,
+                       sales_agents=sales_agents, challenge_types=challenge_types,
+                       company_types=company_types)
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
@@ -230,6 +238,9 @@ def update_opportunity_detail():
         sales_agent = request.form.get('optin_caller')
         comment = request.form.get('comment')
         sales_date = request.form.get('sales_date')
+        gender = request.form.get('gender')
+        challenge_type = request.form.get('challenge_type')
+        company_type = request.form.get('company_type')
 
         # Prepare the data for the update_opportunity function
         opportunity_data = {
@@ -240,7 +251,10 @@ def update_opportunity_detail():
             #'opportunity_status': opportunity_status,
             'sales_agent': sales_agent,
             'comment': comment,
-            'sales_date': sales_date
+            'sales_date': sales_date,
+            'gender': gender,
+            'challenge_type': challenge_type,
+            'company_type': company_type
         }
         print('Updating Opportunity Data:', opportunity_data)
         # Call the update_opportunity function

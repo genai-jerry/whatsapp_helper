@@ -279,7 +279,10 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.opportunity_status AS opportunity_status,
                 opportunity.call_status AS call_status,
                 opportunity.sales_agent AS sales_agent,
-                opportunity.sales_date AS sales_date
+                opportunity.sales_date AS sales_date,
+                opportunity.gender AS gender,
+                opportunity.company_type AS company_type,
+                opportunity.challenge_type AS challenge_type
             FROM 
                 opportunity
             WHERE 
@@ -328,6 +331,9 @@ def get_opportunity_by_id(opportunity_id):
             'call_status': opportunity[7],
             'sales_agent': opportunity[8],
             'sales_date': opportunity[9],
+            'gender': opportunity[10],
+            'company_type': opportunity[11],
+            'challenge_type': opportunity[12],
             'appointments': appointment_data,
             'messages': [{'type': message[1], 'sender': message[2], 'receiver': message[3], 'message': message[5], 'template': message[6], 'status': message[7], 'error_message': message[8], 'create_time': message[9], 'update_time': message[10]} for message in messages],
             'templates': [{'id': template[0], 'name': template[1], 'active': template[2], 'template_text': template[3]} for template in templates]
@@ -366,7 +372,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
         sql = """
         UPDATE opportunity
         SET name = %s, email = %s, phone = %s, call_status = %s, sales_agent = %s,
-        comment = %s, sales_date = %s
+        comment = %s, sales_date = %s, gender = %s, company_type = %s, challenge_type = %s
         WHERE id = %s
         """
 
@@ -379,7 +385,10 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             #opportunity_data['opportunity_status'] if int(opportunity_data['opportunity_status']) > 0 else None,
             opportunity_data['sales_agent'] if int(opportunity_data['sales_agent']) > 0 else None,
             opportunity_data['comment'],
-            opportunity_data['sales_date'],
+            opportunity_data['sales_date'] if opportunity_data['sales_date'] != '' else None,
+            opportunity_data['gender'],
+            opportunity_data['company_type'],
+            opportunity_data['challenge_type'],
             opportunity_id
         )
 
@@ -440,6 +449,40 @@ def get_all_opportunity_status():
     finally:
         if cursor:
             cursor.close()
+
+def get_all_company_types():
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "SELECT id, name FROM company_type"
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        company_types_list = []
+        for row in results:
+            company_types_list.append({'id': row[0], 'name': row[1]})
+        return company_types_list
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_all_challenge_types():
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "SELECT id, name FROM challenge_type"
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        challenge_types_list = []
+        for row in results:
+            challenge_types_list.append({'id': row[0], 'name': row[1]})
+        return challenge_types_list
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
 
 def get_all_sales_agents():
     try:

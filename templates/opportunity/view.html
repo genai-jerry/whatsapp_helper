@@ -47,11 +47,45 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="callStatus">Opt-in Call Status:</label>
-                            <select class="form-control" id="callStatus" name="call_status">
-                                <option value="-1">Select a Call Status</option>
-                                {% for status in call_statuses %}
-                                    <option value="{{ status.id }}" {% if opportunity.call_status == status.id %}selected="selected"{% endif %}>{{ status.name }}</option>
+                            <label for="opportunityStatus">Sales Call Status</label>
+                            <div class="form-control" role="group" aria-label="Opportunity Status">
+                                {% for status in opportunity_statuses %}
+                                    <button type="button" id="status-{{ status.id }}" class="btn btn-primary {% if opportunity.opportunity_status == status.id %}btn-success{% endif %}" onclick="update_status({{opportunity.id}}, {{status.id}})" >{{ status.name }}</button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="gender">Gender:</label>
+                            <select class="form-control" id="gender" name="gender">
+                                <option value="-1">Select a Gender</option>
+                                <option value="male" {% if opportunity.gender == 'male' %}selected="selected"{% endif %}>Male</option>
+                                <option value="female" {% if opportunity.gender == 'female' %}selected="selected"{% endif %}>Female</option>
+                                <option value="other" {% if opportunity.gender == 'other' %}selected="selected"{% endif %}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="companyType">Company Type:</label>
+                            <select class="form-control" id="companyType" name="company_type">
+                                <option value="-1">Select a Company Type</option>
+                                {% for type in company_types %}
+                                    <option value="{{ type.id }}" {% if opportunity.company_type == type.id %}selected="selected"{% endif %}>{{ type.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="challengeType">Challenge Type:</label>
+                            <select class="form-control" id="challengeType" name="challenge_type">
+                                <option value="-1">Select a Challenge Type</option>
+                                {% for type in challenge_types %}
+                                    <option value="{{ type.id }}" {% if opportunity.challenge_type == type.id %}selected="selected"{% endif %}>{{ type.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -60,12 +94,13 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="opportunityStatus">Sales Call Status</label>
-                            <div class="form-control" role="group" aria-label="Opportunity Status">
-                                {% for status in opportunity_statuses %}
-                                    <button type="button" id="status-{{ status.id }}" class="btn btn-primary {% if opportunity.opportunity_status == status.id %}btn-success{% endif %}" onclick="update_status({{opportunity.id}}, {{status.id}})" >{{ status.name }}</button>
+                            <label for="callStatus">Opt-in Call Status:</label>
+                            <select class="form-control" id="callStatus" name="call_status">
+                                <option value="-1">Select a Call Status</option>
+                                {% for status in call_statuses %}
+                                    <option value="{{ status.id }}" {% if opportunity.call_status == status.id %}selected="selected"{% endif %}>{{ status.name }}</option>
                                 {% endfor %}
-                            </div>
+                            </select>
                         </div>
                     </div>
                     <div class="col-md-6">
