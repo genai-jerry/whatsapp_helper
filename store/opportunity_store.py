@@ -386,9 +386,9 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             opportunity_data['sales_agent'] if int(opportunity_data['sales_agent']) > 0 else None,
             opportunity_data['comment'],
             opportunity_data['sales_date'] if opportunity_data['sales_date'] != '' else None,
-            opportunity_data['gender'],
-            opportunity_data['company_type'],
-            opportunity_data['challenge_type'],
+            opportunity_data['gender'] if opportunity_data['gender'] != '' else None,
+            opportunity_data['company_type'] if opportunity_data['company_type'] != '' else None,
+            opportunity_data['challenge_type'] if opportunity_data['challenge_type'] != '' else None,
             opportunity_id
         )
 
