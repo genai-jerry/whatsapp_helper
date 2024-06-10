@@ -32,6 +32,8 @@ def create_opportunity():
         ad_name = data.get('ad_name')
         ad_id = data.get('ad_id')
         ad_medium = data.get('ad_medium')
+        ad_fbp = data.get('ad_fbp')
+        ad_fbc = data.get('ad_fbc')
 
         # Create the opportunity in your database
         opportunity_data = {
@@ -42,7 +44,9 @@ def create_opportunity():
             'campaign': campaign,
             'ad_name': ad_name,
             'ad_id': ad_id,
-            'ad_medium': ad_medium
+            'ad_medium': ad_medium,
+            'ad_fbp': ad_fbp,
+            'ad_fbc': ad_fbc
         }
         store_opportunity(opportunity_data)
 

@@ -48,6 +48,8 @@ def store_opportunity(opportunity_data):
         ad_name = opportunity_data['ad_name'] if 'ad_name' in opportunity_data and opportunity_data['ad_name'] else None
         ad_id = opportunity_data['ad_id'] if 'ad_id' in opportunity_data and opportunity_data['ad_id'] else None
         ad_medium = opportunity_data['ad_medium'] if 'ad_medium' in opportunity_data and opportunity_data['ad_medium'] else None
+        ad_fbp = opportunity_data['ad_fbp'] if 'ad_fbp' in opportunity_data and opportunity_data['ad_fbp'] else None
+        ad_fbc = opportunity_data['ad_fbc'] if 'ad_fbc' in opportunity_data and opportunity_data['ad_fbc'] else None
 
         # Insert the opportunity
         connection = create_connection()
@@ -68,10 +70,12 @@ def store_opportunity(opportunity_data):
         if email_exists == 0:
             # Insert the opportunity
             sql_insert = """
-                INSERT INTO opportunity (name, email, phone, register_time, opportunity_status, call_status, sales_agent, sales_date, comment, campaign, ad_name, ad_id, medium)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO opportunity (name, email, phone, register_time, opportunity_status, call_status, sales_agent, sales_date, comment, campaign, ad_name, ad_id, medium,
+                ad_fbp, ad_fbc)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(sql_insert, (name, email, phone, date, opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, ad_name, ad_id, ad_medium))
+            cursor.execute(sql_insert, (name, email, phone, date, opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, 
+                                        ad_name, ad_id, ad_medium, ad_fbp, ad_fbc))
             connection.commit()
             print("Opportunity inserted successfully.")
         else:
