@@ -31,6 +31,7 @@ def create_opportunity():
         campaign = data.get('campaign')
         ad_name = data.get('ad_name')
         ad_id = data.get('ad_id')
+        ad_medium = data.get('ad_medium')
 
         # Create the opportunity in your database
         opportunity_data = {
@@ -40,7 +41,8 @@ def create_opportunity():
             'phone': phone,
             'campaign': campaign,
             'ad_name': ad_name,
-            'ad_id': ad_id
+            'ad_id': ad_id,
+            'ad_medium': ad_medium
         }
         store_opportunity(opportunity_data)
 
@@ -155,6 +157,7 @@ def list_opportunities():
             'call_status_text_color': opportunity['call_status_text_color'],
             'sales_agent_text_color': opportunity['sales_agent_text_color'],
             'ad_name': opportunity['ad_name'],
+            'ad_medium': opportunity['ad_medium'],
             }
             response_data.append(opportunity_data)
         
