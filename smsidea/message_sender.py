@@ -1,7 +1,7 @@
 import json
 from flask import jsonify
 
-from store.kafka_factory import KafkaProducerFactory
+from middleware.kafka_factory import KafkaProducerFactory
 from .whatsapp_automation import *
 from store.instance_store import *
 from store.template_store import retrieve_template_by_name
@@ -89,7 +89,7 @@ def send_media_message(data, app_home):
 
 def send_message_to_producer(message_data):
     try:
-        producer = KafkaProducerFactory.get_producer()
+        producer = KafkaProducerFactory.get_producer('message')
         producer.get_producer().produce(producer.get_topic(),
                          json.dumps(message_data).encode('utf-8')
                          )

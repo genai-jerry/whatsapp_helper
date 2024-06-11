@@ -1,6 +1,7 @@
 from db.connection_manager import *
 from utils import format_phone_number
 from datetime import datetime
+from facebook.fb_ads_manager import handle_opportunity_update
 
 opportunities = {}
 
@@ -143,7 +144,32 @@ def update_opportunity(opportunity_data):
             cursor.execute(sql_update_sale_date, (opportunity_data['opportunity_id'],))
 
         connection.commit()
-        print("Opportunity updated successfully.")
+        print("Opportunity updated successfully.")  
+
+        # Retrieve the updated opportunity data
+        select_sql = """
+            SELECT 
+            o.name,
+            o.email,
+            o.phone,
+            o.ad_fbp,
+            o.ad_fbc
+            FROM 
+            opportunity o
+            WHERE o.id = %s
+        """
+        cursor.execute(select_sql, (opportunity_data['opportunity_id'],))
+        row = cursor.fetchone() # Fetch the updated opportunity data
+        opportunity = {
+            'name': row[0],
+            'email': row[1],
+            'phone': row[2],
+            'fbp': row[3],
+            'fbc': row[4]
+            }
+
+        handle_opportunity_update(opportunity, status_type, status)
+
     finally:
         if cursor:
             cursor.close()

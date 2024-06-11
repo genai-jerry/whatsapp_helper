@@ -1,6 +1,5 @@
 from flask import Blueprint, request, render_template, g
 from flask_login import login_required
-from store.kafka_factory import KafkaConsumerFactory, KafkaProducerFactory
 from smsidea.qr_code_generator import *
 from smsidea.whatsapp_automation import *
 from smsidea.message_sender import *
@@ -12,9 +11,6 @@ from store.key_store import generate_new_api_key
 from utils import app_home, require_api_key
 
 message_blueprint = Blueprint('message', __name__)
-
-KafkaProducerFactory.get_producer()
-KafkaConsumerFactory.get_consumer()
 
 @message_blueprint.route('/api_key', methods=['POST'])
 def generate_api_key():

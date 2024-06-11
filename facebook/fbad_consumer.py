@@ -1,17 +1,17 @@
-from smsidea.whatsapp_automation import send_media_whatsapp_message, send_whatsapp_message
 import json
-from confluent_kafka import Consumer, KafkaException, Message
+from confluent_kafka import Consumer, Message
 import asyncio
 import threading
 import configparser
+from .fb_conversions import add_lead
 
 config = configparser.ConfigParser()
 config.read('config/config.ini')
 
-class KafkaConsumerThread(threading.Thread):
+class KafkaAdManagerConsumerThread(threading.Thread):
     def __new__(cls):
         if not hasattr(cls, 'instance'):
-            cls.instance = super(KafkaConsumerThread, cls).__new__(cls)
+            cls.instance = super(KafkaAdManagerConsumerThread, cls).__new__(cls)
         return cls.instance
     
     def __init__(self):
@@ -19,13 +19,13 @@ class KafkaConsumerThread(threading.Thread):
         self.daemon = True
 
         self.consumer = Consumer({
-            'bootstrap.servers': config.get('Consumer', 'bootstrap_servers'),
-            'group.id': config.get('Consumer', 'group_id'),
+            'bootstrap.servers': config.get('admanagement.consumer', 'bootstrap_servers'),
+            'group.id': config.get('admanagement.consumer', 'group_id'),
             'auto.offset.reset': 'earliest',
             'enable.auto.commit': False  # Disable auto-commit to manage offset manually
         })
 
-        self.topic = config.get('Consumer', 'topic')
+        self.topic = config.get('admanagement.consumer', 'topic')
         self.consumer.subscribe([self.topic])
 
     def run(self):
@@ -57,15 +57,15 @@ class KafkaConsumerThread(threading.Thread):
         # Your asynchronous message processing logic here
         # For example, you can use `asyncio.sleep` to simulate asynchronous processing
         await asyncio.sleep(2)
-        print(f'Processed message: {msg.value().decode("utf-8")}')
+        print(f'Processing conversion message: {msg.value().decode("utf-8")}')
         message_data = json.loads(msg.value().decode('utf-8'))
         print(f'Received message: {message_data}')
-        if message_data['type'] == 'media':
-            print('Sending whatsapp media message')
-            send_media_whatsapp_message(message_data)
-        else:
-            print('Sending whatsapp text message')
-            send_whatsapp_message(message_data)
+
+        if message_data['event_type'] == 'call_status' and message_data['event_value'] in ['4', '5', '8', '10']:
+            lead = message_data['opportunity']
+            print(f'Adding Lead {lead}')
+            add_lead(lead)
+      
 
 
 

@@ -4,18 +4,18 @@ import configparser
 config = configparser.ConfigParser()
 config.read('config/config.ini')
 
-class KafkaProducer(object):
+class KafkaMessageProducer(object):
     def __new__(cls):
         if not hasattr(cls, 'instance'):
-            cls.instance = super(KafkaProducer, cls).__new__(cls)
+            cls.instance = super(KafkaMessageProducer, cls).__new__(cls)
         return cls.instance
     
     def __init__(self):
-        print('Initializing Kafka producer')
-        self.producer = Producer({'bootstrap.servers': config.get('Producer', 'bootstrap_servers')
+        print('Initializing Kafka message producer')
+        self.producer = Producer({'bootstrap.servers': config.get('message.producer', 'bootstrap_servers')
                     })
-        self.topic = config.get('Producer', 'topic')
-        print('Kafka producer initialized')
+        self.topic = config.get('message.producer', 'topic')
+        print('Kafka message producer initialized')
 
     def get_producer(self):
         return self.producer

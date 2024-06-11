@@ -1,4 +1,3 @@
-import os
 from flask import Flask, g, jsonify, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from routers.driver import driver_blueprint

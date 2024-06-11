@@ -1,7 +1,7 @@
 import json
 from flask import jsonify
 
-from store.kafka_factory import KafkaProducerFactory
+from middleware.kafka_factory import KafkaProducerFactory
 from .whatsapp_automation import *
 from store.instance_store import *
 from store.template_store import retrieve_template_by_name
