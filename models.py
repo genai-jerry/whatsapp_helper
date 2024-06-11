@@ -14,6 +14,7 @@ class Instances(db.Model):
     mobile_number = db.Column(db.String(255), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     status = db.Column(db.String(50), nullable=False)
+    sms_idea_api_key = db.Column(db.String(50), nullable=False)
 
 
 class LeadCallStatus(db.Model):
@@ -57,12 +58,29 @@ class Opportunity(db.Model):
     email = db.Column(db.String(255), nullable=False, unique=True)
     phone = db.Column(db.String(15), nullable=False, unique=True)
     comment = db.Column(db.String(250))
+    ad_name = db.Column(db.String(250))
+    ad_id = db.Column(db.String(250))
+    ad_fbp = db.Column(db.String(500))
+    ad_fbc = db.Column(db.String(500))
+    medium = db.Column(db.String(250))
+    gender = db.Column(db.String(10), nullable=True)
     register_time = db.Column(db.DateTime, nullable=False)
     opportunity_status = db.Column(db.Integer, db.ForeignKey('opportunity_status.id'))
     call_status = db.Column(db.Integer, db.ForeignKey('lead_call_status.id'))
     sales_agent = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
+    company_type = db.Column(db.Integer, db.ForeignKey('company_type.id'))
+    challenge_type = db.Column(db.Integer, db.ForeignKey('challenge_type.id'))
     sales_date = db.Column(db.DateTime)  # New column
 
+class CompanyType(db.Model):
+    __tablename__ = 'company_type'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+
+class ChallengeType(db.Model):
+    __tablename__ = 'challenge_type'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
 
 class OpportunityStatus(db.Model):
     __tablename__ = 'opportunity_status'
