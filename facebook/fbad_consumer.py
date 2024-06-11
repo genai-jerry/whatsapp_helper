@@ -61,7 +61,7 @@ class KafkaAdManagerConsumerThread(threading.Thread):
         message_data = json.loads(msg.value().decode('utf-8'))
         print(f'Received message: {message_data}')
 
-        if message_data['event_type'] == 'call_status' and message_data['event_value'] in ['4', '5', '8', '10']:
+        if message_data['event_type'] == 'call_status' and message_data['event_value'] in ['3', '4', '5', '8', '10']:
             lead = message_data['opportunity']
             print(f'Adding Lead {lead}')
             add_lead(lead)
