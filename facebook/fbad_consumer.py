@@ -3,7 +3,7 @@ from confluent_kafka import Consumer, Message
 import asyncio
 import threading
 import configparser
-from .fb_conversions import add_lead
+from .fb_conversions import add_lead, add_sale
 
 config = configparser.ConfigParser()
 config.read('config/config.ini')
@@ -61,10 +61,15 @@ class KafkaAdManagerConsumerThread(threading.Thread):
         message_data = json.loads(msg.value().decode('utf-8'))
         print(f'Received message: {message_data}')
 
-        if message_data['event_type'] == 'call_status' and message_data['event_value'] in ['3', '4', '5', '8', '10']:
+        if message_data['event_type'] == 'call_status':
             lead = message_data['opportunity']
-            print(f'Adding Lead {lead}')
-            add_lead(lead)
+            print(f'Adding New Lead {lead}')
+            add_lead(lead, message_data['event_value'])
+        if message_data['event_type'] == 'opportunity_status':
+            lead = message_data['opportunity']
+            print(f'Updating Opportunity Sale {lead}')
+            # Update opportunity status
+            add_sale(lead)
       
 
 

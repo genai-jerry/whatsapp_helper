@@ -155,6 +155,7 @@ def update_opportunity(opportunity_data):
         # Retrieve the updated opportunity data
         select_sql = """
             SELECT 
+            o.id,
             o.name,
             o.email,
             o.phone,
@@ -167,11 +168,12 @@ def update_opportunity(opportunity_data):
         cursor.execute(select_sql, (opportunity_data['opportunity_id'],))
         row = cursor.fetchone() # Fetch the updated opportunity data
         opportunity = {
-            'name': row[0],
-            'email': row[1],
-            'phone': row[2],
-            'fbp': row[3],
-            'fbc': row[4]
+            'id': row[0],
+            'name': row[1],
+            'email': row[2],
+            'phone': row[3],
+            'fbp': row[4],
+            'fbc': row[5]
             }
 
         handle_opportunity_update(opportunity, status_type, status)
@@ -321,7 +323,12 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.sales_date AS sales_date,
                 opportunity.gender AS gender,
                 opportunity.company_type AS company_type,
-                opportunity.challenge_type AS challenge_type
+                opportunity.challenge_type AS challenge_type,
+                opportunity.lead_event_fired as lead_even_fired,
+                opportunity.submit_application_event_fired as submit_application_event_fired,
+                opportunity.sale_event_fired as sale_event_fired,
+                opportunity.ad_fbp as fbp,
+                opportunity.ad_fbc as fbc
             FROM 
                 opportunity
             WHERE 
@@ -373,6 +380,11 @@ def get_opportunity_by_id(opportunity_id):
             'gender': opportunity[10],
             'company_type': opportunity[11],
             'challenge_type': opportunity[12],
+            'lead_event_fired': opportunity[13],
+            'submit_application_event_fired': opportunity[14],
+            'sale_event_fired': opportunity[15],
+            'fbp': opportunity[16],
+            'fbc': opportunity[17],
             'appointments': appointment_data,
             'messages': [{'type': message[1], 'sender': message[2], 'receiver': message[3], 'message': message[5], 'template': message[6], 'status': message[7], 'error_message': message[8], 'create_time': message[9], 'update_time': message[10]} for message in messages],
             'templates': [{'id': template[0], 'name': template[1], 'active': template[2], 'template_text': template[3]} for template in templates]
@@ -433,7 +445,20 @@ def update_opportunity_data(opportunity_id, opportunity_data):
 
         # Execute the query with the provided values
         cursor.execute(sql, values)
-
+        if int(opportunity_data['call_status']) > 0:
+            opportunity = get_opportunity_by_id(opportunity_id)
+            data = {
+                'id': opportunity['id'],
+                'name': opportunity['name'],
+                'email': opportunity['email'],
+                'phone': opportunity['phone'],
+                'opportunity_status': opportunity['opportunity_status'],
+                'call_status': opportunity['call_status'],
+                'fbp': opportunity['fbp'],
+                'fbc': opportunity['fbc']
+             }
+            handle_opportunity_update(data, 
+                                  'call_status', f'{data["call_status"]}')
         connection.commit()
     finally:
         if cursor:
@@ -666,3 +691,4 @@ def generate_metrics(start_date, end_date):
     finally:
         if cursor:
             cursor.close()
+
