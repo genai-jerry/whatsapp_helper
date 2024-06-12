@@ -84,10 +84,12 @@ def store_opportunity(opportunity_data):
             # Update the opportunity
             sql_update = """
                 UPDATE opportunity 
-                SET opportunity_status = %s, call_status = %s, sales_agent = %s, sales_date = %s , comment = %s, campaign = %s
+                SET opportunity_status = %s, call_status = %s, sales_agent = %s, sales_date = %s , comment = %s, campaign = %s,
+                ad_name = %s, ad_id = %s, medium = %s, ad_fbp = %s, ad_fbc = %s, reregister_time = %s
                 WHERE email = %s or phone = %s
             """
-            cursor.execute(sql_update, (opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, email, phone))
+            cursor.execute(sql_update, (opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, email, 
+                                        phone, ad_name, ad_id, ad_medium, ad_fbp, ad_fbc, date))
             connection.commit()
             print("Opportunity updated successfully.")
     except Exception as e:
@@ -248,7 +250,7 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
                 else:
                     params.append(filter_value)
 
-        select_sql += " ORDER BY o.register_time desc LIMIT %s OFFSET %s"
+        select_sql += " ORDER BY o.reregister_time desc, o.register_time desc LIMIT %s OFFSET %s"
         print(select_sql)
         print(count_sql, params)
         # Count the total number of opportunities

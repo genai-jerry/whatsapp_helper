@@ -65,6 +65,7 @@ class Opportunity(db.Model):
     medium = db.Column(db.String(250))
     gender = db.Column(db.String(10), nullable=True)
     register_time = db.Column(db.DateTime, nullable=False)
+    reregister_time = db.Column(db.DateTime, nullable=True)
     opportunity_status = db.Column(db.Integer, db.ForeignKey('opportunity_status.id'))
     call_status = db.Column(db.Integer, db.ForeignKey('lead_call_status.id'))
     sales_agent = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
