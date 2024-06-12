@@ -2,6 +2,7 @@ from db.connection_manager import *
 from utils import format_phone_number
 from datetime import datetime
 from facebook.fb_ads_manager import handle_opportunity_update
+from datetime import datetime
 
 opportunities = {}
 
@@ -81,6 +82,7 @@ def store_opportunity(opportunity_data):
             print("Opportunity inserted successfully.")
         else:
             print("Email already exists in the table.")
+            current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             # Update the opportunity
             sql_update = """
                 UPDATE opportunity 
@@ -88,8 +90,10 @@ def store_opportunity(opportunity_data):
                 ad_name = %s, ad_id = %s, medium = %s, ad_fbp = %s, ad_fbc = %s, reregister_time = %s
                 WHERE email = %s or phone = %s
             """
-            cursor.execute(sql_update, (opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, email, 
-                                        phone, ad_name, ad_id, ad_medium, ad_fbp, ad_fbc, date))
+            cursor.execute(sql_update, (opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, ad_name, 
+                                        ad_id, ad_medium, ad_fbp, ad_fbc, current_datetime,
+                                        email, 
+                                        phone))
             connection.commit()
             print("Opportunity updated successfully.")
     except Exception as e:
