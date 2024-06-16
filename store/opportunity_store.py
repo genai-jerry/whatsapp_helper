@@ -240,25 +240,32 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
 
         # If a filter type and filter value are provided, add a WHERE clause to the queries
         print(f'Filter params {filter_type} and {filter_value}')
-        
+
         if filter_type and filter_value:
+            filter_types = filter_type.split(",")
+            filter_values = filter_value.split(",")
+            print(f'Filter Types {filter_values}')
             if search_term or search_type:
                 count_sql += " AND"
                 select_sql += " AND"
-            if isinstance(filter_value, int) and int(filter_value) == 11:
-                count_sql += f" {filter_type} IS NULL"
-                select_sql += f" {filter_type} IS NULL"
-            else:
-                count_sql += f" {filter_type} = %s"
-                select_sql += f" {filter_type} = %s"
-                if isinstance(filter_value, int):
-                    params.append(int(filter_value))
+            for i in range(len(filter_types)):
+                if i>0:
+                    count_sql += " AND"
+                    select_sql += " AND"
+                if isinstance(filter_values[i], int) and int(filter_values[i]) == 11:
+                    count_sql += f" {filter_types[i]} IS NULL"
+                    select_sql += f" {filter_types[i]} IS NULL"
                 else:
-                    params.append(filter_value)
+                    count_sql += f" {filter_types[i]} = %s"
+                    select_sql += f" {filter_types[i]} = %s"
+                    if isinstance(filter_values[i], int):
+                        params.append(int(filter_values[i]))
+                    else:
+                        params.append(filter_values[i])
 
         select_sql += " ORDER BY o.reregister_time desc, o.register_time desc LIMIT %s OFFSET %s"
-        print(select_sql)
-        print(count_sql, params)
+
+        print(f'Count SQL {count_sql}')
         # Count the total number of opportunities
         cursor.execute(count_sql, params)  # Only pass the search term and filter value to the count query
         params.extend([per_page, (page - 1) * per_page])
@@ -266,7 +273,7 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
 
         # Calculate the total number of pages
         total_pages = (total_items + per_page - 1) // per_page
-        print(select_sql, params)
+        print(f'Select SQL {select_sql}')
         # Retrieve the opportunities for the current page
         cursor.execute(select_sql, params)
         results = cursor.fetchall()

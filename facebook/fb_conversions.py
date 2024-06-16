@@ -7,7 +7,7 @@ url = "https://connect.pabbly.com/workflow/sendwebhookdata/IjU3NjUwNTY1MDYzNzA0M
 def add_lead(opportunity, status_value):
     # If the event is of type "VSL Shared", send a POST request to the external API
     events_fired = check_events_fired(opportunity['id'])
-    if status_value in ['3', '4', '5', '8', '10']:
+    if status_value in ['3', '4', '5', '8', '10', '15']:
         if 'lead_event_fired' not in events_fired or not events_fired['lead_event_fired']:
             fire_event(opportunity, "NewLead")
             update_event_fired(opportunity['id'], 'lead_event_fired')

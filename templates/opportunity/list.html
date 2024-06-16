@@ -64,17 +64,23 @@
 <script>
     var page = 1;
     var totalPages = 1;
-    var filterType = null;
-    var filterValue = null;
-    var filterName = null;
-    function loadOpportunities(searchTerm, searchType, filterType, filterValue) {
+
+    function loadOpportunities(searchTerm, searchType, filters) {
         
         var url = '/opportunity/list?page=' + page;
         if (searchTerm && searchType) {
             url += '&searchTerm=' + encodeURIComponent(searchTerm) + '&searchType=' + encodeURIComponent(searchType);
         }
-        if (filterType && filterValue) {
-            url += '&filterType=' + encodeURIComponent(filterType) + '&filterValue=' + encodeURIComponent(filterValue);
+        if (filters) {
+            var filterTypes = Object.keys(filters).map(function(fType) {
+                return filters[fType].type;
+            }).join(',');
+
+            var filterValues = Object.keys(filters).map(function(fType) {
+                return filters[fType].value;
+            }).join(',');
+
+            url += '&filterType=' + encodeURIComponent(filterTypes) + '&filterValue=' + encodeURIComponent(filterValues);
         }
         $.getJSON(url, function(data) {
             // Clear the current list of opportunities
@@ -114,33 +120,41 @@
             totalPages = data.total_pages;
             // Load the initial data
             $.getJSON('/opportunity/call_status', function(data) {
-                var callStatusFilter = createFilterDropdown(null, filterType=="cs.id" ? filterName: null, data, 
+                var callStatusFilter = createFilterDropdown(null, filters && filters.hasOwnProperty('cs.id') ? filters['cs.id'].name : null, data, 
                     'name', 'color_code', 'text_color', 'cs.id', 'Call Status');
                 $('#call_status_heading').empty();
                 $('#call_status_heading').append(callStatusFilter);
             });
             $.getJSON('/opportunity/opportunity_status', function(data) {
-                var opportunityStatusFilter = createFilterDropdown(null, filterType=="os.id" ? filterName: null, data, 
+                var opportunityStatusFilter = createFilterDropdown(null, filters && filters.hasOwnProperty("os.id") ? filters['os.id'].name: null, data, 
                     'name', 'color_code', 'text_color', 'os.id', 'Opportunity Status');
                 $('#opportunity_status_heading').empty();
                 $('#opportunity_status_heading').append(opportunityStatusFilter);
             });
             $.getJSON('/opportunity/sales_agents', function(data) {
-                var opportunityStatusFilter = createFilterDropdown(null, filterType=="sa.id" ? filterName: null, data, 
+                var opportunityStatusFilter = createFilterDropdown(null, filters && filters.hasOwnProperty("sa.id") ? filters['sa.id'].name: null, data, 
                     'name', 'color_code', 'text_color', 'sa.id', 'Sales Agent');
                 $('#agent_heading').empty();
                 $('#agent_heading').append(opportunityStatusFilter);
             });
         });
     }
-    function filterOpportunity(fType, fValue, fName){
+    class Filter {
+        constructor(type, value, name) {
+            this.type = type;
+            this.value = value;
+            this.name = name;
+        }
+    }
+
+    var filters = {};
+
+    function filterOpportunity(fType, fValue, fName) {
         var searchTerm = $('#searchTerm').val();
         var searchType = $('#searchType').val();
-        filterType = fType;
-        filterValue = fValue;
-        filterName = fName;
-        loadOpportunities(searchTerm, searchType, filterType, filterValue);
-        
+        var filter = new Filter(fType, fValue, fName);
+        filters[fType] = filter;
+        loadOpportunities(searchTerm, searchType, filters);
     }
     function updateOpportunityStatus(opportunityId, status, statusType, option_color_key, option_text_color_key, option_name_key) {
         // Make an AJAX request to update the opportunity status
@@ -153,7 +167,7 @@
                 status: status
             }),
             success: function(response) {
-                loadOpportunities($('#searchTerm').val(), $('#searchType').val(), filterType, filterValue);
+                loadOpportunities($('#searchTerm').val(), $('#searchType').val(), filters);
             },
             error: function(xhr, status, error) {
                 // Handle the error response
@@ -221,7 +235,7 @@
                 page = 1;  // Reset to the first page
                 filterType = "DATE(o.register_time)";
                 filterValue = dateStr;
-                loadOpportunities(searchTerm, searchType, filterType, filterValue);
+                loadOpportunities(searchTerm, searchType, filters);
             },
             disableMobile: true // Add this line to disable the dropdown on mobile
         });
@@ -232,7 +246,7 @@
                 page--;
                 var searchTerm = $('#searchTerm').val();
                 var searchType = $('#searchType').val();
-                loadOpportunities(searchTerm, searchType, filterType, filterValue);
+                loadOpportunities(searchTerm, searchType, filters);
             }
         });
         // Handle the search form submission
@@ -241,7 +255,7 @@
             var searchTerm = $('#searchTerm').val();
             var searchType = $('#searchType').val();
             page = 1;  // Reset to the first page
-            loadOpportunities(searchTerm, searchType, filterType, filterValue);
+            loadOpportunities(searchTerm, searchType, filters);
         });
         
         // Handle the Next button click
@@ -250,7 +264,7 @@
                 page++;
                 var searchTerm = $('#searchTerm').val();
                 var searchType = $('#searchType').val();
-                loadOpportunities(searchTerm, searchType, filterType, filterValue);
+                loadOpportunities(searchTerm, searchType, filters);
             }
         });
         // Handle the First button click
@@ -259,7 +273,7 @@
                 page = 1;
                 var searchTerm = $('#searchTerm').val();
                 var searchType = $('#searchType').val();
-                loadOpportunities(searchTerm, searchType, filterType, filterValue);
+                loadOpportunities(searchTerm, searchType, filters);
             }
         });
     });
