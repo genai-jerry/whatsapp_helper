@@ -72,11 +72,11 @@ def store_opportunity(opportunity_data):
         if email_exists == 0:
             # Insert the opportunity
             sql_insert = """
-                INSERT INTO opportunity (name, email, phone, register_time, opportunity_status, call_status, sales_agent, sales_date, comment, campaign, ad_name, ad_id, medium,
+                INSERT INTO opportunity (name, email, phone, register_time, last_register_time, opportunity_status, call_status, sales_agent, sales_date, comment, campaign, ad_name, ad_id, medium,
                 ad_fbp, ad_fbc)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(sql_insert, (name, email, phone, date, opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, 
+            cursor.execute(sql_insert, (name, email, phone, date, date, opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, 
                                         ad_name, ad_id, ad_medium, ad_fbp, ad_fbc))
             connection.commit()
             print("Opportunity inserted successfully.")
@@ -87,7 +87,7 @@ def store_opportunity(opportunity_data):
             sql_update = """
                 UPDATE opportunity 
                 SET opportunity_status = %s, call_status = %s, sales_agent = %s, sales_date = %s , comment = %s, campaign = %s,
-                ad_name = %s, ad_id = %s, medium = %s, ad_fbp = %s, ad_fbc = %s, reregister_time = %s
+                ad_name = %s, ad_id = %s, medium = %s, ad_fbp = %s, ad_fbc = %s, last_register_time = %s
                 WHERE email = %s or phone = %s
             """
             cursor.execute(sql_update, (opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, ad_name, 
@@ -263,7 +263,7 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
                     else:
                         params.append(filter_values[i])
 
-        select_sql += " ORDER BY o.reregister_time desc, o.register_time desc LIMIT %s OFFSET %s"
+        select_sql += " ORDER BY o.last_register_time desc LIMIT %s OFFSET %s"
 
         print(f'Count SQL {count_sql}')
         # Count the total number of opportunities
