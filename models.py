@@ -120,6 +120,16 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime)
 
+class UserRole(db.Model):
+    __tablename__ = 'user_role'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), Primary_key=True)
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False, unique=True)
+
 class ApiKey(db.Model):
     __tablename__ = 'api_key'
     id = db.Column(db.Integer, primary_key=True)
@@ -164,3 +174,51 @@ class Config(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     value = db.Column(db.String(255), nullable=False)
+
+class Product(db.Model):
+    __tablename__ = 'products'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    price = db.Column(db.Integer, nullable=False)
+    currency = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+
+class Sale(db.Model):
+    __tablename__ = 'sale'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    sale_value = db.Column(db.Integer, nullable=False)
+    total_paid = db.Column(db.Integer, nullable=False)
+    currency = db.Column(db.String(255), nullable=True)
+    note = db.Column(db.String(255), nullable=True)
+    is_final = db.Column(db.Boolean, nullable=False, default=False)
+    opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'))
+    sales_agent = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
+    product = db.Column(db.Integer, db.ForeignKey('products.id'))
+
+class Payment(db.Model):
+    __tablename__ = 'payments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    payment_value = db.Column(db.Integer, nullable=False)
+    charges = db.Column(db.Integer, nullable=False)
+    payment_mode_reference = db.Column(db.String(255), nullable=True)
+    currency = db.Column(db.String(255), nullable=True)
+    payment_date = db.Column(db.DateTime, nullable=False)
+    is_deposit = db.Column(db.Boolean, nullable=False, default=False)
+    invoice_link = db.Column(db.String(255), nullable=True)
+    sale = db.Column(db.Integer, db.ForeignKey('sale.id'))
+    opportunity = db.Column(db.Integer, db.ForeignKey('opportunity.id'))
+    accountant = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    payment_mode = db.Column(db.Integer, db.ForeignKey('payment_mode.id'))
+
+class PaymentMode(db.Model):
+    __tablename__ = 'payment_mode'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+
+
