@@ -66,6 +66,7 @@ class Opportunity(db.Model):
     lead_event_fired = db.Column(db.Boolean, nullable=True)
     submit_application_event_fired = db.Column(db.Boolean, nullable=True)
     sale_event_fired = db.Column(db.Boolean, nullable=True)
+    video_watched = db.Column(db.Boolean, nullable=False, default=False)
     gender = db.Column(db.String(10), nullable=True)
     register_time = db.Column(db.DateTime, nullable=False)
     last_register_time = db.Column(db.DateTime, nullable=True)

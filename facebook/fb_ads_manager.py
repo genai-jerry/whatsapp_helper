@@ -2,7 +2,7 @@ import json
 from middleware.kafka_factory import KafkaConsumerFactory, KafkaProducerFactory
 KafkaConsumerFactory.get_consumer('admanager')
 
-def handle_opportunity_update(opportunity, event_type, event_value):
+def handle_opportunity_update(opportunity, event_type, event_value=None):
     # Send message to fbad_producer
     print('Getting producer')
     producer = KafkaProducerFactory.get_producer('admanager')

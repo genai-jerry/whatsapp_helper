@@ -15,7 +15,10 @@ def add_lead(opportunity, status_value):
         if 'submit_application_event_fired' not in events_fired or not events_fired['submit_application_event_fired']:
             fire_event(opportunity, "SubmitApplication")
             update_event_fired(opportunity['id'], 'submit_application_event_fired')
-        
+
+def video_watched(opportunity):
+    fire_event(opportunity, "VideoWatched")
+
 def add_sale(opportunity):
     fire_event(opportunity, "Sale")
     update_event_fired(opportunity['id'], 'sale_event_fired')
