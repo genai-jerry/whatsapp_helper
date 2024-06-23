@@ -122,7 +122,7 @@ def remove_opportunity(email):
         if cursor:
             cursor.close()
 
-def update_opportunity(opportunity_data):
+def update_opportunity_status(opportunity_data, status_columns=None):
     status = opportunity_data['status']
     # Update data in 'opportunities' table using a prepared statement
     try:
@@ -132,16 +132,24 @@ def update_opportunity(opportunity_data):
         status_type = opportunity_data['status_type']
         # Define the SQL query with placeholders
         if status_type == "call_status":
-            sql = "UPDATE opportunity SET call_status = %s WHERE id = %s"
+            sql = "UPDATE opportunity SET call_status = %s "
         elif status_type == "opportunity_status":
-            sql = "UPDATE opportunity SET opportunity_status = %s WHERE id = %s"
+            sql = "UPDATE opportunity SET opportunity_status = %s "
         elif status_type == "agent":
-            sql = "UPDATE opportunity SET sales_agent = %s WHERE id = %s"
+            sql = "UPDATE opportunity SET sales_agent = %s "
         else:
             raise ValueError("Invalid status type")
 
+        params = [status]
+        if status_columns:
+            for column, value in status_columns.items():
+                sql += f", {column} = %s "
+                params.append(value)
+        params.append(opportunity_data['opportunity_id'])
+
+        sql = sql + " WHERE id = %s"
         # Prepare the query and execute it with the provided values
-        cursor.execute(sql, (status, opportunity_data['opportunity_id']))
+        cursor.execute(sql, params)
 
         if status_type == "opportunity_status" and status == "2":
             # Update the sale_date to current date
@@ -415,6 +423,33 @@ def get_opportunity_id_by_phone_number(phone_number):
         opportunity_id = cursor.fetchone()
         if opportunity_id:
             return opportunity_id[0]
+        else:
+            return None
+    finally:
+        if cursor:
+            cursor.close()
+
+def get_opportunity_by_email(email):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        # Define the SQL query with placeholders
+        sql = "SELECT id, name, email, phone, ad_fbp as fbp, ad_fbc as fbc FROM opportunity where email = %s"
+
+        # Prepare the query and execute it with the provided values
+        cursor.execute(sql, (email,))
+
+        row = cursor.fetchone()
+        if row:
+            opportunity = {
+                'id': row[0],
+                'name': row[1],
+                'email': row[2],
+                'phone': row[3],
+                'fbp': row[4],
+                'fbc': row[5]
+            }
+            return opportunity
         else:
             return None
     finally:
@@ -699,3 +734,16 @@ def generate_metrics(start_date, end_date):
         if cursor:
             cursor.close()
 
+def handle_video_watch_event(email):
+    # Lookup opportunity by email
+    opportunity = get_opportunity_by_email(email)
+    if opportunity is None:
+        print(f'Opportunity with email {email} not found')
+        return
+    print(f'Opportunity ID {opportunity}')
+    # Fire the Facebook event
+    handle_opportunity_update(opportunity, 'video_watched')
+    # Set the opportunity status to 15
+    opportunity_data = {'status': 15, 'status_type': 'call_status', 'opportunity_id': opportunity['id']}
+    # Update the opportunity status in your database
+    update_opportunity_status(opportunity_data, {'video_watched': True})

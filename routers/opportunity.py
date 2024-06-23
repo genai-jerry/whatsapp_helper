@@ -54,9 +54,22 @@ def create_opportunity():
     except Exception as e:
         return error_response(500, str(e))
 
+@opportunity_blueprint.route('/video_watched', methods=['POST'])
+@require_api_key
+def video_watched():
+    try:
+        # Extract the data from the request
+        data = request.get_json()
+        email = data.get('email')
+        handle_video_watch_event(email)
+        
+        return jsonify({'status': 'success', 'message': 'Opportunity status updated successfully'}), 200
+    except Exception as e:
+        return error_response(500, str(e))
+
 @opportunity_blueprint.route('/<opportunity_id>/status/<status_id>', methods=['POST'])
 @login_required
-def update_status(opportunity_id, status_id):
+def update_status_value(opportunity_id, status_id):
     try:
         # Prepare the data for the update_opportunity function
         opportunity_data = {
@@ -66,7 +79,7 @@ def update_status(opportunity_id, status_id):
 
         # Call the update_opportunity function
         print('Updating opportunity status')
-        update_opportunity(opportunity_data)
+        update_opportunity_status(opportunity_data)
         
         return jsonify({'status': 'success', 'message': 'Opportunity status updated successfully'}), 200
     except Exception as e:
@@ -283,7 +296,7 @@ def handle_search_request():
 
 @opportunity_blueprint.route('/status/<int:opportunity_id>/<string:status_type>', methods=['POST'])
 @login_required
-def update_opportunity_status(opportunity_id, status_type):
+def update_status_type(opportunity_id, status_type):
     try:
         # Extract the status from the request
         data = request.get_json()
@@ -295,7 +308,7 @@ def update_opportunity_status(opportunity_id, status_type):
         }
         
         # Call the update_opportunity function
-        update_opportunity(opportunity_data)
+        update_opportunity_status(opportunity_data)
         
         return jsonify({'status': 'success', 'message': 'Opportunity status updated successfully'}), 200
     except Exception as e:
