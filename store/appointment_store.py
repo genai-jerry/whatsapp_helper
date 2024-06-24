@@ -2,6 +2,8 @@ from datetime import datetime
 from utils import format_phone_number
 import pytz
 from db.connection_manager import *
+from facebook.fb_ads_manager import *
+from .opportunity_store import get_opportunity_by_id
 
 def store_appointment(profile_details, application_form_details, mentor_name, import_app=False):
     try:
@@ -107,6 +109,10 @@ def store_appointment(profile_details, application_form_details, mentor_name, im
 
         # Get the ID of the newly inserted appointment
         appointment_id = cursor.lastrowid
+
+        # Send a FB event
+        handle_opportunity_update(get_opportunity_by_id(opportunity_id), 'call_status', 
+                                  '8')
 
         # Return the appointment ID
         return appointment_id
