@@ -176,6 +176,7 @@ def list_opportunities():
             'sales_agent_text_color': opportunity['sales_agent_text_color'],
             'ad_name': opportunity['ad_name'],
             'ad_medium': opportunity['ad_medium'],
+            'video_watched': opportunity['video_watched']
             }
             response_data.append(opportunity_data)
         

@@ -224,7 +224,8 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             sa.text_color AS sales_agent_text_color,
             o.campaign,
             o.ad_name,
-            o.medium
+            o.medium,
+            o.video_watched
             FROM 
             opportunity o
             LEFT JOIN 
@@ -306,7 +307,8 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             'sales_agent_text_color': row[13],
             'campaign': row[14],
             'ad_name': row[15],
-            'ad_medium': row[16]
+            'ad_medium': row[16],
+            'video_watched': row[17]
             }
             opportunities.append(opportunity)
 
