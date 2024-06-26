@@ -12,7 +12,8 @@ def check_events_fired(opportunity_id):
             opportunity.id,
             opportunity.lead_event_fired as lead_even_fired,
             opportunity.submit_application_event_fired as submit_application_event_fired,
-            opportunity.sale_event_fired as sale_event_fired
+            opportunity.sale_event_fired as sale_event_fired,
+            opportunity.video_watched as video_watched_event_fired
         FROM 
             opportunity
         WHERE 
@@ -26,11 +27,13 @@ def check_events_fired(opportunity_id):
             'lead_event_fired': row[1],
             'submit_application_event_fired': row[2],
             'sale_event_fired': row[3],
+            'video_watched': row[4]
         }
 
     return {'lead_event_fired': opportunity['lead_event_fired'], 
             'submit_application_event_fired': opportunity['submit_application_event_fired'],
-            'sale_event_fired': opportunity['sale_event_fired']}
+            'sale_event_fired': opportunity['sale_event_fired'],
+            'video_watched': opportunity['video_watched']}
 
 def update_event_fired(opportunity_id, event_type):
     try:
@@ -44,6 +47,8 @@ def update_event_fired(opportunity_id, event_type):
             sql = "UPDATE opportunity SET submit_application_event_fired = 1 WHERE id = %s"
         elif event_type == 'sale_event_fired':
             sql = "UPDATE opportunity SET sale_event_fired = 1 WHERE id = %s"
+        elif event_type == 'video_watched':
+            sql = "UPDATE opportunity SET video_watched = 1 WHERE id = %s"
         else:
             raise ValueError("Invalid event type")
 

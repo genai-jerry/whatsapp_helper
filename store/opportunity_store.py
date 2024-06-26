@@ -748,4 +748,4 @@ def handle_video_watch_event(email):
     # Set the opportunity status to 15
     opportunity_data = {'status': '15', 'status_type': 'call_status', 'opportunity_id': opportunity['id']}
     # Update the opportunity status in your database
-    update_opportunity_status(opportunity_data, {'video_watched': True})
+    update_opportunity_status(opportunity_data)

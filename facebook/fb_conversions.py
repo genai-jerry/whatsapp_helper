@@ -11,13 +11,20 @@ def add_lead(opportunity, status_value):
         if 'lead_event_fired' not in events_fired or not events_fired['lead_event_fired']:
             fire_event(opportunity, "NewLead")
             update_event_fired(opportunity['id'], 'lead_event_fired')
+            print('Lead event fired')
     if status_value in ['8']:
         if 'submit_application_event_fired' not in events_fired or not events_fired['submit_application_event_fired']:
             fire_event(opportunity, "SubmitApplication")
             update_event_fired(opportunity['id'], 'submit_application_event_fired')
+            print('SubmitApplication event fired')
 
 def video_watched(opportunity):
-    fire_event(opportunity, "VideoWatched")
+    events_fired = check_events_fired(opportunity['id'])
+    print(f'Firing VideoWatched event {events_fired["video_watched"]}')
+    if events_fired['video_watched'] == 0:
+        fire_event(opportunity, "VideoWatched")
+        update_event_fired(opportunity['id'], 'video_watched')
+        print('VideoWatched event fired')
 
 def add_sale(opportunity):
     fire_event(opportunity, "Sale")
