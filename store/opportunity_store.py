@@ -753,7 +753,16 @@ def record_new_sale(opportunity_id, sale_date, sale_value, note, sales_agent, pr
         sales_data = (opportunity_id, sale_date, sale_value, note, sales_agent, product, 0, False, 'INR')
         cursor.execute(sql_sales, sales_data)
         connection.commit()
-        handle_opportunity_update(get_opportunity_by_id(opportunity_id), 
+        opportunity = get_opportunity_by_id(opportunity_id)
+        opportunity_data = {
+                'id': opportunity['id'],
+                'name': opportunity['name'],
+                'email': opportunity['email'],
+                'phone': opportunity['phone'],
+                'fbp': opportunity['fbp'],
+                'fbc': opportunity['fbc']
+            }
+        handle_opportunity_update(opportunity_data, 
                                   'opportunity_status', '2')
     finally:
         if cursor:

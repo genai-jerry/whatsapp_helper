@@ -9,6 +9,7 @@ from routers.qr import qr_blueprint
 from routers.template import template_blueprint
 from routers.dashboard import dashboard_blueprint
 from routers.opportunity import opportunity_blueprint
+from routers.payment import payments_blueprint
 from flask_migrate import Migrate
 import configparser
 from flask_login import LoginManager, login_user, logout_user, login_required
@@ -40,6 +41,7 @@ app.register_blueprint(template_blueprint, url_prefix='/template')
 app.register_blueprint(opportunity_blueprint, url_prefix='/opportunity')
 app.register_blueprint(appointment_blueprint, url_prefix='/appointment')
 app.register_blueprint(dashboard_blueprint, url_prefix='/dashboard')
+app.register_blueprint(payments_blueprint, url_prefix='/payments')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -108,6 +110,14 @@ def numberFormat(value):
     converted_value = format(int(value), ',d')
     print(f'Converting {converted_value}')
     return converted_value
+
+@app.template_filter()
+def exclTax(value):
+    return int(value) / 1.18
+
+@app.template_filter()
+def tax(value):
+    return value - exclTax(value)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=30000, debug=True)

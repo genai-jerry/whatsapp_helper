@@ -1,45 +1,30 @@
-from flask import Flask, request, jsonify
-
+from flask import Blueprint, Flask, render_template, request, jsonify
+from store.payment_store import store_payment, list_payments_for_sale
 app = Flask(__name__)
 
-# Mock database
-payments = []
-payment_modes = [{"id": 1, "name": "PhonePe", "description": "PhonePe payments"}]
+payments_blueprint = Blueprint('payments', __name__)
 
-@app.route('/payments', methods=['POST'])
-def record_payment():
-    new_payment = request.json
-    new_payment["id"] = len(payments) + 1
-    payments.append(new_payment)
-    return jsonify(new_payment), 201
+@payments_blueprint.route('<int:opportunity_id>/<int:sale_id>', methods=['POST'])
+def record_payment(opportunity_id, sale_id):
+    # Assuming the form data is sent as application/x-www-form-urlencoded
+    # Extracting form data
+    payment_data = {
+        'payment_date': request.form.get('payment_date'),
+        'payment_amount': request.form.get('payment_amount'),
+        'charges': request.form.get('charges'),
+        'payment_mode': request.form.get('payment_mode'),
+        'invoice_link': request.form.get('invoice_link'),
+        'is_deposit': True if request.form.get('is_deposit') == 'on' else False
+    }
 
-@app.route('/payments', methods=['GET'])
-def list_payments():
-    return jsonify(payments), 200
+    # Process the payment data (e.g., store in database)
+    # This function should be defined elsewhere in your application
+    store_payment(sale_id, payment_data)
 
-@app.route('/payments/<int:payment_id>', methods=['GET'])
-def view_payment_details(payment_id):
-    payment = next((p for p in payments if p["id"] == payment_id), None)
-    if payment:
-        return jsonify(payment), 200
-    else:
-        return jsonify({"message": "Payment not found"}), 404
+    # Return a success response
+    return list_payments(opportunity_id, sale_id)
 
-@app.route('/opportunities/<int:opportunity_id>/payments', methods=['GET'])
-def view_opportunity_payments(opportunity_id):
-    # Mock implementation, replace with real logic to fetch opportunity payments
-    return jsonify({"sales_value": 10000, "total_paid": 5000, "payments_pending": 2, "tax_value": 500}), 200
-
-@app.route('/payment-modes', methods=['POST'])
-def create_payment_mode():
-    new_mode = request.json
-    new_mode["id"] = len(payment_modes) + 1
-    payment_modes.append(new_mode)
-    return jsonify(new_mode), 201
-
-@app.route('/payment-modes', methods=['GET'])
-def list_payment_modes():
-    return jsonify(payment_modes), 200
-
-if __name__ == '__main__':
-    app.run(debug=True)
+@payments_blueprint.route('<int:opportunity_id>/<int:sale_id>', methods=['GET'])
+def list_payments(opportunity_id, sale_id):
+    payments = list_payments_for_sale(sale_id)
+    return render_template('payments/view.html', payments=payments, sale_id=sale_id, opportunity_id=opportunity_id), 200

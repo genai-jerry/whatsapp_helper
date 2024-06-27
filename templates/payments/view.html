@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}
+    View Payments
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h3><a href="/opportunity/{{opportunity_id}}">Opportunity</a>/Payments</h3>
+        <button id="addPaymentButton" class="btn btn-primary">Add Payment</button>
+
+        <form id="paymentForm" action="{{sale_id}}" method="post" style="display: none;">
+            <!-- Existing fields here -->
+            <div class="row">
+                <!-- New field for Payment Date -->
+                <div class="col-md-3 mb-3">
+                    <div class="form-group">
+                        <label for="paymentDate">Payment Date:</label>
+                        <input type="date" class="form-control" id="paymentDate" name="payment_date">
+                    </div>
+                </div>
+                <!-- New field for Payment Amount -->
+                <div class="col-md-3 mb-3">
+                    <div class="form-group">
+                        <label for="paymentAmount">Payment Amount</label>
+                        <input type="number" class="form-control" id="paymentAmount" name="payment_amount" step="0.01" required>
+                    </div>
+                </div>
+                <!-- New field for Charges -->
+                <div class="col-md-3 mb-3">
+                    <div class="form-group">
+                        <label for="charges">Charges</label>
+                        <input type="number" class="form-control" id="charges" name="charges" step="0.01">
+                    </div>
+                </div>
+                <!-- New field for Payment Mode -->
+                <div class="col-md-3 mb-3">
+                    <div class="form-group">
+                        <label for="paymentMode">Payment Mode</label>
+                        <select class="form-control" id="paymentMode" name="payment_mode">
+                            <option value="1">Razorpay</option>
+                            <option value="2">Phone Pe</option>
+                            <option value="3">Bank Transfer</option>
+                            <option value="4">Direct UPI</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <!-- New field for Invoice Link -->
+                <div class="col-md-6 mb-6">
+                    <div class="form-group">
+                        <label for="invoiceLink">Invoice Link</label>
+                        <input type="text" class="form-control" id="invoiceLink" name="invoice_link">
+                    </div>
+                </div>
+                <!-- New field for Deposit -->
+                <div class="col-md-2 mb-2">
+                    <div class="form-group">
+                        <label for="isDeposit">Is it a Deposit?</label>
+                        <input type="checkbox" class="form-check-input form-control" id="isDeposit" name="is_deposit">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    &nbsp;
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button id="cancelPaymentButton" class="btn btn-danger">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Payment Date</th>
+                    <th>Payment Amount</th>
+                    <th>Tax Amount</th>
+                    <th>Payment Mode</th>
+                    <th>Charges</th>
+                    <th>Invoice Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td>{{ payment.date.strftime('%b %d, %Y') }}</td>
+                    <td>{{ payment.amount | exclTax | numberFormat }}</td>
+                    <td>{{ payment.amount | tax | numberFormat }}</td>
+                    <td>{{ payment.mode }}</td>
+                    <td>{{ payment.charges }}</td>
+                    <td><a target="_blank" href="{{ payment.invoice_link }}">Invoice Link</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <script>
+            const addPaymentButton = document.getElementById('addPaymentButton');
+            const cancelPaymentButton = document.getElementById('cancelPaymentButton');
+            const paymentForm = document.getElementById('paymentForm');
+
+            addPaymentButton.addEventListener('click', () => {
+                paymentForm.style.display = 'block';
+            });
+            cancelPaymentButton.addEventListener('click', () => {
+                paymentForm.style.display = 'none';
+            });
+        </script>
+    </div>
+
+{% endblock %}

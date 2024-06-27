@@ -2,8 +2,8 @@
     <thead>
         <tr>
             <th>Sale Date</th>
-            <th>Sale Value</th>
-            <th>Amount Paid</th>
+            <th>Sale Value (Excl Tax)</th>
+            <th>Amount Paid  (Excl Tax)</th>
             <th>Amount Pending</th>
             <th>Product</th>
             <th>Payments</th>
@@ -13,11 +13,11 @@
         {% for sale in sales %}
         <tr>
             <td>{{ sale.sale_date.strftime('%b %d, %Y') }}</td>
-            <td>{{ sale.sale_value | numberFormat }}</td>
+            <td>{{ sale.sale_value  | numberFormat  }}</td>
             <td>{{ sale.amount_paid | numberFormat }}</td>
             <td>{{ (sale.sale_value - sale.amount_paid) | numberFormat }}</td>
             <td>GenAI Leap</td>
-            <td><a href="">Manage Payments</a></td>
+            <td><a href="/payments/{{opportunity.id}}/{{sale.id}}">Manage Payments</a></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -79,6 +79,7 @@
         <div class="col-md-6">
             <div class="form-group">
                 <button type="submit" class="btn btn-primary">Save</button>
+                <button id="cancelSaleButton" class="btn btn-danger">Cancel</button>
             </div>
         </div>
     </div>
@@ -86,9 +87,13 @@
 
 <script>
     const addSaleButton = document.getElementById('addSaleButton');
+    const cancelSaleButton = document.getElementById('cancelSaleButton');
     const saleForm = document.getElementById('saleForm');
 
     addSaleButton.addEventListener('click', () => {
         saleForm.style.display = 'block';
+    });
+    cancelSaleButton.addEventListener('click', () => {
+        saleForm.style.display = 'none';
     });
 </script>
