@@ -761,6 +761,30 @@ def record_new_sale(opportunity_id, sale_date, sale_value, note, sales_agent, pr
         if connection:
             connection.close()
 
+def get_sales_details(opportunity_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "SELECT * FROM sales WHERE opportunity_id = %s"
+        cursor.execute(sql, (opportunity_id,))
+        results = cursor.fetchall()
+        sales_details = []
+        for row in results:
+            sales_details.append({
+                'sale_date': row[1],
+                'sale_value': row[2],
+                'currency': row[3],
+                'note': row[4],
+                'sales_agent': row[5],
+                'product': row[6]
+            })
+        return sales_details
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
 def get_all_sales(opportunity_id):
     try:
         connection = create_connection()
