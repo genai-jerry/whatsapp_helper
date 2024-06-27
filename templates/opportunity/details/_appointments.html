@@ -1,0 +1,17 @@
+{% for appointment in opportunity.appointments %}
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <h5 class="card-header">Date: {{ appointment.time.strftime('%b %d, %Y, %H:%M') }}</h5>
+            <div class="card-body">
+                <p class="card-text">Call Status: <b>{{ appointment.call_status }}</b></p>
+            </div>
+            <div class="card-footer {% if appointment.opportunity_status == 'Sale' %}bg-success{% elif appointment.opportunity_status == 'Follow up' %}bg-warning{% elif appointment.opportunity_status == None %}bg-primary{% else %}bg-danger{% endif %}">
+                {% if appointment.opportunity_status == None %}
+                    Call Pending
+                {% else %}
+                    {{ appointment.opportunity_status }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endfor %}

@@ -103,5 +103,11 @@ def logout():
     logout_user()
     return redirect('/login')
     
+@app.template_filter()
+def numberFormat(value):
+    converted_value = format(int(value), ',d')
+    print(f'Converting {converted_value}')
+    return converted_value
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=30000, debug=True)

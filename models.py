@@ -75,7 +75,6 @@ class Opportunity(db.Model):
     sales_agent = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
     company_type = db.Column(db.Integer, db.ForeignKey('company_type.id'))
     challenge_type = db.Column(db.Integer, db.ForeignKey('challenge_type.id'))
-    sales_date = db.Column(db.DateTime)  # New column
 
 class CompanyType(db.Model):
     __tablename__ = 'company_type'
@@ -193,6 +192,7 @@ class Sale(db.Model):
     total_paid = db.Column(db.Integer, nullable=False)
     currency = db.Column(db.String(255), nullable=True)
     note = db.Column(db.String(255), nullable=True)
+    sale_date = db.Column(db.DateTime)
     is_final = db.Column(db.Boolean, nullable=False, default=False)
     opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'))
     sales_agent = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
