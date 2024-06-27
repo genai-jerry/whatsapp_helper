@@ -73,11 +73,11 @@ def store_opportunity(opportunity_data):
             # Insert the opportunity
             sql_insert = """
                 INSERT INTO opportunity (name, email, phone, register_time, last_register_time, opportunity_status, call_status, sales_agent, sales_date, comment, campaign, ad_name, ad_id, medium,
-                ad_fbp, ad_fbc)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ad_fbp, ad_fbc, video_watched)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql_insert, (name, email, phone, date, date, opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, 
-                                        ad_name, ad_id, ad_medium, ad_fbp, ad_fbc))
+                                        ad_name, ad_id, ad_medium, ad_fbp, ad_fbc, False))
             connection.commit()
             print("Opportunity inserted successfully.")
         else:
