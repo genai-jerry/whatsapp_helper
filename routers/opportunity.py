@@ -239,6 +239,7 @@ def get_opportunity_detail(opportunity_id):
 
         sales = get_all_sales(opportunity_id)
         
+
         return render_template('opportunity/view.html', opportunity=response_data,
                        call_statuses=call_statuses, opportunity_statuses=opportunity_statuses,
                        sales_agents=sales_agents, challenge_types=challenge_types,
