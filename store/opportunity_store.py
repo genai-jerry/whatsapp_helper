@@ -202,7 +202,7 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             o.name, 
             o.email, 
             o.phone, 
-            o.register_time, 
+            o.last_register_time, 
             os.name AS opportunity_status, 
             cs.name AS call_status, 
             sa.name AS sales_agent,
