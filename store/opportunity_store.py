@@ -52,7 +52,8 @@ def store_opportunity(opportunity_data):
         ad_medium = opportunity_data['ad_medium'] if 'ad_medium' in opportunity_data and opportunity_data['ad_medium'] else None
         ad_fbp = opportunity_data['ad_fbp'] if 'ad_fbp' in opportunity_data and opportunity_data['ad_fbp'] else None
         ad_fbc = opportunity_data['ad_fbc'] if 'ad_fbc' in opportunity_data and opportunity_data['ad_fbc'] else None
-
+        ad_placement = opportunity_data['ad_placement'] if 'ad_placement' in opportunity_data and opportunity_data['ad_placement'] else None
+        
         # Insert the opportunity
         connection = create_connection()
         cursor = connection.cursor()
@@ -73,11 +74,11 @@ def store_opportunity(opportunity_data):
             # Insert the opportunity
             sql_insert = """
                 INSERT INTO opportunity (name, email, phone, register_time, last_register_time, opportunity_status, call_status, sales_agent, sales_date, comment, campaign, ad_name, ad_id, medium,
-                ad_fbp, ad_fbc, video_watched)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ad_fbp, ad_fbc, video_watched, ad_placement)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql_insert, (name, email, phone, date, date, opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, 
-                                        ad_name, ad_id, ad_medium, ad_fbp, ad_fbc, False))
+                                        ad_name, ad_id, ad_medium, ad_fbp, ad_fbc, False, ad_placement))
             connection.commit()
             print("Opportunity inserted successfully.")
         else:
@@ -87,11 +88,11 @@ def store_opportunity(opportunity_data):
             sql_update = """
                 UPDATE opportunity 
                 SET opportunity_status = %s, call_status = %s, sales_agent = %s, sales_date = %s , comment = %s, campaign = %s,
-                ad_name = %s, ad_id = %s, medium = %s, ad_fbp = %s, ad_fbc = %s, last_register_time = %s
+                ad_name = %s, ad_id = %s, medium = %s, ad_fbp = %s, ad_fbc = %s, last_register_time = %s, ad_placement = %s
                 WHERE email = %s or phone = %s
             """
             cursor.execute(sql_update, (opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, ad_name, 
-                                        ad_id, ad_medium, ad_fbp, ad_fbc, current_datetime,
+                                        ad_id, ad_medium, ad_fbp, ad_fbc, current_datetime, ad_placement,
                                         email, 
                                         phone))
             connection.commit()
@@ -225,7 +226,8 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             o.campaign,
             o.ad_name,
             o.medium,
-            o.video_watched
+            o.video_watched,
+            o.ad_placement
             FROM 
             opportunity o
             LEFT JOIN 
@@ -308,7 +310,8 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             'campaign': row[14],
             'ad_name': row[15],
             'ad_medium': row[16],
-            'video_watched': row[17]
+            'video_watched': row[17],
+            'ad_placement': row[18]
             }
             opportunities.append(opportunity)
 

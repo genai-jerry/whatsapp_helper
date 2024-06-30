@@ -62,6 +62,7 @@ class Opportunity(db.Model):
     ad_id = db.Column(db.String(250))
     ad_fbp = db.Column(db.String(500))
     ad_fbc = db.Column(db.String(500))
+    ad_placement = db.Column(db.String(250))
     medium = db.Column(db.String(250))
     lead_event_fired = db.Column(db.Boolean, nullable=True)
     submit_application_event_fired = db.Column(db.Boolean, nullable=True)
