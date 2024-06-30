@@ -1,6 +1,9 @@
 from flask import Blueprint, Flask, render_template, request, jsonify
 from flask_login import login_required
+from flask_login import login_required
 from store.payment_store import store_payment, list_payments_for_sale
+from werkzeug.utils import secure_filename
+import csv
 from werkzeug.utils import secure_filename
 import csv
 app = Flask(__name__)
@@ -26,6 +29,35 @@ def record_payment(opportunity_id, sale_id):
 
     # Return a success response
     return list_payments(opportunity_id, sale_id)
+
+@payments_blueprint.route('/import', methods=['POST'])
+@login_required
+def import_payments():
+    print('Importing payments')
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part in the request'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected for uploading'}), 400
+
+    filename = secure_filename(file.filename)
+    file.save(filename)
+
+    with open(filename, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            payment_details = {
+                'email': row['Email'],
+                'payment_date': row['Payment Date'],
+                'invoice_number': row['Invoice Number'],
+                'payment_amount': row['Payment Amount'],
+                'GST': row['GST'],
+                'link': row['link'],
+            }
+            # Process payment_details as needed, e.g., store in database
+
+    return jsonify({'status': 'success'}), 200
 
 @payments_blueprint.route('/import', methods=['POST'])
 @login_required
