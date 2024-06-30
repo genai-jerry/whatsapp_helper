@@ -197,6 +197,7 @@ class Sale(db.Model):
     opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'))
     sales_agent = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
     product = db.Column(db.Integer, db.ForeignKey('products.id'))
+    cancelled = db.Column(db.Boolean, nullable=False, default=False)
 
 class Payment(db.Model):
     __tablename__ = 'payments'
@@ -213,6 +214,7 @@ class Payment(db.Model):
     opportunity = db.Column(db.Integer, db.ForeignKey('opportunity.id'))
     accountant = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     payment_mode = db.Column(db.Integer, db.ForeignKey('payment_mode.id'))
+    refunded = db.Column(db.Boolean, nullable=False, default=False)
 
 class PaymentMode(db.Model):
     __tablename__ = 'payment_mode'

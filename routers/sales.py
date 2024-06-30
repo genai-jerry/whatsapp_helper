@@ -1,0 +1,32 @@
+from flask import Blueprint, request, jsonify
+from werkzeug.utils import secure_filename
+import csv
+
+opportunity_blueprint = Blueprint('sales', __name__)
+
+@opportunity_blueprint.route('/import', methods=['POST'])
+def import_sales():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part in the request'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected for uploading'}), 400
+
+    filename = secure_filename(file.filename)
+    file.save(filename)
+
+    with open(filename, mode='r', encoding='utf-8-sig') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        for row in csv_reader:
+            # Extract required items
+            email = row['Email']
+            date = row['Date']
+            gross = row['Gross']
+            token = row['Token']
+            comments = row['Comments']
+            
+            # Process the extracted data here
+            # For example, store in a database or perform some calculations
+
+    return jsonify({'status': 'success', 'message': 'Sales data imported successfully'}), 200

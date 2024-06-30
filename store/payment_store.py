@@ -21,7 +21,7 @@ def store_payment(sale_id, payment_data):
         """
         cursor.execute(sql_insert, (payment_date, payment_amount, charges, payment_mode, invoice_link, is_deposit, sale_id))
         
-        update_sale_payment(cursor, sale_id, payment_amount)
+        update_sale_payment(cursor, sale_id, payment_amount, is_deposit)
 
         connection.commit()
         print("Payment inserted successfully.")
@@ -32,8 +32,9 @@ def store_payment(sale_id, payment_data):
         if cursor:
             cursor.close()
 
-def update_sale_payment(cursor, sale_id, payment_amount):
+def update_sale_payment(cursor, sale_id, payment_amount, payment_is_deposit):
     try:
+        is_sale_final = not payment_is_deposit
         # Get the sale details
         sql_select_sale = "SELECT total_paid FROM sale WHERE id = %s"
         cursor.execute(sql_select_sale, (sale_id,))
@@ -44,8 +45,8 @@ def update_sale_payment(cursor, sale_id, payment_amount):
         updated_paid_amount = int(paid_amount) + int(payment_amount)
         
         # Update the sale details
-        sql_update_sale = "UPDATE sale SET total_paid = %s WHERE id = %s"
-        cursor.execute(sql_update_sale, (updated_paid_amount, sale_id))
+        sql_update_sale = "UPDATE sale SET total_paid = %s, is_final = %s WHERE id = %s"
+        cursor.execute(sql_update_sale, (updated_paid_amount, is_sale_final, sale_id))
         
         print("Sale payment updated successfully.")
     except Exception as e:

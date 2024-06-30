@@ -62,8 +62,8 @@ def store_opportunity(opportunity_data):
 
 
         # Check if the email already exists in the table
-        sql_check_email = "SELECT COUNT(*) FROM opportunity WHERE email = %s or phone = %s"
-        cursor.execute(sql_check_email, (email, phone))
+        sql_check_email = "SELECT COUNT(*) FROM opportunity WHERE email = %s"
+        cursor.execute(sql_check_email, (email))
         email_exists = cursor.fetchone()[0]
         
         if email_exists == 0:
@@ -799,7 +799,7 @@ def get_all_sales(opportunity_id):
         connection = create_connection()
         cursor = connection.cursor()
         sql = '''SELECT id, opportunity_id, sale_date, sale_value, total_paid, currency, note, 
-            sales_agent, product FROM sale WHERE opportunity_id = %s'''
+            sales_agent, product, is_final FROM sale WHERE opportunity_id = %s'''
         cursor.execute(sql, (opportunity_id,))
         results = cursor.fetchall()
         sales_list = []
@@ -813,7 +813,8 @@ def get_all_sales(opportunity_id):
                 'currency': row[5],
                 'note': row[6],
                 'sales_agent': row[7],
-                'product': row[8]
+                'product': row[8],
+                'is_final': row[9]
             }
             sales_list.append(sales)
         return sales_list
