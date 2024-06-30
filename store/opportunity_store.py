@@ -212,7 +212,7 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             o.name, 
             o.email, 
             o.phone, 
-            o.register_time, 
+            o.last_register_time, 
             os.name AS opportunity_status, 
             cs.name AS call_status, 
             sa.name AS sales_agent,
@@ -745,10 +745,13 @@ def handle_video_watch_event(email):
     if opportunity is None:
         print(f'Opportunity with email {email} not found')
         return
-    print(f'Opportunity ID {opportunity}')
-    # Fire the Facebook event
-    handle_opportunity_update(opportunity, 'video_watched')
-    # Set the opportunity status to 15
-    opportunity_data = {'status': '15', 'status_type': 'call_status', 'opportunity_id': opportunity['id']}
-    # Update the opportunity status in your database
-    update_opportunity_status(opportunity_data)
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "UPDATE opportunity SET video_watched = 1 WHERE id = %s"
+        cursor.execute(sql, (opportunity['id'],))
+
+        connection.commit()
+    finally:
+        if cursor:
+            cursor.close()
