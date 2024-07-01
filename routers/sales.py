@@ -18,15 +18,18 @@ def import_sales():
 
     with open(filename, mode='r', encoding='utf-8-sig') as csv_file:
         csv_reader = csv.DictReader(csv_file)
+        sales = []
         for row in csv_reader:
             # Extract required items
-            email = row['Email']
-            date = row['Date']
-            gross = row['Gross']
-            token = row['Token']
-            comments = row['Comments']
-            
+            sale_details = {
+                'email': row['Email'],
+                'date': row['Date'],
+                'gross': row['Gross'],
+                'token': row['Token'],
+                'comments': row['Comments']
+            }
+            sales.append(sale_details)
             # Process the extracted data here
             # For example, store in a database or perform some calculations
-
+        # store_sale(sale_details)
     return jsonify({'status': 'success', 'message': 'Sales data imported successfully'}), 200
