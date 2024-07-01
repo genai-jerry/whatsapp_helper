@@ -46,6 +46,7 @@ def import_payments():
 
     with open(filename, 'r') as f:
         reader = csv.DictReader(f)
+        payments = []
         for row in reader:
             payment_details = {
                 'email': row['Email'],
@@ -55,8 +56,9 @@ def import_payments():
                 'GST': row['GST'],
                 'link': row['link'],
             }
+            payments.append(payment_details)
             # Process payment_details as needed, e.g., store in database
-
+        # store_payment(sale_id, payment_details)
     return jsonify({'status': 'success'}), 200
 
 @payments_blueprint.route('/import', methods=['POST'])
