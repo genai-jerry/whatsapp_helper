@@ -1,7 +1,7 @@
 from flask import Blueprint, Flask, render_template, request, jsonify
 from flask_login import login_required
 from flask_login import login_required
-from store.payment_store import store_payment, list_payments_for_sale
+from store.payment_store import store_payment, list_payments_for_sale, store_payments
 from werkzeug.utils import secure_filename
 import csv
 from werkzeug.utils import secure_filename
@@ -57,8 +57,8 @@ def import_payments():
                 'link': row['link'],
             }
             payments.append(payment_details)
-            # Process payment_details as needed, e.g., store in database
-        # store_payment(sale_id, payment_details)
+        # Process payment_details as needed, e.g., store in database
+        store_payments(payments)
     return jsonify({'status': 'success'}), 200
 
 @payments_blueprint.route('<int:opportunity_id>/<int:sale_id>', methods=['GET'])

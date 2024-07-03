@@ -10,6 +10,7 @@ from routers.template import template_blueprint
 from routers.dashboard import dashboard_blueprint
 from routers.opportunity import opportunity_blueprint
 from routers.payment import payments_blueprint
+from routers.sales import sales_blueprint
 from flask_migrate import Migrate
 import configparser
 from flask_login import LoginManager, login_user, logout_user, login_required
@@ -42,7 +43,7 @@ app.register_blueprint(opportunity_blueprint, url_prefix='/opportunity')
 app.register_blueprint(appointment_blueprint, url_prefix='/appointment')
 app.register_blueprint(dashboard_blueprint, url_prefix='/dashboard')
 app.register_blueprint(payments_blueprint, url_prefix='/payments')
-
+app.register_blueprint(sales_blueprint, url_prefix='/sales')
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'

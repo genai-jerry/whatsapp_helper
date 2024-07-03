@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
 import csv
+from store.payment_store import store_sales
 
-opportunity_blueprint = Blueprint('sales', __name__)
+sales_blueprint = Blueprint('sales', __name__)
 
-@opportunity_blueprint.route('/import', methods=['POST'])
+@sales_blueprint.route('/import', methods=['POST'])
 def import_sales():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part in the request'}), 400
@@ -31,5 +32,5 @@ def import_sales():
             sales.append(sale_details)
             # Process the extracted data here
             # For example, store in a database or perform some calculations
-        # store_sale(sale_details)
+        store_sales(sales)
     return jsonify({'status': 'success', 'message': 'Sales data imported successfully'}), 200
