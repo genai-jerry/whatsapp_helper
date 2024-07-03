@@ -1,0 +1,59 @@
+<form class="mt-4" id="messageForm">
+    <input type="hidden" class="form-control" id="id" name="id" value="{{ opportunity.id }}">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="messageTemplate">Message Template</label>
+                <select class="form-control" id="messageTemplate" name="template_name">
+                    <option value="-1">Select a Template</option>
+                    {% for template in opportunity.templates %}
+                        <option value="{{ template.name }}">{{ template.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div id="templateInput"></div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="sender">Sender</label>
+                <select class="form-control" name="sender">
+                    {% for sender in opportunity.senders %}
+                        <option value="{{ sender.mobile_number }}">{{ sender.mobile_number }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <input type="hidden" name="receiver" value="{{ opportunity.phone }}">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6"  id="placeholderInputs">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <button class="btn btn-primary" type="submit" id="sendButton">Send Message</button>
+            </div>
+        </div>
+    </div>
+</form>
+<h3>Past Communications</h3>
+<div id="messagingInformation" class="card-deck">
+    <div class="row">
+        {% for message in opportunity.messages %}
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    {% if message.template %}
+                        <h5 class="card-header">{{ message.template }}</h5>
+                    {% else %}
+                        <h5 class="card-header">No Template</h5>
+                    {% endif %}
+                    <div class="card-body">
+                        <p class="card-text">Date Sent: {{ message.create_time.strftime('%b %d, %Y, %H:%M') }}</p>
+                    </div>
+                    <div class="card-footer {% if message.status == 'Sent' %}bg-success{% elif message.status == 'Pending' %}bg-warning{% else %}bg-danger{% endif %}">{{ message.status }}</div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

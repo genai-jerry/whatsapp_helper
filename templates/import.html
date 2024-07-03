@@ -7,23 +7,43 @@
 {% block content %}
     <div class="container mt-5">
         <h2>Import Opportunities</h2>
-        <form id="uploadForm" enctype="multipart/form-data">
+        <form id="uploadOppForm" enctype="multipart/form-data">
             
             <div class="mb-3">
                 <label for="excelFile" class="form-label">CSV File</label>
                 <input type="file" class="form-control" id="oppFile" required>
             </div>
-            <button type="button" class="btn btn-primary" onclick="uploadExcel('opportunities')">Upload</button>
+            <button type="button" class="btn btn-primary" onclick="uploadExcel('opportunity')">Upload</button>
             <button type="button" class="btn btn-secondary" onclick="window.history.back();">Cancel</button>
         </form>
         <h2>Import Appointments</h2>
-        <form id="uploadForm" enctype="multipart/form-data">
+        <form id="uploadAppForm" enctype="multipart/form-data">
             
             <div class="mb-3">
                 <label for="excelFile" class="form-label">CSV File</label>
                 <input type="file" class="form-control" id="appFile" required>
             </div>
             <button type="button" class="btn btn-primary" onclick="uploadExcel('appointments')">Upload</button>
+            <button type="button" class="btn btn-secondary" onclick="window.history.back();">Cancel</button>
+        </form>
+        <h2>Import Sales</h2>
+        <form id="uploadSalForm" enctype="multipart/form-data">
+            
+            <div class="mb-3">
+                <label for="excelFile" class="form-label">CSV File</label>
+                <input type="file" class="form-control" id="saleFile" required>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="uploadExcel('sales')">Upload</button>
+            <button type="button" class="btn btn-secondary" onclick="window.history.back();">Cancel</button>
+        </form>
+        <h2>Import Payments</h2>
+        <form id="uploadSalForm" enctype="multipart/form-data">
+            
+            <div class="mb-3">
+                <label for="excelFile" class="form-label">CSV File</label>
+                <input type="file" class="form-control" id="paymentFile" required>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="uploadExcel('payments')">Upload</button>
             <button type="button" class="btn btn-secondary" onclick="window.history.back();">Cancel</button>
         </form>
     </div>
@@ -36,8 +56,18 @@
             if(type == 'appointments'){
                 base_url = 'appointment';
                 formData.append('file', $('#appFile')[0].files[0]);
-            }else{
+            }
+            if(type == 'opportunity'){
+                base_url = 'opportunity';
                 formData.append('file', $('#oppFile')[0].files[0]);
+            }
+            if(type == 'sales'){
+                base_url = 'sales';
+                formData.append('file', $('#saleFile')[0].files[0]);
+            }
+            if(type == 'payments'){
+                base_url = 'payments';
+                formData.append('file', $('#paymentFile')[0].files[0]);
             }
             $.ajax({
                 url: '/' + base_url + '/import',
@@ -46,7 +76,7 @@
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    if(response.message == 'Opportunities imported successfully'){
+                    if(response.message == type + ' imported successfully'){
                         // Handle success
                         window.location.href = '/'; // Redirect to the instances page
                     }
