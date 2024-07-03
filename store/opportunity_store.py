@@ -49,7 +49,8 @@ def store_opportunity(opportunity_data):
         ad_medium = opportunity_data['ad_medium'] if 'ad_medium' in opportunity_data and opportunity_data['ad_medium'] else None
         ad_fbp = opportunity_data['ad_fbp'] if 'ad_fbp' in opportunity_data and opportunity_data['ad_fbp'] else None
         ad_fbc = opportunity_data['ad_fbc'] if 'ad_fbc' in opportunity_data and opportunity_data['ad_fbc'] else None
-
+        ad_placement = opportunity_data['ad_placement'] if 'ad_placement' in opportunity_data and opportunity_data['ad_placement'] else None
+        
         # Insert the opportunity
         connection = create_connection()
         cursor = connection.cursor()
@@ -216,7 +217,8 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             o.campaign,
             o.ad_name,
             o.medium,
-            o.video_watched
+            o.video_watched,
+            o.ad_placement
             FROM 
             opportunity o
             LEFT JOIN 
@@ -299,7 +301,8 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             'campaign': row[14],
             'ad_name': row[15],
             'ad_medium': row[16],
-            'video_watched': row[17]
+            'video_watched': row[17],
+            'ad_placement': row[18]
             }
             opportunities.append(opportunity)
 

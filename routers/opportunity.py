@@ -34,6 +34,7 @@ def create_opportunity():
         ad_medium = data.get('ad_medium')
         ad_fbp = data.get('ad_fbp')
         ad_fbc = data.get('ad_fbc')
+        ad_placement = data.get('ad_placement')
 
         # Create the opportunity in your database
         opportunity_data = {
@@ -46,7 +47,8 @@ def create_opportunity():
             'ad_id': ad_id,
             'ad_medium': ad_medium,
             'ad_fbp': ad_fbp,
-            'ad_fbc': ad_fbc
+            'ad_fbc': ad_fbc,
+            'ad_placement': ad_placement
         }
         store_opportunity(opportunity_data)
 
@@ -176,7 +178,8 @@ def list_opportunities():
             'sales_agent_text_color': opportunity['sales_agent_text_color'],
             'ad_name': opportunity['ad_name'],
             'ad_medium': opportunity['ad_medium'],
-            'video_watched': opportunity['video_watched']
+            'video_watched': opportunity['video_watched'],
+            'ad_placement': opportunity['ad_placement'],
             }
             response_data.append(opportunity_data)
         
