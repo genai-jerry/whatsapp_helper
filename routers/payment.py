@@ -61,37 +61,6 @@ def import_payments():
         # store_payment(sale_id, payment_details)
     return jsonify({'status': 'success'}), 200
 
-@payments_blueprint.route('/import', methods=['POST'])
-@login_required
-def import_payments():
-    print('Importing payments')
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part in the request'}), 400
-
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected for uploading'}), 400
-
-    filename = secure_filename(file.filename)
-    file.save(filename)
-
-    with open(filename, 'r') as f:
-        reader = csv.DictReader(f)
-        payments = []
-        for row in reader:
-            payment_details = {
-                'email': row['Email'],
-                'payment_date': row['Payment Date'],
-                'invoice_number': row['Invoice Number'],
-                'payment_amount': row['Payment Amount'],
-                'GST': row['GST'],
-                'link': row['link'],
-            }
-            payments.append(payment_details)
-            # Process payment_details as needed, e.g., store in database
-        # store_payment(sale_id, payment_details)
-    return jsonify({'status': 'success'}), 200
-
 @payments_blueprint.route('<int:opportunity_id>/<int:sale_id>', methods=['GET'])
 def list_payments(opportunity_id, sale_id):
     payments = list_payments_for_sale(sale_id)
