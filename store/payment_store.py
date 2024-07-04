@@ -6,7 +6,7 @@ def store_payment(sale_id, payment_data):
     try:
         payment_date = payment_data['payment_date'] if 'payment_date' in payment_data else None
         payment_amount = payment_data['payment_amount'] if 'payment_amount' in payment_data else None
-        charges = payment_data['charges'] if 'charges' in payment_data else None
+        charges = payment_data['charges'] if 'charges' in payment_data and payment_data['charges'] != '' else 0
         payment_mode = payment_data['payment_mode'] if 'payment_mode' in payment_data else None
         invoice_link = payment_data['invoice_link'] if 'invoice_link' in payment_data else None
         is_deposit = payment_data['is_deposit'] if 'is_deposit' in payment_data else False
@@ -17,10 +17,10 @@ def store_payment(sale_id, payment_data):
 
         # Insert the payment
         sql_insert = """
-        INSERT INTO payments (payment_date, payment_value, charges, payment_mode, invoice_link, is_deposit, sale)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO payments (payment_date, payment_value, charges, payment_mode, invoice_link, is_deposit, sale, refunded)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
-        cursor.execute(sql_insert, (payment_date, payment_amount, charges, payment_mode, invoice_link, is_deposit, sale_id))
+        cursor.execute(sql_insert, (payment_date, payment_amount, charges, payment_mode, invoice_link, is_deposit, sale_id, 0))
         
         update_sale_payment(cursor, sale_id, payment_amount, is_deposit)
 

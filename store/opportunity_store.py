@@ -344,7 +344,7 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.sale_event_fired as sale_event_fired,
                 opportunity.ad_fbp as fbp,
                 opportunity.ad_fbc as fbc,
-                opportunity.ad_account,
+                opportunity.ad_account as ad_account
             FROM 
                 opportunity
             WHERE 
@@ -761,9 +761,9 @@ def record_new_sale(opportunity_id, sale_date, sale_value, note, sales_agent, pr
 
         # Insert data into 'sales' table
         sql_sales = '''INSERT INTO sale (opportunity_id, sale_date, sale_value, 
-                note, sales_agent, product, total_paid, is_final, currency) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-        sales_data = (opportunity_id, sale_date, sale_value, note, sales_agent, product, 0, False, 'INR')
+                note, sales_agent, product, total_paid, is_final, currency, cancelled) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+        sales_data = (opportunity_id, sale_date, sale_value, note, sales_agent, product, 0, False, 'INR', False)
         cursor.execute(sql_sales, sales_data)
         connection.commit()
         opportunity = get_opportunity_by_id(opportunity_id)
