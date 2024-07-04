@@ -65,15 +65,16 @@ def store_opportunity(opportunity_data):
 
         # Check if the email already exists in the table
         sql_check_email = "SELECT COUNT(*) FROM opportunity WHERE email = %s"
-        cursor.execute(sql_check_email, (email))
+        cursor.execute(sql_check_email, (email,))
         email_exists = cursor.fetchone()[0]
         
         if email_exists == 0:
             # Insert the opportunity
             sql_insert = """
-                INSERT INTO opportunity (name, email, phone, register_time, last_register_time, opportunity_status, call_status, sales_agent, comment, campaign, ad_name, ad_id, medium,
+                INSERT INTO opportunity (name, email, phone, register_time, last_register_time, 
+                opportunity_status, call_status, sales_agent, comment, campaign, ad_name, ad_id, medium,
                 ad_fbp, ad_fbc, video_watched, ad_placement, ad_account)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql_insert, (name, email, phone, date, date, opportunity_status, optin_status, sales_agent, comment, campaign, 
                                         ad_name, ad_id, ad_medium, ad_fbp, ad_fbc, False, ad_placement, ad_account))
