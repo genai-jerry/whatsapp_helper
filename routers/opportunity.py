@@ -35,6 +35,7 @@ def create_opportunity():
         ad_fbp = data.get('ad_fbp')
         ad_fbc = data.get('ad_fbc')
         ad_placement = data.get('ad_placement')
+        ad_account = data.get('ad_account')
 
         # Create the opportunity in your database
         opportunity_data = {
@@ -48,7 +49,8 @@ def create_opportunity():
             'ad_medium': ad_medium,
             'ad_fbp': ad_fbp,
             'ad_fbc': ad_fbc,
-            'ad_placement': ad_placement
+            'ad_placement': ad_placement,
+            'ad_account': ad_account
         }
         store_opportunity(opportunity_data)
 

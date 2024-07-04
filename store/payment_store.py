@@ -98,8 +98,8 @@ def store_sales(sale_details):
         # Prepare the SQL query to insert sale details
             # This is a generic template, adjust the table name and columns as per your database schema
         query = """
-            INSERT INTO sale (sale_value, sale_date, total_paid, is_final, note, opportunity_id)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO sale (sale_value, sale_date, total_paid, is_final, note, cancelled, opportunity_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
         # Loop through the sale details and insert each sale object
         for sale in sale_details:
@@ -113,7 +113,7 @@ def store_sales(sale_details):
             gross_amount = float(sale['gross'].replace(',', ''))
             sale_date = datetime.strptime(sale['date'], '%b %d %Y')
             # Execute the query with the sale details
-            cursor.execute(query, (gross_amount, sale_date, 0, is_final, sale['comments'], opportunity['id']))
+            cursor.execute(query, (gross_amount, sale_date, 0, is_final, sale['comments'], False, opportunity['id']))
         # Commit the transaction
         connection.commit()
         

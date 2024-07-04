@@ -50,7 +50,8 @@ def store_opportunity(opportunity_data):
         ad_fbp = opportunity_data['ad_fbp'] if 'ad_fbp' in opportunity_data and opportunity_data['ad_fbp'] else None
         ad_fbc = opportunity_data['ad_fbc'] if 'ad_fbc' in opportunity_data and opportunity_data['ad_fbc'] else None
         ad_placement = opportunity_data['ad_placement'] if 'ad_placement' in opportunity_data and opportunity_data['ad_placement'] else None
-        
+        ad_account = opportunity_data['ad_account'] if 'ad_account' in opportunity_data and opportunity_data['ad_account'] else None
+
         # Insert the opportunity
         connection = create_connection()
         cursor = connection.cursor()
@@ -71,11 +72,11 @@ def store_opportunity(opportunity_data):
             # Insert the opportunity
             sql_insert = """
                 INSERT INTO opportunity (name, email, phone, register_time, last_register_time, opportunity_status, call_status, sales_agent, comment, campaign, ad_name, ad_id, medium,
-                ad_fbp, ad_fbc, video_watched)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ad_fbp, ad_fbc, video_watched, ad_placement, ad_account)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql_insert, (name, email, phone, date, date, opportunity_status, optin_status, sales_agent, comment, campaign, 
-                                        ad_name, ad_id, ad_medium, ad_fbp, ad_fbc, False))
+                                        ad_name, ad_id, ad_medium, ad_fbp, ad_fbc, False, ad_placement, ad_account))
             connection.commit()
             print("Opportunity inserted successfully.")
         else:
@@ -85,11 +86,11 @@ def store_opportunity(opportunity_data):
             sql_update = """
                 UPDATE opportunity 
                 SET opportunity_status = %s, call_status = %s, sales_agent = %s, comment = %s, campaign = %s,
-                ad_name = %s, ad_id = %s, medium = %s, ad_fbp = %s, ad_fbc = %s, last_register_time = %s
+                ad_name = %s, ad_id = %s, medium = %s, ad_fbp = %s, ad_fbc = %s, last_register_time = %s, ad_placement = %s, ad_account = %s
                 WHERE email = %s or phone = %s
             """
             cursor.execute(sql_update, (opportunity_status, optin_status, sales_agent, comment, campaign, ad_name, 
-                                        ad_id, ad_medium, ad_fbp, ad_fbc, current_datetime,
+                                        ad_id, ad_medium, ad_fbp, ad_fbc, current_datetime, ad_placement, ad_account,
                                         email, 
                                         phone))
             connection.commit()
@@ -160,7 +161,8 @@ def update_opportunity_status(opportunity_data, status_columns=None):
             o.email,
             o.phone,
             o.ad_fbp,
-            o.ad_fbc
+            o.ad_fbc,
+            o.ad_account
             FROM 
             opportunity o
             WHERE o.id = %s
@@ -173,7 +175,8 @@ def update_opportunity_status(opportunity_data, status_columns=None):
             'email': row[2],
             'phone': row[3],
             'fbp': row[4],
-            'fbc': row[5]
+            'fbc': row[5],
+            'ad_account': row[6]
             }
 
         handle_opportunity_update(opportunity, status_type, status)
@@ -218,7 +221,8 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             o.ad_name,
             o.medium,
             o.video_watched,
-            o.ad_placement
+            o.ad_placement,
+            o.ad_account
             FROM 
             opportunity o
             LEFT JOIN 
@@ -302,7 +306,8 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             'ad_name': row[15],
             'ad_medium': row[16],
             'video_watched': row[17],
-            'ad_placement': row[18]
+            'ad_placement': row[18],
+            'ad_account': row[19]
             }
             opportunities.append(opportunity)
 
@@ -338,7 +343,8 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.submit_application_event_fired as submit_application_event_fired,
                 opportunity.sale_event_fired as sale_event_fired,
                 opportunity.ad_fbp as fbp,
-                opportunity.ad_fbc as fbc
+                opportunity.ad_fbc as fbc,
+                opportunity.ad_account,
             FROM 
                 opportunity
             WHERE 
@@ -394,6 +400,7 @@ def get_opportunity_by_id(opportunity_id):
             'sale_event_fired': opportunity[14],
             'fbp': opportunity[15],
             'fbc': opportunity[16],
+            'ad_account': opportunity[17],
             'appointments': appointment_data,
             'messages': [{'type': message[1], 'sender': message[2], 'receiver': message[3], 'message': message[5], 'template': message[6], 'status': message[7], 'error_message': message[8], 'create_time': message[9], 'update_time': message[10]} for message in messages],
             'templates': [{'id': template[0], 'name': template[1], 'active': template[2], 'template_text': template[3]} for template in templates]
@@ -428,7 +435,7 @@ def get_opportunity_by_email(email):
         connection = create_connection()
         cursor = connection.cursor()
         # Define the SQL query with placeholders
-        sql = "SELECT id, name, email, phone, ad_fbp as fbp, ad_fbc as fbc FROM opportunity where email = %s"
+        sql = "SELECT id, name, email, phone, ad_fbp as fbp, ad_fbc as fbc, ad_account as ad_account FROM opportunity where email = %s"
 
         # Prepare the query and execute it with the provided values
         cursor.execute(sql, (email,))
@@ -441,8 +448,10 @@ def get_opportunity_by_email(email):
                 'email': row[2],
                 'phone': row[3],
                 'fbp': row[4],
-                'fbc': row[5]
+                'fbc': row[5],
+                'ad_account': row[6]
             }
+            print(f'Returning Opportunity {opportunity}')
             return opportunity
         else:
             return None
@@ -490,7 +499,8 @@ def update_opportunity_data(opportunity_id, opportunity_data):
                 'opportunity_status': opportunity['opportunity_status'],
                 'call_status': opportunity['call_status'],
                 'fbp': opportunity['fbp'],
-                'fbc': opportunity['fbc']
+                'fbc': opportunity['fbc'],
+                'ad_account': opportunity['ad_account']
              }
             handle_opportunity_update(data, 
                                   'call_status', f'{data["call_status"]}')
@@ -763,7 +773,8 @@ def record_new_sale(opportunity_id, sale_date, sale_value, note, sales_agent, pr
                 'email': opportunity['email'],
                 'phone': opportunity['phone'],
                 'fbp': opportunity['fbp'],
-                'fbc': opportunity['fbc']
+                'fbc': opportunity['fbc'],
+                'ad_account': opportunity['ad_account']
             }
         handle_opportunity_update(opportunity_data, 
                                   'opportunity_status', '2')

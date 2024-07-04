@@ -35,6 +35,8 @@ def fire_event(opportunity, event_name):
     name_parts = full_name.split()
     first_name = name_parts[0]
     last_name = name_parts[-1]
+    print(f'Opportunity ad account {opportunity["ad_account"]}')
+    ad_account = opportunity['ad_account'] if 'ad_account' in opportunity and opportunity['ad_account'] != None else ''
     data = {
         "Email": opportunity['email'],
         "First Name": first_name,
@@ -42,6 +44,16 @@ def fire_event(opportunity, event_name):
         "Phone": opportunity['phone'],
         "FBP": opportunity['fbp'],
         "FBC": opportunity['fbc'],
-        "Event Name": event_name
+        "Event Name": event_name,
+        "Account ID": ad_account
     }
     headers = {"Content-Type": "application/json"}
+
+    response = requests.post(url, data=json.dumps(data), headers=headers)
+    if response.status_code == 200:
+        print("Successfully sent data to external API")
+    else:
+        print("Failed to send data to external API")
+        print(response.text)
+
+
