@@ -242,8 +242,10 @@
                 var searchTerm = $('#searchTerm').val();
                 var searchType = $('#searchType').val();
                 page = 1;  // Reset to the first page
-                filterType = "DATE(o.register_time)";
+                filterType = "DATE(o.last_register_time)";
                 filterValue = dateStr;
+                var filter = new Filter(filterType, filterValue, 'Date');
+                filters[filterType] = filter;
                 loadOpportunities(searchTerm, searchType, filters);
             },
             disableMobile: true // Add this line to disable the dropdown on mobile

@@ -1,0 +1,51 @@
+<nav class="bg-light d-md-block collapse navbar-collapse" id="navbarSupportedContent">
+    <!-- Menu Items -->
+    <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+            {% if g.user_logged_in %}
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/">
+                    Home
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/appointment">
+                    Appointments
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/instance">
+                    Instances
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/template">
+                    Templates
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/opportunity">
+                    Opportunities
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/message/">
+                    Messages
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/import">
+                    Import
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/logout">
+                    Logout
+                </a>
+            </li>
+            
+            {% endif %}
+        </ul>
+    </div>
+</nav>

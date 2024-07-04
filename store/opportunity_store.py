@@ -40,9 +40,6 @@ def store_opportunity(opportunity_data):
         phone = format_phone_number(opportunity_data['phone']) if opportunity_data['phone'] else None
 
         comment = opportunity_data['comment'] if 'comment' in opportunity_data and opportunity_data['comment'] else None
-        sale_date_str = opportunity_data['sale_date'] if 'sale_date' in opportunity_data and opportunity_data['sale_date'] else None
-        sale_date = datetime.strptime(sale_date_str, '%d/%m/%Y') if sale_date_str else None
-        print(f'Got sale date {sale_date}')
         optin_status_name = opportunity_data['optin_status'] if 'optin_status' in opportunity_data and opportunity_data['optin_status'] else None
         opportunity_status_name = opportunity_data['opportunity_status'] if 'opportunity_status' in opportunity_data and opportunity_data['opportunity_status'] else None
         sales_agent_name = opportunity_data['agent'] if 'agent' in opportunity_data and opportunity_data['agent'] else None
@@ -53,7 +50,8 @@ def store_opportunity(opportunity_data):
         ad_fbp = opportunity_data['ad_fbp'] if 'ad_fbp' in opportunity_data and opportunity_data['ad_fbp'] else None
         ad_fbc = opportunity_data['ad_fbc'] if 'ad_fbc' in opportunity_data and opportunity_data['ad_fbc'] else None
         ad_placement = opportunity_data['ad_placement'] if 'ad_placement' in opportunity_data and opportunity_data['ad_placement'] else None
-        
+        ad_account = opportunity_data['ad_account'] if 'ad_account' in opportunity_data and opportunity_data['ad_account'] else None
+
         # Insert the opportunity
         connection = create_connection()
         cursor = connection.cursor()
@@ -66,19 +64,19 @@ def store_opportunity(opportunity_data):
 
 
         # Check if the email already exists in the table
-        sql_check_email = "SELECT COUNT(*) FROM opportunity WHERE email = %s or phone = %s"
-        cursor.execute(sql_check_email, (email, phone))
+        sql_check_email = "SELECT COUNT(*) FROM opportunity WHERE email = %s"
+        cursor.execute(sql_check_email, (email))
         email_exists = cursor.fetchone()[0]
         
         if email_exists == 0:
             # Insert the opportunity
             sql_insert = """
-                INSERT INTO opportunity (name, email, phone, register_time, last_register_time, opportunity_status, call_status, sales_agent, sales_date, comment, campaign, ad_name, ad_id, medium,
-                ad_fbp, ad_fbc, video_watched, ad_placement)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO opportunity (name, email, phone, register_time, last_register_time, opportunity_status, call_status, sales_agent, comment, campaign, ad_name, ad_id, medium,
+                ad_fbp, ad_fbc, video_watched, ad_placement, ad_account)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(sql_insert, (name, email, phone, date, date, opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, 
-                                        ad_name, ad_id, ad_medium, ad_fbp, ad_fbc, False, ad_placement))
+            cursor.execute(sql_insert, (name, email, phone, date, date, opportunity_status, optin_status, sales_agent, comment, campaign, 
+                                        ad_name, ad_id, ad_medium, ad_fbp, ad_fbc, False, ad_placement, ad_account))
             connection.commit()
             print("Opportunity inserted successfully.")
         else:
@@ -87,12 +85,12 @@ def store_opportunity(opportunity_data):
             # Update the opportunity
             sql_update = """
                 UPDATE opportunity 
-                SET opportunity_status = %s, call_status = %s, sales_agent = %s, sales_date = %s , comment = %s, campaign = %s,
-                ad_name = %s, ad_id = %s, medium = %s, ad_fbp = %s, ad_fbc = %s, last_register_time = %s, ad_placement = %s
+                SET opportunity_status = %s, call_status = %s, sales_agent = %s, comment = %s, campaign = %s,
+                ad_name = %s, ad_id = %s, medium = %s, ad_fbp = %s, ad_fbc = %s, last_register_time = %s, ad_placement = %s, ad_account = %s
                 WHERE email = %s or phone = %s
             """
-            cursor.execute(sql_update, (opportunity_status, optin_status, sales_agent, sale_date, comment, campaign, ad_name, 
-                                        ad_id, ad_medium, ad_fbp, ad_fbc, current_datetime, ad_placement,
+            cursor.execute(sql_update, (opportunity_status, optin_status, sales_agent, comment, campaign, ad_name, 
+                                        ad_id, ad_medium, ad_fbp, ad_fbc, current_datetime, ad_placement, ad_account,
                                         email, 
                                         phone))
             connection.commit()
@@ -152,12 +150,6 @@ def update_opportunity_status(opportunity_data, status_columns=None):
         # Prepare the query and execute it with the provided values
         cursor.execute(sql, params)
 
-        if status_type == "opportunity_status" and status == "2":
-            # Update the sale_date to current date
-            print('Updating sale date')
-            sql_update_sale_date = "UPDATE opportunity SET sales_date = CURRENT_DATE() WHERE id = %s"
-            cursor.execute(sql_update_sale_date, (opportunity_data['opportunity_id'],))
-
         connection.commit()
         print("Opportunity updated successfully.")  
 
@@ -169,7 +161,8 @@ def update_opportunity_status(opportunity_data, status_columns=None):
             o.email,
             o.phone,
             o.ad_fbp,
-            o.ad_fbc
+            o.ad_fbc,
+            o.ad_account
             FROM 
             opportunity o
             WHERE o.id = %s
@@ -182,7 +175,8 @@ def update_opportunity_status(opportunity_data, status_columns=None):
             'email': row[2],
             'phone': row[3],
             'fbp': row[4],
-            'fbc': row[5]
+            'fbc': row[5],
+            'ad_account': row[6]
             }
 
         handle_opportunity_update(opportunity, status_type, status)
@@ -227,7 +221,8 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             o.ad_name,
             o.medium,
             o.video_watched,
-            o.ad_placement
+            o.ad_placement,
+            o.ad_account
             FROM 
             opportunity o
             LEFT JOIN 
@@ -311,7 +306,8 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             'ad_name': row[15],
             'ad_medium': row[16],
             'video_watched': row[17],
-            'ad_placement': row[18]
+            'ad_placement': row[18],
+            'ad_account': row[19]
             }
             opportunities.append(opportunity)
 
@@ -340,7 +336,6 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.opportunity_status AS opportunity_status,
                 opportunity.call_status AS call_status,
                 opportunity.sales_agent AS sales_agent,
-                opportunity.sales_date AS sales_date,
                 opportunity.gender AS gender,
                 opportunity.company_type AS company_type,
                 opportunity.challenge_type AS challenge_type,
@@ -348,7 +343,8 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.submit_application_event_fired as submit_application_event_fired,
                 opportunity.sale_event_fired as sale_event_fired,
                 opportunity.ad_fbp as fbp,
-                opportunity.ad_fbc as fbc
+                opportunity.ad_fbc as fbc,
+                opportunity.ad_account,
             FROM 
                 opportunity
             WHERE 
@@ -396,15 +392,15 @@ def get_opportunity_by_id(opportunity_id):
             'opportunity_status': opportunity[6],
             'call_status': opportunity[7],
             'sales_agent': opportunity[8],
-            'sales_date': opportunity[9],
-            'gender': opportunity[10],
-            'company_type': opportunity[11],
-            'challenge_type': opportunity[12],
-            'lead_event_fired': opportunity[13],
-            'submit_application_event_fired': opportunity[14],
-            'sale_event_fired': opportunity[15],
-            'fbp': opportunity[16],
-            'fbc': opportunity[17],
+            'gender': opportunity[9],
+            'company_type': opportunity[10],
+            'challenge_type': opportunity[11],
+            'lead_event_fired': opportunity[12],
+            'submit_application_event_fired': opportunity[13],
+            'sale_event_fired': opportunity[14],
+            'fbp': opportunity[15],
+            'fbc': opportunity[16],
+            'ad_account': opportunity[17],
             'appointments': appointment_data,
             'messages': [{'type': message[1], 'sender': message[2], 'receiver': message[3], 'message': message[5], 'template': message[6], 'status': message[7], 'error_message': message[8], 'create_time': message[9], 'update_time': message[10]} for message in messages],
             'templates': [{'id': template[0], 'name': template[1], 'active': template[2], 'template_text': template[3]} for template in templates]
@@ -439,7 +435,7 @@ def get_opportunity_by_email(email):
         connection = create_connection()
         cursor = connection.cursor()
         # Define the SQL query with placeholders
-        sql = "SELECT id, name, email, phone, ad_fbp as fbp, ad_fbc as fbc FROM opportunity where email = %s"
+        sql = "SELECT id, name, email, phone, ad_fbp as fbp, ad_fbc as fbc, ad_account as ad_account FROM opportunity where email = %s"
 
         # Prepare the query and execute it with the provided values
         cursor.execute(sql, (email,))
@@ -452,8 +448,10 @@ def get_opportunity_by_email(email):
                 'email': row[2],
                 'phone': row[3],
                 'fbp': row[4],
-                'fbc': row[5]
+                'fbc': row[5],
+                'ad_account': row[6]
             }
+            print(f'Returning Opportunity {opportunity}')
             return opportunity
         else:
             return None
@@ -470,7 +468,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
         sql = """
         UPDATE opportunity
         SET name = %s, email = %s, phone = %s, call_status = %s, sales_agent = %s,
-        comment = %s, sales_date = %s, gender = %s, company_type = %s, challenge_type = %s
+        comment = %s, gender = %s, company_type = %s, challenge_type = %s
         WHERE id = %s
         """
 
@@ -483,7 +481,6 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             #opportunity_data['opportunity_status'] if int(opportunity_data['opportunity_status']) > 0 else None,
             opportunity_data['sales_agent'] if int(opportunity_data['sales_agent']) > 0 else None,
             opportunity_data['comment'],
-            opportunity_data['sales_date'] if opportunity_data['sales_date'] != '' else None,
             opportunity_data['gender'] if opportunity_data['gender'] != '-1' else None,
             opportunity_data['company_type'] if opportunity_data['company_type'] != '-1' else None,
             opportunity_data['challenge_type'] if opportunity_data['challenge_type'] != '-1' else None,
@@ -502,7 +499,8 @@ def update_opportunity_data(opportunity_id, opportunity_data):
                 'opportunity_status': opportunity['opportunity_status'],
                 'call_status': opportunity['call_status'],
                 'fbp': opportunity['fbp'],
-                'fbc': opportunity['fbc']
+                'fbc': opportunity['fbc'],
+                'ad_account': opportunity['ad_account']
              }
             handle_opportunity_update(data, 
                                   'call_status', f'{data["call_status"]}')
@@ -696,14 +694,14 @@ def generate_metrics(start_date, end_date):
         load_total_opportunities = 'SELECT COUNT(*) FROM opportunity WHERE register_time BETWEEN %s AND %s'
         load_followup_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (o.call_status !=9) AND o.sales_agent != 4 and o.sales_agent is not Null'
         load_self_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (o.call_status !=9) AND (o.sales_agent = 4 or o.sales_agent is Null)'
-        load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (o.call_status !=9)'
+        load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (o.call_status !=9)'
         queries = {
             'total_leads': load_total_opportunities,
             'call_booked_follow_up': f"{load_followup_opportunities} and a.appointment_time >= %s AND a.appointment_time <= %s",
             'call_show_up_follow_up': f"{load_followup_opportunities} AND o.opportunity_status != 1 AND a.appointment_time >= %s AND a.appointment_time <= %s",
             'call_booked_vsl': f"{load_self_opportunities} AND a.appointment_time >= %s AND a.appointment_time <= %s",
             'call_show_up_self': f"{load_self_opportunities} AND o.opportunity_status != 1 AND a.appointment_time >= %s AND a.appointment_time <= %s",
-            'sale_conversion': f"{load_opportunities_not_canceled} AND o.opportunity_status = 2 AND o.sales_date >= %s AND o.sales_date <= %s",
+            'sale_conversion': f"{load_opportunities_not_canceled} AND o.opportunity_status = 2 AND s.sale_date >= %s AND s.sale_date <= %s",
             'total_calls_booked': f"{load_opportunities_not_canceled} AND a.appointment_time >= %s AND a.appointment_time <= %s",
         }
 
@@ -745,13 +743,97 @@ def handle_video_watch_event(email):
     if opportunity is None:
         print(f'Opportunity with email {email} not found')
         return
+    print(f'Opportunity ID {opportunity}')
+    # Fire the Facebook event
+    handle_opportunity_update(opportunity, 'video_watched')
+    # Set the opportunity status to 15
+    opportunity_data = {'status': '15', 'status_type': 'call_status', 'opportunity_id': opportunity['id']}
+    # Update the opportunity status in your database
+    update_opportunity_status(opportunity_data)
+    
+def record_new_sale(opportunity_id, sale_date, sale_value, note, sales_agent, product):
     try:
         connection = create_connection()
         cursor = connection.cursor()
-        sql = "UPDATE opportunity SET video_watched = 1 WHERE id = %s"
-        cursor.execute(sql, (opportunity['id'],))
+        sql = "UPDATE opportunity SET opportunity_status = %s WHERE id = %s"
+        values = (2, opportunity_id)
+        cursor.execute(sql, values)
 
+        # Insert data into 'sales' table
+        sql_sales = '''INSERT INTO sale (opportunity_id, sale_date, sale_value, 
+                note, sales_agent, product, total_paid, is_final, currency) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+        sales_data = (opportunity_id, sale_date, sale_value, note, sales_agent, product, 0, False, 'INR')
+        cursor.execute(sql_sales, sales_data)
         connection.commit()
+        opportunity = get_opportunity_by_id(opportunity_id)
+        opportunity_data = {
+                'id': opportunity['id'],
+                'name': opportunity['name'],
+                'email': opportunity['email'],
+                'phone': opportunity['phone'],
+                'fbp': opportunity['fbp'],
+                'fbc': opportunity['fbc'],
+                'ad_account': opportunity['ad_account']
+            }
+        handle_opportunity_update(opportunity_data, 
+                                  'opportunity_status', '2')
     finally:
         if cursor:
             cursor.close()
+        if connection:
+            connection.close()
+
+def get_sales_details(opportunity_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "SELECT * FROM sales WHERE opportunity_id = %s"
+        cursor.execute(sql, (opportunity_id,))
+        results = cursor.fetchall()
+        sales_details = []
+        for row in results:
+            sales_details.append({
+                'sale_date': row[1],
+                'sale_value': row[2],
+                'currency': row[3],
+                'note': row[4],
+                'sales_agent': row[5],
+                'product': row[6]
+            })
+        return sales_details
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_all_sales(opportunity_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = '''SELECT id, opportunity_id, sale_date, sale_value, total_paid, currency, note, 
+            sales_agent, product, is_final FROM sale WHERE opportunity_id = %s'''
+        cursor.execute(sql, (opportunity_id,))
+        results = cursor.fetchall()
+        sales_list = []
+        for row in results:
+            sales = {
+                'id': row[0],
+                'opportunity_id': row[1],
+                'sale_date': row[2],
+                'sale_value': row[3],
+                'amount_paid': row[4],
+                'currency': row[5],
+                'note': row[6],
+                'sales_agent': row[7],
+                'product': row[8],
+                'is_final': row[9]
+            }
+            sales_list.append(sales)
+        return sales_list
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()

@@ -1,0 +1,99 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sale Date</th>
+            <th>Sale Value (Excl Tax)</th>
+            <th>Amount Paid  (Excl Tax)</th>
+            <th>Amount Pending</th>
+            <th>Product</th>
+            <th>Payments</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sale in sales %}
+        <tr {% if sale.is_final==1 %}style="background-color: #9bdb9b;"{% else %}style="background-color: #ddbe83;"{% endif %}>
+            <td>{{ sale.sale_date.strftime('%b %d, %Y') }}</td>
+            <td>{{ sale.sale_value  | numberFormat  }}</td>
+            <td>{{ sale.amount_paid | numberFormat }}</td>
+            <td>{{ (sale.sale_value - sale.amount_paid) | numberFormat }}</td>
+            <td>GenAI Leap</td>
+            <td><a href="/payments/{{opportunity.id}}/{{sale.id}}">Manage Payments</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<button id="addSaleButton" class="btn btn-primary">Add Sale</button>
+
+<form id="saleForm" action="{{opportunity.id}}/sale" method="post" style="display: none;">
+    <!-- Existing fields here -->
+    <div class="row">
+        <!-- New field for Sales Date -->
+        <div class="col-md-3 mb-3">
+            <div class="form-group">
+                <label for="salesDate">Sale Date:</label>
+                <input type="date" class="form-control" id="salesDate" name="sale_date">
+            </div>
+        </div>
+        <!-- New field for Sale Value -->
+        <div class="col-md-3 mb-3">
+            <div class="form-group">
+                <label for="saleValue">Sale Value</label>
+                <input type="number" class="form-control" id="saleValue" name="sale_value" step="0.01" required>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="form-group">
+                <label for="saleAgent">Sales Agent</label>
+                <select class="form-control" id="saleAgent" name="sales_agent">
+                    <option value="-1">Select a Sales Agent</option>
+                    {% for agent in sales_agents %}
+                        <option value="{{ agent.id }}">{{ agent.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="form-group">
+                <label for="saleAgent">Product</label>
+                <select class="form-control" id="product" name="product">
+                    <option value="1">GenAI Leap</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- New field for Notes -->
+        <div class="col-md-4 mb-4">
+            <div class="form-group">
+                <label for="notes">Notes</label>
+                <textarea class="form-control" id="notes" name="note" rows="3"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button id="cancelSaleButton" class="btn btn-danger">Cancel</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    const addSaleButton = document.getElementById('addSaleButton');
+    const cancelSaleButton = document.getElementById('cancelSaleButton');
+    const saleForm = document.getElementById('saleForm');
+
+    addSaleButton.addEventListener('click', () => {
+        saleForm.style.display = 'block';
+    });
+    cancelSaleButton.addEventListener('click', () => {
+        saleForm.style.display = 'none';
+    });
+</script>

@@ -35,6 +35,7 @@ def create_opportunity():
         ad_fbp = data.get('ad_fbp')
         ad_fbc = data.get('ad_fbc')
         ad_placement = data.get('ad_placement')
+        ad_account = data.get('ad_account')
 
         # Create the opportunity in your database
         opportunity_data = {
@@ -48,7 +49,8 @@ def create_opportunity():
             'ad_medium': ad_medium,
             'ad_fbp': ad_fbp,
             'ad_fbc': ad_fbc,
-            'ad_placement': ad_placement
+            'ad_placement': ad_placement,
+            'ad_account': ad_account
         }
         store_opportunity(opportunity_data)
 
@@ -224,7 +226,6 @@ def get_opportunity_detail(opportunity_id):
             'messages': opportunity['messages'],
             'templates': opportunity['templates'],
             'appointments': opportunity['appointments'],
-            'sales_date': opportunity['sales_date'].date() if opportunity['sales_date'] is not None else None,
             'senders': senders,  # Add the list of senders to the response data,
             'gender': opportunity['gender'],
             'challenge_type': opportunity['challenge_type'],
@@ -241,10 +242,12 @@ def get_opportunity_detail(opportunity_id):
         # Get a list of company types
         company_types = get_all_company_types()  # Replace with your database query
 
+        sales = get_all_sales(opportunity_id)
+        
         return render_template('opportunity/view.html', opportunity=response_data,
                        call_statuses=call_statuses, opportunity_statuses=opportunity_statuses,
                        sales_agents=sales_agents, challenge_types=challenge_types,
-                       company_types=company_types)
+                       company_types=company_types, sales=sales)
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
@@ -348,6 +351,27 @@ def get_sales_agents():
         # Retrieve all sales agents from your database
         sales_agents = get_all_sales_agents()  # Replace with your database query
         return jsonify(sales_agents), 200
+    except Exception as e:
+        print(str(e))
+        return error_response(500, str(e))
+    
+@opportunity_blueprint.route('/<int:opportunity_id>/sale', methods=['POST'])
+@login_required
+def record_sale(opportunity_id):
+    try:
+        # Extract the sale data from the request
+        data = request.form
+        sale_value = data.get('sale_value')
+        note = data.get('note')
+        sales_agent = data.get('sales_agent')
+        product = data.get('product')
+        sale_date = data.get('sale_date')
+
+        # Record the sale in your database for the given opportunity_id
+        record_new_sale(opportunity_id, sale_date, sale_value, note, sales_agent, product)
+        
+        return get_opportunity_detail(opportunity_id)
+        return get_opportunity_detail(opportunity_id)
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
