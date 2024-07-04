@@ -63,7 +63,7 @@ def list_payments_for_sale(sale_id):
         cursor = connection.cursor()
         sql_select = '''SELECT payment_date, payment_value, pm.name, charges, invoice_link
             FROM payments 
-            JOIN payment_mode as pm ON payments.payment_mode = pm.id
+            LEFT JOIN payment_mode as pm ON payments.payment_mode = pm.id
             WHERE sale = %s'''
         cursor.execute(sql_select, (sale_id,))
         payments = cursor.fetchall()
@@ -81,7 +81,6 @@ def list_payments_for_sale(sale_id):
             'charges': charges,
             'invoice_link': invoice_link
             })
-        
         return payment_data
     except Exception as e:
         print(str(e))
@@ -144,54 +143,29 @@ def get_first_sale_id(opportunity_id):
             cursor.close()
 
 def store_payments(payment_details):
-    cursor = None
-    try:
-        # Assuming db_connection is your database connection object
-        connection = create_connection()
-        cursor = connection.cursor()
-        
-        # SQL query to insert payment data into the payments table
-        query = """
-        INSERT INTO payments (payment_value, charges, payment_mode_reference, currency, payment_date, is_deposit, invoice_link, sale, opportunity, accountant, payment_mode, refunded)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
+   
+    # Assuming default values for some fields and mapping others directly
+    default_charges = 0  # Assuming a default value for demonstration
+    default_is_deposit = False  # Assuming a default value
+    
+    # Other fields like sale, opportunity, accountant, and payment_mode are set to NULL for this example
 
-        # Assuming default values for some fields and mapping others directly
-        default_charges = 0  # Assuming a default value for demonstration
-        default_is_deposit = False  # Assuming a default value
-        default_refunded = False  # Assuming a default value
-        
-        # Other fields like sale, opportunity, accountant, and payment_mode are set to NULL for this example
+    # Execute the query with the payment details
+    for payment in payment_details:
+        opportunity = get_opportunity_by_email(payment['email'])
+        if opportunity:
+            payment_amount = float(payment['payment_amount'].replace(',', ''))
+            tax = float(payment['GST'].replace(',', ''))
+            sale_id = get_first_sale_id(opportunity['id'])
+            payment_date = datetime.strptime(payment['payment_date'], '%b %d %Y')
 
-        # Execute the query with the payment details
-        for payment in payment_details:
-            opportunity = get_opportunity_by_email(payment['email'])
-            if opportunity:
-                payment_amount = float(payment['payment_amount'].replace(',', ''))
-                sale_id = get_first_sale_id(opportunity['id'])
-                payment_date = datetime.strptime(payment['payment_date'], '%b %d %Y')
-                cursor.execute(query, (
-                    payment_amount,  # payment_value maps to payment_amount
-                    default_charges,  # charges set to a default value
-                    None,  # payment_mode_reference not provided, assuming NULL
-                    None,  # currency not provided, assuming NULL
-                    payment_date,
-                    default_is_deposit,  # is_deposit set to a default value
-                    payment['link'],  # Assuming invoice_link maps to link
-                    sale_id,  # sale not provided, assuming NULL
-                    opportunity['id'],  # opportunity not provided, assuming NULL
-                    None,  # accountant not provided, assuming NULL
-                    None,  # payment_mode not provided, assuming NULL
-                    default_refunded  # refunded set to a default value
-                ))
-        
-        # Commit the transaction
-        connection.commit()
-        print("Payment details stored successfully.")
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        if cursor:
-            cursor.rollback()  # Rollback in case of error
-    finally:
-        if cursor:
-            cursor.close()
+            store_payment(sale_id, {
+                'payment_date': payment_date,
+                'payment_amount': payment_amount + tax,
+                'charges': default_charges,
+                'payment_mode': None,
+                'invoice_link': payment['link'],
+                'is_deposit': default_is_deposit
+            })
+    
+    print("Payment details stored successfully.")
