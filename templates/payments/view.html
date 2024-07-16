@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}
-    View Payments
+    Manage Payments
 {% endblock %}
 
 {% block content %}
     <div class="container mt-5">
-        <h3><a href="/opportunity/{{opportunity_id}}">Opportunity</a>/Payments</h3>
+        <h3>Manage payments for <a href="/opportunity/{{opportunity_id}}">{{opportunity_name}}</a></h3>
         <button id="addPaymentButton" class="btn btn-primary">Add Payment</button>
 
         <form id="paymentForm" action="{{sale_id}}" method="post" style="display: none;">
@@ -114,5 +114,70 @@
             });
         </script>
     </div>
+    <div class="container mt-5">
+        <h3>Payments Due</h3>
+        <button id="addDueButton" class="btn btn-primary">Add Due</button>
 
+        <form id="dueForm" action="/payments/{{opportunity_id}}/{{sale_id}}/due" method="post" style="display: none;">
+            <div class="row">
+                <!-- New field for Due Date -->
+                <div class="col-md-3 mb-3">
+                    <div class="form-group">
+                        <label for="dueDate">Due Date:</label>
+                        <input type="date" class="form-control" id="dueDate" name="due_date">
+                    </div>
+                </div>
+                <!-- New field for Amount Due -->
+                <div class="col-md-3 mb-3">
+                    <div class="form-group">
+                        <label for="amountDue">Amount Due</label>
+                        <input type="number" class="form-control" id="amountDue" name="amount_due" step="0.01" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    &nbsp;
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button id="cancelDueButton" class="btn btn-danger">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Due Date</th>
+                    <th>Amount Due</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for due in dues %}
+                <tr>
+                    <td>{{ due.due_date.strftime('%b %d, %Y') }}</td>
+                    <td>{{ due.amount | numberFormat }}</td>
+                    <td><a href="/payments/{{due.id}}/paid">Mark Paid</a>&nbsp;|&nbsp;<a href="/payments/{{due.id}}/cancel">Cancel</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <script>
+            const addDueButton = document.getElementById('addDueButton');
+            const cancelDueButton = document.getElementById('cancelDueButton');
+            const dueForm = document.getElementById('dueForm');
+
+            addDueButton.addEventListener('click', () => {
+                dueForm.style.display = 'block';
+            });
+            cancelDueButton.addEventListener('click', () => {
+                dueForm.style.display = 'none';
+            });
+        </script>
+    </div>
 {% endblock %}

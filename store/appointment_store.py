@@ -3,7 +3,7 @@ from utils import format_phone_number
 import pytz
 from db.connection_manager import *
 from facebook.fb_ads_manager import *
-from .opportunity_store import get_opportunity_by_email
+from .opportunity_store import get_opportunity_by_email, update_opportunity_status
 
 def store_appointment(profile_details, application_form_details, mentor_name, import_app=False):
     try:
@@ -214,9 +214,10 @@ def retrieve_appointments(page_number, page_size, max=0):
     query = """
     SELECT a.id, o.name, o.email, o.phone, o.name AS opportunity_name, o.id AS opportunity_id, m.name AS mentor_name, m.id AS mentor_id, a.appointment_time AS appointment_time,
     a.career_challenge, a.challenge_description, a.urgency, a.salary_range, a.expected_salary, a.current_employer, a.financial_situation, a.grade, 
-    a.verified, a.conflicted, a.canceled, a.confirmed
+    a.verified, a.conflicted, a.canceled, a.confirmed, os.name as opportunity_status
     FROM appointments AS a
     LEFT JOIN opportunity AS o ON a.opportunity_id = o.id
+    LEFT JOIN opportunity_status AS os ON a.status = os.id
     LEFT JOIN sales_agent AS m ON a.mentor_id = m.id
     WHERE a.appointment_time > %s and (a.canceled = FALSE OR a.canceled IS NULL)
     """
@@ -276,7 +277,8 @@ def retrieve_appointments(page_number, page_size, max=0):
                 'verified': row[17],
                 'conflicted': row[18],
                 'canceled': row[19],
-                'confirmed': row[20]
+                'confirmed': row[20],
+                'opportunity_status': row[21]
             }
             appointments.append(appointment)
 
@@ -341,6 +343,77 @@ def confirm_saved_appointment(appointment_id):
         return True
     except Exception as err:
         raise err
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+
+def update_appointment_status(opportunity_id, appointment_id, status):
+    try:
+        # Create a new database connection
+        cnx = create_connection()
+
+        # Create a new cursor
+        cursor = cnx.cursor()
+
+        is_initial_appointment = get_initial_discussion_appointment(opportunity_id) is None
+
+        # Define the SQL query for updating the appointment status
+        query = "UPDATE appointments SET status = %s, is_initial_discussion = %s WHERE id = %s"
+
+        # Execute the SQL query with the status and appointment ID as parameters
+        cursor.execute(query, (status, is_initial_appointment, appointment_id))
+        opportunity_data = {'opportunity_id': opportunity_id, 'status': status, 
+                            'status_type': 'opportunity_status'}
+        
+        update_opportunity_status(opportunity_data)
+        # Commit the transaction
+        cnx.commit()
+        
+        # Return True to indicate success
+        return True
+
+    except Exception as err:
+        raise err
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+
+def get_initial_discussion_appointment(opportunity_id):
+    try:
+        # Create a new database connection
+        cnx = create_connection()
+
+        # Create a new cursor
+        cursor = cnx.cursor()
+
+        # Define the SQL query for retrieving the initial discussion appointment for the given opportunity ID
+        query = "SELECT id FROM appointments WHERE opportunity_id = %s AND is_initial_discussion = 1 LIMIT 1"
+
+        # Execute the SQL query with the opportunity ID as a parameter
+        cursor.execute(query, (opportunity_id,))
+
+        # Fetch the row
+        row = cursor.fetchone()
+
+        # Check if a row is found
+        if row:
+            # Extract the appointment details
+            appointment = {
+                'id': row[0]
+            }
+
+            # Return the appointment
+            return appointment
+        else:
+            # Return None if no appointment is found
+            return None
+
+    except Exception as err:
+        raise err
+
     finally:
         # Close the cursor and connection
         if cursor:

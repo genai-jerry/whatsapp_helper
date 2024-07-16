@@ -49,11 +49,4 @@ def fire_event(opportunity, event_name):
     }
     headers = {"Content-Type": "application/json"}
 
-    response = requests.post(url, data=json.dumps(data), headers=headers)
-    if response.status_code == 200:
-        print("Successfully sent data to external API")
-    else:
-        print("Failed to send data to external API")
-        print(response.text)
-
 

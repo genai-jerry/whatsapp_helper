@@ -120,5 +120,10 @@ def exclTax(value):
 def tax(value):
     return value - exclTax(value)
 
+@app.template_filter()
+def formatDate(value):
+    formatted_date = value.strftime('%d %b %Y')
+    return formatted_date
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=30000, debug=True)

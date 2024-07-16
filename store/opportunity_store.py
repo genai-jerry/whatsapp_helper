@@ -2,7 +2,6 @@ from db.connection_manager import *
 from utils import format_phone_number
 from datetime import datetime
 from facebook.fb_ads_manager import handle_opportunity_update
-from datetime import datetime
 
 opportunities = {}
 
@@ -375,12 +374,12 @@ def get_opportunity_by_id(opportunity_id):
             FROM appointments a
             LEFT JOIN opportunity o ON a.opportunity_id = o.id
             LEFT JOIN lead_call_status cs ON o.call_status = cs.id
-            LEFT JOIN opportunity_status os ON o.opportunity_status = os.id
+            LEFT JOIN opportunity_status os ON a.status = os.id
             WHERE a.opportunity_id = %s
         """, (opportunity_id,))
         appointments = cursor.fetchall()
         # Prepare the appointment data to return
-        appointment_data = [{'time': appointment[0], 'call_status': appointment[1], 'opportunity_status': appointment[2], 'cancelled': appointment[3]} for appointment in appointments]
+        appointment_data = [{'time': appointment[0], 'call_status': appointment[1], 'appointment_status': appointment[2], 'cancelled': appointment[3]} for appointment in appointments]
 
         # Prepare the data to return
         data = {
@@ -699,9 +698,9 @@ def generate_metrics(start_date, end_date):
         queries = {
             'total_leads': load_total_opportunities,
             'call_booked_follow_up': f"{load_followup_opportunities} and a.appointment_time >= %s AND a.appointment_time <= %s",
-            'call_show_up_follow_up': f"{load_followup_opportunities} AND o.opportunity_status != 1 AND a.appointment_time >= %s AND a.appointment_time <= %s",
+            'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status != 1 AND a.appointment_time >= %s AND a.appointment_time <= %s AND (a.is_initial_discussion = 1 or a.status is null)",
             'call_booked_vsl': f"{load_self_opportunities} AND a.appointment_time >= %s AND a.appointment_time <= %s",
-            'call_show_up_self': f"{load_self_opportunities} AND o.opportunity_status != 1 AND a.appointment_time >= %s AND a.appointment_time <= %s",
+            'call_show_up_self': f"{load_self_opportunities} AND a.status != 1 AND a.appointment_time >= %s AND a.appointment_time <= %s AND (a.is_initial_discussion = 1 or a.status is null)",
             'sale_conversion': f"{load_opportunities_not_canceled} AND o.opportunity_status = 2 AND s.sale_date >= %s AND s.sale_date <= %s",
             'total_calls_booked': f"{load_opportunities_not_canceled} AND a.appointment_time >= %s AND a.appointment_time <= %s",
         }
@@ -717,11 +716,11 @@ def generate_metrics(start_date, end_date):
         call_booked_by_self = metrics['call_booked_vsl']
         call_show_up_self = metrics['call_show_up_self']
         sale_conversion = metrics['sale_conversion']
-        total_calls_booked = metrics['total_calls_booked']
+        total_calls_booked = call_booked_through_followup + call_booked_by_self
         total_leads = metrics['total_leads']
         total_calls_showed_up = call_show_up_followup + call_show_up_self
 
-        print(f'Metrics for {start_date} & {end_date} - {call_booked_through_followup}, {call_show_up_followup}, {call_booked_by_self}, {call_show_up_self}, {sale_conversion}, {total_calls_booked}, {total_calls_showed_up}')
+        print(f'Total Calls Showed {total_calls_showed_up}/ Total Calls Booked {total_calls_booked}')
 
         # Calculate the percentages
         metrics_data = {}
@@ -730,7 +729,7 @@ def generate_metrics(start_date, end_date):
         metrics_data['Call Show up for follow up bookings'] = [call_show_up_followup, round((call_show_up_followup / call_booked_through_followup) * 100, 2) if call_booked_through_followup != 0 else 0]
         metrics_data['Call booked via VSL'] = [call_booked_by_self, round((call_booked_by_self / total_leads) * 100, 2) if total_leads != 0 else 0]
         metrics_data['Call Show up for self bookings'] = [call_show_up_self, round((call_show_up_self / call_booked_by_self) * 100, 2) if call_booked_by_self != 0 else 0]
-        metrics_data['Overall Show-up'] = [total_calls_showed_up, round(((total_calls_showed_up) / (total_calls_booked)) * 100, 2) if total_calls_booked != 0 else 0]
+        metrics_data['Overall Show-up'] = [total_calls_showed_up, round((total_calls_showed_up / total_calls_booked) * 100, 2) if total_calls_booked != 0 else 0]
         metrics_data['Sale Conversion'] = [sale_conversion, round((sale_conversion / (total_calls_showed_up)) * 100, 2) if total_calls_showed_up != 0 else 0]
 
         return metrics_data

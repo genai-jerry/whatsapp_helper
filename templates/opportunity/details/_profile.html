@@ -33,16 +33,6 @@
                 <input type="text" class="form-control" id="phone" name="phone" value="{{ opportunity.phone }}">
               </div>
         </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="opportunityStatus">Sales Call Status</label>
-                <div class="form-control" role="group" aria-label="Opportunity Status">
-                    {% for status in opportunity_statuses %}
-                        <button type="button" id="status-{{ status.id }}" class="btn btn-primary {% if opportunity.opportunity_status == status.id %}btn-success{% endif %}" onclick="update_status({{opportunity.id}}, {{status.id}})" >{{ status.name }}</button>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
     </div>
     <div class="row">
         <div class="col-md-4">

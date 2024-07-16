@@ -2,8 +2,10 @@ from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required
 from utils import require_api_key
 import csv
+from utils import error_response
 from werkzeug.utils import secure_filename
-from store.appointment_store import store_appointment, retrieve_appointments, cancel_saved_appointment, confirm_saved_appointment
+from store.appointment_store import *
+from store.opportunity_store import get_all_opportunity_status
 
 appointment_blueprint = Blueprint('appointment', __name__)
 
@@ -60,8 +62,10 @@ def list_appointments():
     print(f'Page: {page}, per_page: {per_page}, max_appointments: {max_appointments}')
     pages, total_items, appointments = retrieve_appointments(page, per_page, 
                                                              max_appointments)
+    opportunity_statuses = get_all_opportunity_status()
     return jsonify({
         'appointments': appointments, 
+        'opportunity_statuses': opportunity_statuses,
         'page': page,
         'total_pages': pages,
         'total_items': total_items}), 200
@@ -111,3 +115,16 @@ def import_appointments():
             store_appointment(profile_details, application_form_details, mentor_name, True)
 
     return jsonify({'status': 'success'}), 200
+
+@appointment_blueprint.route('status/<int:opportunity_id>/<int:appointment_id>', methods=['POST'])
+@login_required
+def set_appointment_status(opportunity_id, appointment_id):
+    try:
+        # Extract status from request body
+        status = request.json.get('status')
+        update_appointment_status(opportunity_id,appointment_id, status)
+        print('Appointment Status Updated')
+        return jsonify({'status': 'success'}), 200
+    except Exception as e:
+        print(str(e))
+        return error_response(500, str(e))

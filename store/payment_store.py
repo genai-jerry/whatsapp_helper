@@ -10,6 +10,8 @@ def store_payment(sale_id, payment_data):
         payment_mode = payment_data['payment_mode'] if 'payment_mode' in payment_data else None
         invoice_link = payment_data['invoice_link'] if 'invoice_link' in payment_data else None
         is_deposit = payment_data['is_deposit'] if 'is_deposit' in payment_data else False
+        payment_mode_reference = payment_data['payment_mode_reference'] if 'payment_mode_reference' in payment_data else None
+        payment_method = payment_data['payment_method'] if 'payment_method' in payment_data else None
 
         # Insert the payment
         connection = create_connection()
@@ -17,10 +19,14 @@ def store_payment(sale_id, payment_data):
 
         # Insert the payment
         sql_insert = """
-        INSERT INTO payments (payment_date, payment_value, charges, payment_mode, invoice_link, is_deposit, sale, refunded)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO payments (payment_date, payment_value, charges, 
+            payment_mode, payment_method, payment_mode_reference,
+            invoice_link, is_deposit, sale, refunded)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-        cursor.execute(sql_insert, (payment_date, payment_amount, charges, payment_mode, invoice_link, is_deposit, sale_id, 0))
+        cursor.execute(sql_insert, (payment_date, payment_amount, charges, 
+                                    payment_mode, payment_method, payment_mode_reference,
+                                    invoice_link, is_deposit, sale_id, 0))
         
         update_sale_payment(cursor, sale_id, payment_amount, is_deposit)
 
@@ -169,3 +175,124 @@ def store_payments(payment_details):
             })
     
     print("Payment details stored successfully.")
+
+def store_payments_due(sale_id, due_date, amount_due):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        query = """
+            INSERT INTO payment_due (payment_value, due_date, sale_id, paid, cancelled)
+            VALUES (%s, %s, %s, %s, %s)
+            """
+        due_date = datetime.strptime(due_date, '%Y-%m-%d')
+        payment_value = float(amount_due.replace(',', ''))
+        cursor.execute(query, (payment_value, due_date, sale_id, False, False))
+        connection.commit()
+        print("Payment due details stored successfully.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        cursor.rollback()
+    finally:
+        if cursor:
+            cursor.close()
+
+def list_payment_dues(sale_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql_select = "SELECT payment_value, due_date FROM payment_due WHERE sale_id = %s"
+        cursor.execute(sql_select, (sale_id,))
+        payment_dues = cursor.fetchall()
+        payment_due_data = []
+        for payment_due in payment_dues:
+            payment_value = payment_due[0]
+            due_date = payment_due[1]
+            payment_due_data.append({
+            'amount': payment_value,
+            'due_date': due_date
+            })
+        return payment_due_data
+    except Exception as e:
+        print(str(e))
+        raise e
+    finally:
+        if cursor:
+            cursor.close()
+
+def process_payment(email, amount, charges, mode, method, date, reference):
+    # Validate the input data
+    if not email or amount <= 0 or charges < 0:
+        raise ValueError("Invalid payment data")
+    
+    # Assuming you have a database connection established as db_connection
+    
+    opportunity_id = None
+    opportunity = get_opportunity_by_email(email)   
+    if opportunity:
+        opportunity_id = opportunity['id']
+
+    if date == 1720433278:
+        payment_date = datetime.now()
+    else:
+        payment_date = datetime.fromtimestamp(date / 1000)
+
+    payment_mode = get_payment_mode_id_by_name(mode)
+
+    sale_id = get_first_sale_id(opportunity_id)
+
+    if sale_id:
+        store_payment(sale_id, {
+            'payment_date': payment_date,
+            'payment_amount': amount,
+            'charges': charges,
+            'payment_mode': payment_mode,
+            'payment_mode_reference': reference,
+            'payment_method': method,
+            'is_deposit': False
+        })
+    else:
+        try:
+            connection = create_connection()
+            cursor = connection.cursor()
+        
+            # Prepare the SQL query to insert the payment record
+            query = """
+            INSERT INTO payments (payment_value, charges, payment_method, payment_mode_reference,
+            payment_date, opportunity, sale, payment_mode, is_deposit, refunded)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            
+            # Execute the query with the provided data
+            cursor.execute(query, (amount, charges, method, reference, payment_date, 
+                                opportunity_id, sale_id, payment_mode, False, False))
+            
+            # Commit the transaction
+            connection.commit()
+        
+            # Return a success message or boolean to indicate success
+            return True
+        except Exception as e:
+            # Optionally, rollback the transaction if something goes wrong
+            connection.rollback()
+            raise e
+        finally:
+            if cursor:
+                cursor.close()
+
+def get_payment_mode_id_by_name(mode):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql_select = "SELECT id FROM payment_mode WHERE name = %s"
+        cursor.execute(sql_select, (mode,))
+        result = cursor.fetchone()
+        if result:
+            return result[0]
+        else:
+            return None
+    except Exception as e:
+        print(str(e))
+        raise e
+    finally:
+        if cursor:
+            cursor.close()

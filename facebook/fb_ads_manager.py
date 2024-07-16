@@ -12,5 +12,6 @@ def handle_opportunity_update(opportunity, event_type, event_value=None):
                                     'event_type': event_type,
                                     'event_value': event_value}).encode('utf-8')
                         )
-    print('Sent message to Kafka ad manager')
+    print('Sending message to Kafka ad manager')
     producer.get_producer().flush()
+    print('Sent message to Kafka ad manager')

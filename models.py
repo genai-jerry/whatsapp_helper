@@ -154,11 +154,13 @@ class Appointment(db.Model):
     mentor_id = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
     opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'))
     appointment_time = db.Column(db.DateTime, nullable=False)
+    is_initial_discussion = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     verified = db.Column(db.Boolean, nullable=False)
     conflicted = db.Column(db.Boolean, nullable=True)
     canceled = db.Column(db.Boolean, nullable=True)
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
+    status = db.Column(db.Integer, db.ForeignKey('opportunity_status.id'), nullable=True)
     
 
 class MaxScore(db.Model):
@@ -200,7 +202,7 @@ class Sale(db.Model):
     sales_agent = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
     product = db.Column(db.Integer, db.ForeignKey('products.id'))
     cancelled = db.Column(db.Boolean, nullable=False, default=False)
-
+    
 class Payment(db.Model):
     __tablename__ = 'payments'
     
@@ -216,6 +218,7 @@ class Payment(db.Model):
     opportunity = db.Column(db.Integer, db.ForeignKey('opportunity.id'))
     accountant = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     payment_mode = db.Column(db.Integer, db.ForeignKey('payment_mode.id'))
+    payment_method = db.Column(db.String(255), nullable=True)
     refunded = db.Column(db.Boolean, nullable=False, default=False)
 
 class PaymentMode(db.Model):
@@ -225,4 +228,13 @@ class PaymentMode(db.Model):
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(255), nullable=True)
 
+class PaymentDue(db.Model):
+    __tablename__ = 'payment_due'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    payment_value = db.Column(db.Integer, nullable=False)
+    due_date = db.Column(db.DateTime, nullable=False)
+    sale_id = db.Column(db.Integer, db.ForeignKey('sale.id'))
+    paid = db.Column(db.Boolean, nullable=False, default=False)
+    cancelled = db.Column(db.Boolean, nullable=False, default=False)
 
