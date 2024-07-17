@@ -701,7 +701,7 @@ def generate_metrics(start_date, end_date):
             'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status != 1 AND a.appointment_time >= %s AND a.appointment_time <= %s AND (a.is_initial_discussion = 1 or a.status is null)",
             'call_booked_vsl': f"{load_self_opportunities} AND a.appointment_time >= %s AND a.appointment_time <= %s",
             'call_show_up_self': f"{load_self_opportunities} AND a.status != 1 AND a.appointment_time >= %s AND a.appointment_time <= %s AND (a.is_initial_discussion = 1 or a.status is null)",
-            'sale_conversion': f"{load_opportunities_not_canceled} AND o.opportunity_status = 2 AND s.sale_date >= %s AND s.sale_date <= %s",
+            'sale_conversion': f"{load_opportunities_not_canceled} AND o.opportunity_status = 2 AND s.sale_date >= %s AND s.sale_date <= %s AND s.is_final = 1",
             'total_calls_booked': f"{load_opportunities_not_canceled} AND a.appointment_time >= %s AND a.appointment_time <= %s",
         }
 

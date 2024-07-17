@@ -97,10 +97,13 @@ def record_payment():
         email = data.get('email')
         amount = data.get('amount')
         charges = data.get('charges')
+        charge_tax = data.get('charge_tax')
         mode = data.get('mode')
         method = data.get('method')
         date = data.get('date')
         reference = data.get('reference')
+
+        charges = int(charges) + int(charge_tax)
         
         if mode == "Razorpay":
             amount = round(amount / 100, 2)
