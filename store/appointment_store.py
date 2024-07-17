@@ -356,20 +356,22 @@ def update_appointment_status(opportunity_id, appointment_id, status):
         # Create a new cursor
         cursor = cnx.cursor()
 
-        is_initial_appointment = get_initial_discussion_appointment(opportunity_id) is None
+        is_initial_appointment = 1 if get_initial_discussion_appointment(opportunity_id) is None else 0
 
         # Define the SQL query for updating the appointment status
         query = "UPDATE appointments SET status = %s, is_initial_discussion = %s WHERE id = %s"
 
         # Execute the SQL query with the status and appointment ID as parameters
         cursor.execute(query, (status, is_initial_appointment, appointment_id))
-        opportunity_data = {'opportunity_id': opportunity_id, 'status': status, 
-                            'status_type': 'opportunity_status'}
-        
-        update_opportunity_status(opportunity_data)
+
         # Commit the transaction
         cnx.commit()
-        
+
+        if status == 2:
+            opportunity_data = {'opportunity_id': opportunity_id, 'status': status, 
+                                'status_type': 'opportunity_status'}
+            
+            update_opportunity_status(opportunity_data)        
         # Return True to indicate success
         return True
 
