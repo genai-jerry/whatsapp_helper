@@ -5,6 +5,7 @@ from utils import error_response, app_home, require_api_key
 import csv
 from werkzeug.utils import secure_filename
 from store.opportunity_store import *  # Import the store_opportunity function
+from store.sales_store import record_new_sale, get_all_sales
 from store.instance_store import get_senders
 from whatsapp.message_sender import send_template_message
 import datetime

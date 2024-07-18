@@ -3,6 +3,7 @@ from werkzeug.utils import secure_filename
 import csv
 from store.payment_store import store_sales
 from store.sales_store import get_sales_data
+from store.payment_store import get_unassigned_payments
 
 sales_blueprint = Blueprint('sales', __name__)
 
@@ -42,4 +43,6 @@ def list_sales():
     per_page = request.args.get('per_page', 10, type=int)
     opportunity_name = request.args.get('opportunity_name', '')
     sales_data, total_pages = get_sales_data(page, per_page, opportunity_name)
-    return render_template('sales/list.html', sales=sales_data, page=page, total_pages=total_pages), 200
+    unassigned_payments = get_unassigned_payments()
+    return render_template('sales/list.html', sales=sales_data, page=page, 
+                           total_pages=total_pages, unassigned_payments=unassigned_payments), 200

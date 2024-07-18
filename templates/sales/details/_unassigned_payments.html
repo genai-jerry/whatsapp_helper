@@ -1,0 +1,41 @@
+{% if unassigned_payments %}
+<div class="container mt-5">
+    <h2>Unassigned Payments</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Amount</th>
+                <th>Payment Date</th>
+                <th>Assign</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in unassigned_payments %}
+            <tr>
+                <td>{{ payment.email }}</td>
+                <td>{{ payment.phone }}</td>
+                <td>{{ (payment.amount + payment.charges) }}</td>
+                <td>{{ payment.date | formatDate }}</td>
+                <td>
+                    <form action="/payments/assign" method="POST">
+                        <select name="sale_id">
+                            {% for sale in sales %}
+                            <option value="{{ sale.sale_id }}">{{ sale.opportunity_name }} - {{ sale.product_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <span>
+                            <input type="hidden" name="payment_id" value="{{ payment.payment_id }}">
+                            <input type="hidden" name="payment_amount" value="{{ (payment.amount + payment.charges) }}">
+                            <button type="submit" class="btn btn-primary ml-2">Assign</button>
+                        </span>
+                    </form>
+                </td>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}

@@ -207,6 +207,8 @@ class Payment(db.Model):
     __tablename__ = 'payments'
     
     id = db.Column(db.Integer, primary_key=True)
+    payor_email = db.Column(db.String(255), nullable=False)
+    payor_phone = db.Column(db.String(255), nullable=False)
     payment_value = db.Column(db.Integer, nullable=False)
     charges = db.Column(db.Integer, nullable=False)
     payment_mode_reference = db.Column(db.String(255), nullable=True)
