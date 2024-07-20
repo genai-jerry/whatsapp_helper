@@ -356,7 +356,11 @@ def update_appointment_status(opportunity_id, appointment_id, status):
         # Create a new cursor
         cursor = cnx.cursor()
 
-        is_initial_appointment = 1 if get_initial_discussion_appointment(opportunity_id) is None else 0
+        is_initial_appointment = 0
+
+        if status != '5' and status != '6':
+            print(f'Checking if initial appointment exists for opportunity {opportunity_id} with status {status}')
+            is_initial_appointment = 1 if get_initial_discussion_appointment(opportunity_id) is None else 0
 
         # Define the SQL query for updating the appointment status
         query = "UPDATE appointments SET status = %s, is_initial_discussion = %s WHERE id = %s"

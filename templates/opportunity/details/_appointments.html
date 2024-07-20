@@ -5,7 +5,7 @@
             <div class="card-body">
                 <p class="card-text">Call Status: <b>{{ appointment.call_status }}</b></p>
             </div>
-            <div class="card-footer {% if appointment.appointment_status == 'Sale' %}bg-success{% elif appointment.appointment_status == 'Follow up' %}bg-warning{% elif appointment.appointment_status == None %}bg-primary{% else %}bg-danger{% endif %}">
+            <div class="card-footer {% if appointment.appointment_status == 'Sale' %}bg-success{% elif appointment.appointment_status == 'Follow up' or appointment.appointment_status == 'Rescheduled' %}bg-warning{% elif appointment.appointment_status == None %}bg-primary{% else %}bg-danger{% endif %}">
                 {% if appointment.appointment_status == None %}
                     Call Pending
                 {% else %}
