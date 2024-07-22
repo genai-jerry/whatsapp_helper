@@ -147,3 +147,31 @@ def get_all_sales(opportunity_id):
             cursor.close()
         if connection:
             connection.close()
+
+def mark_sale_not_final(sale_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "UPDATE sale SET is_final = %s WHERE id = %s"
+        values = (False, sale_id)
+        cursor.execute(sql, values)
+        connection.commit()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def mark_sale_final(sale_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "UPDATE sale SET is_final = %s WHERE id = %s"
+        values = (True, sale_id)
+        cursor.execute(sql, values)
+        connection.commit()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()

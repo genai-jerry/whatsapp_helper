@@ -2,8 +2,9 @@ from flask import Blueprint, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 import csv
 from store.payment_store import store_sales
-from store.sales_store import get_sales_data
+from store.sales_store import get_sales_data, mark_sale_final, mark_sale_not_final
 from store.payment_store import get_unassigned_payments
+from routers.opportunity import get_opportunity_detail
 
 sales_blueprint = Blueprint('sales', __name__)
 
@@ -46,3 +47,14 @@ def list_sales():
     unassigned_payments = get_unassigned_payments()
     return render_template('sales/list.html', sales=sales_data, page=page, 
                            total_pages=total_pages, unassigned_payments=unassigned_payments), 200
+
+@sales_blueprint.route('<int:opportunity_id>/status/<int:sale_id>/<int:status>', methods=['POST'])
+def mark_sale_status(opportunity_id, sale_id, status):
+    # Perform logic to mark the sale as not final
+    # For example, update the sale status in the database
+    if status == 1:
+        mark_sale_final(sale_id)
+        return get_opportunity_detail(opportunity_id)
+    elif status == 0:
+        mark_sale_not_final(sale_id)
+        return get_opportunity_detail(opportunity_id)

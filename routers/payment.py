@@ -138,3 +138,15 @@ def record_payment():
         # Return an error response if something goes wrong
         return jsonify({'error': str(e)}), 400
     
+
+@payments_blueprint.route('<int:opportunity_id>/<int:sale_id>/<int:payment_id>/deposit', methods=['POST'])
+@login_required
+def mark_deposit(opportunity_id,sale_id, payment_id):
+    try:
+        # Process the deposit marking (e.g., update in database)
+        mark_payment_as_deposit(payment_id)
+
+        # Return a success response
+        return list_payments(opportunity_id, sale_id)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400

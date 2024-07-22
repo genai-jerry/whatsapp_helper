@@ -16,6 +16,13 @@ def store_payment(sale_id, payment_data):
         payor_phone = payment_data['payor_phone'] if 'payor_phone' in payment_data else None
         opportunity_id = payment_data['opportunity_id'] if 'opportunity_id' in payment_data else None
 
+        if payor_email is None or payor_phone is None:
+            email, phone = get_opportunity_email_and_phone(sale_id)
+            if payor_email is None:
+                payor_email = email
+            if payor_phone is None:
+                payor_phone = phone
+
         # Insert the payment
         connection = create_connection()
         cursor = connection.cursor()
@@ -24,8 +31,8 @@ def store_payment(sale_id, payment_data):
         sql_insert = """
         INSERT INTO payments (payment_date, payment_value, charges, 
             payment_mode, payment_method, payment_mode_reference,
-            invoice_link, is_deposit, sale, refunded, email, phone, opportunity)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            invoice_link, is_deposit, sale, refunded, payor_email, payor_phone, opportunity)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         cursor.execute(sql_insert, (payment_date, payment_amount, charges, 
                                     payment_mode, payment_method, payment_mode_reference,
@@ -71,7 +78,8 @@ def list_payments_for_sale(sale_id):
     try:
         connection = create_connection()
         cursor = connection.cursor()
-        sql_select = '''SELECT payment_date, payment_value, pm.name, charges, invoice_link
+        sql_select = '''SELECT payment_date, payment_value, pm.name, 
+            charges, invoice_link, is_deposit, payments.id
             FROM payments 
             LEFT JOIN payment_mode as pm ON payments.payment_mode = pm.id
             WHERE sale = %s'''
@@ -84,12 +92,16 @@ def list_payments_for_sale(sale_id):
             payment_mode = payment[2]
             charges = payment[3]
             invoice_link = payment[4]
+            is_deposit = payment[5]
+            id = payment[6]
             payment_data.append({
             'date': payment_date,
             'amount': payment_amount,
             'mode': payment_mode,
             'charges': charges,
-            'invoice_link': invoice_link
+            'invoice_link': invoice_link,
+            'is_deposit': is_deposit,
+            'id': id
             })
         return payment_data
     except Exception as e:
@@ -361,6 +373,25 @@ def get_opportunity_id(sale_id):
         if cursor:
             cursor.close()
 
+def get_opportunity_email_and_phone(sale_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql_select = "SELECT o.email, o.phone FROM opportunity AS o INNER JOIN sale AS s ON o.id = s.opportunity_id WHERE s.id = %s"
+        cursor.execute(sql_select, (sale_id,))
+        result = cursor.fetchone()
+        if result:
+            email, phone = result
+            return email, phone
+        else:
+            return None, None
+    except Exception as e:
+        print(str(e))
+        raise e
+    finally:
+        if cursor:
+            cursor.close()
+
 def assign_payment_to_sale(payment_id, sale_id, payment_amount):
     try:
         print(f"Assigning payment {payment_id} to sale {sale_id}")
@@ -374,6 +405,31 @@ def assign_payment_to_sale(payment_id, sale_id, payment_amount):
         connection.commit()
         print("Payment assigned to sale successfully.")
         return opportunity_id
+    except Exception as e:
+        print(str(e))
+        raise e
+    finally:
+        if cursor:
+            cursor.close()
+
+def mark_payment_as_deposit(payment_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql_update = "UPDATE payments SET is_deposit = True WHERE id = %s"
+        cursor.execute(sql_update, (payment_id,))
+        
+        # Get the sale ID associated with the payment
+        sql_select = "SELECT sale FROM payments WHERE id = %s"
+        cursor.execute(sql_select, (payment_id,))
+        sale_id = cursor.fetchone()[0]
+        
+        # Update the sale to be not final
+        sql_update_sale = "UPDATE sale SET is_final = False WHERE id = %s"
+        cursor.execute(sql_update_sale, (sale_id,))
+        
+        connection.commit()
+        print("Payment marked as deposit successfully.")
     except Exception as e:
         print(str(e))
         raise e

@@ -77,30 +77,34 @@
                 </div>
             </div>
         </form>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Payment Date</th>
-                    <th>Payment Amount</th>
-                    <th>Tax Amount</th>
-                    <th>Payment Mode</th>
-                    <th>Charges</th>
-                    <th>Invoice Link</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for payment in payments %}
-                <tr>
-                    <td>{{ payment.date.strftime('%b %d, %Y') }}</td>
-                    <td>{{ payment.amount | exclTax | numberFormat }}</td>
-                    <td>{{ payment.amount | tax | numberFormat }}</td>
-                    <td>{{ payment.mode }}</td>
-                    <td>{{ payment.charges }}</td>
-                    <td><a target="_blank" href="{{ payment.invoice_link }}">Invoice Link</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        
+        <div class="row">
+            {% for payment in payments %}
+            <div class="col-md-4 mb-4">
+                <div class="card-group">
+                    <div class="card">
+                        <h5 class="card-header {% if not payment.is_deposit %}bg-success{% else %}bg-warning{% endif %}" style="color: white;">GenAI Leap - Date: {{ payment.date.strftime('%b %d, %Y') }}</h5>
+                        <div class="card-body">
+                            <p class="card-text">Payment Amount: <b>{{ payment.amount | exclTax | numberFormat }}</b></p>
+                            <p class="card-text">GST: <b>{{ payment.amount | tax | numberFormat }}</b></p>
+                            <p class="card-text">Payment Mode: <b>{{ payment.mode }}</b></p>
+                            <p class="card-text">Payment Charges: <b>{{ payment.charges }}</b></p>
+                            <p class="card-text">Invoice Link: <a target="_blank" href="{{ payment.invoice_link }}">Invoice Link</a></p>
+                        </div>
+                        <div class="card-footer">
+                            {% if not payment.is_deposit %}
+                            <div class="float-start">
+                                <form action="/payments/{{opportunity_id}}/{{sale_id}}/{{payment.id}}/deposit" method="post">
+                                    <button type="submit" class="btn btn-success">Mark as Deposit</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}       
+        </div>
         <script>
             const addPaymentButton = document.getElementById('addPaymentButton');
             const cancelPaymentButton = document.getElementById('cancelPaymentButton');
