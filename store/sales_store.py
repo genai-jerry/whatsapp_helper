@@ -12,20 +12,24 @@ def get_sales_data(page_number, page_size, opportunity_name):
         offset = (page_number - 1) * page_size
 
         # SQL query to select sales data with pagination
-        query = f'''SELECT o.name, s.sale_value as sale_value,
+        query = f'''SELECT DISTINCT s.id as sale_id, o.id as opportunity_id, o.name, 
+            s.sale_value as sale_value,
             s.total_paid as amount_paid,
             (s.sale_value - s.total_paid) as balance,
             pd.due_date as due_date,
-            o.id as opportunity_id,
-            prd.name as product_name,
-            s.id as sale_id
-            FROM sale s
-            JOIN opportunity o ON s.opportunity_id = o.id
-            LEFT JOIN payment_due pd ON s.id = pd.sale_id
-            LEFT JOIN products prd ON s.product = prd.id
-            WHERE o.name LIKE '%{opportunity_name}%'
-            ORDER BY pd.due_date DESC, balance DESC, o.name ASC
-            LIMIT {page_size} OFFSET {offset};'''
+            prd.name as product_name
+        FROM sale s
+        LEFT JOIN (
+            SELECT sale_id, MIN(due_date) as due_date
+            FROM payment_due
+            GROUP BY sale_id
+        ) pd_min ON s.id = pd_min.sale_id
+        LEFT JOIN payment_due pd ON s.id = pd.sale_id AND pd.due_date = pd_min.due_date and pd.paid=0 and pd.cancelled=0
+        LEFT JOIN products prd ON s.product = prd.id
+        JOIN opportunity o ON s.opportunity_id = o.id
+        WHERE o.name LIKE '%{opportunity_name}%'
+        ORDER BY CASE WHEN pd.due_date IS NULL THEN 1 ELSE 0 END, pd.due_date ASC, balance DESC, o.name ASC
+        LIMIT {page_size} OFFSET {offset}'''
 
         # Execute the query
         cursor.execute(query)
@@ -36,14 +40,14 @@ def get_sales_data(page_number, page_size, opportunity_name):
         # Format each row into a dictionary and append to sales_data list
         for row in rows:
             sales_data.append({
-                'opportunity_name': row[0],
-                'sale_value': row[1],
-                'amount_paid': row[2],
-                'balance': row[3],
-                'due_date': row[4],
-                'opportunity_id': row[5],
-                'product_name': row[6],
-                'sale_id': row[7]
+                'opportunity_name': row[2],
+                'sale_value': row[3],
+                'amount_paid': row[4],
+                'balance': row[5],
+                'due_date': row[6],
+                'opportunity_id': row[1],
+                'product_name': row[7],
+                'sale_id': row[0]
             })
 
         # Get the total number of sales records

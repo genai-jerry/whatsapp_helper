@@ -70,7 +70,6 @@ def create_user():
 
 @login_manager.user_loader
 def load_user(user_id):
-    print(f'loading user {user_id}')
     user = load_user_by_username(user_id)
     if user:
         return SystemUser(user['id'], user['username'], user['password'])
@@ -85,7 +84,6 @@ def show_import():
 @app.route('/login', methods=['POST'])
 def login():
     # Authenticate the user and start a session
-    print(request.form)
     user = load_user(request.form['username'])
     password = request.form['password']
     if user and user.check_password(password):
@@ -109,7 +107,6 @@ def logout():
 @app.template_filter()
 def numberFormat(value):
     converted_value = format(int(value), ',d')
-    print(f'Converting {converted_value}')
     return converted_value
 
 @app.template_filter()
