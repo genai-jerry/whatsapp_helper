@@ -166,7 +166,10 @@
                 <tr>
                     <td>{{ due.due_date.strftime('%b %d, %Y') }}</td>
                     <td>{{ due.amount | numberFormat }}</td>
-                    <td><a href="/payments/{{due.id}}/paid">Mark Paid</a>&nbsp;|&nbsp;<a href="/payments/{{due.id}}/cancel">Cancel</a></td>
+                    <td>
+                        <a href="/payments/{{opportunity_id}}/{{sale_id}}/due/{{due.id}}/paid">Mark Paid</a>&nbsp;|&nbsp;
+                        <a href="/payments/{{opportunity_id}}/{{sale_id}}/due/{{due.id}}/cancel">Cancel</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

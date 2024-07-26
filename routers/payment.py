@@ -102,6 +102,24 @@ def handle_due(opportunity_id, sale_id):
         return list_payments(opportunity_id, sale_id)
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+    
+@payments_blueprint.route('<int:opportunity_id>/<int:sale_id>/due/<int:due_id>/paid', methods=['GET'])
+@login_required
+def mark_due_paid(opportunity_id, sale_id, due_id):
+    try:
+        mark_payment_due_as_paid(due_id)
+        return list_payments(opportunity_id, sale_id)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@payments_blueprint.route('<int:opportunity_id>/<int:sale_id>/due/<int:due_id>/cancel', methods=['GET'])
+@login_required
+def mark_due_cancelled(opportunity_id, sale_id, due_id):
+    try:
+        mark_payment_due_as_cancelled(due_id)
+        return list_payments(opportunity_id, sale_id)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 @payments_blueprint.route('/', methods=['POST'])
 @require_api_key

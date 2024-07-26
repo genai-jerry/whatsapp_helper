@@ -217,16 +217,19 @@ def list_payment_dues(sale_id):
     try:
         connection = create_connection()
         cursor = connection.cursor()
-        sql_select = "SELECT payment_value, due_date FROM payment_due WHERE sale_id = %s"
+        sql_select = '''SELECT payment_value, due_date, id
+            FROM payment_due WHERE sale_id = %s and paid = False and cancelled = False'''
         cursor.execute(sql_select, (sale_id,))
         payment_dues = cursor.fetchall()
         payment_due_data = []
         for payment_due in payment_dues:
             payment_value = payment_due[0]
             due_date = payment_due[1]
+            payment_due_id = payment_due[2]
             payment_due_data.append({
             'amount': payment_value,
-            'due_date': due_date
+            'due_date': due_date,
+            'id': payment_due_id
             })
         return payment_due_data
     except Exception as e:
@@ -432,6 +435,40 @@ def mark_payment_as_deposit(payment_id):
         print("Payment marked as deposit successfully.")
     except Exception as e:
         print(str(e))
+        raise e
+    finally:
+        if cursor:
+            cursor.close()
+
+def mark_payment_due_as_paid(payment_due_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        
+        # Update the payment due record based on the is_paid flag
+        sql_update = "UPDATE payment_due SET paid = %s WHERE id = %s"
+        cursor.execute(sql_update, (1, payment_due_id))
+        
+        connection.commit()
+        print("Payment due marked as paid successfully.")
+    except Exception as e:
+        raise e
+    finally:
+        if cursor:
+            cursor.close()
+
+def mark_payment_due_as_cancelled(payment_due_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        
+        # Update the payment due record based on the is_paid flag
+        sql_update = "UPDATE payment_due SET cancelled = %s WHERE id = %s"
+        cursor.execute(sql_update, (1, payment_due_id))
+        
+        connection.commit()
+        print("Payment due marked as cancelled successfully.")
+    except Exception as e:
         raise e
     finally:
         if cursor:

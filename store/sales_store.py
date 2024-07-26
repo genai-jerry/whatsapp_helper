@@ -22,9 +22,10 @@ def get_sales_data(page_number, page_size, opportunity_name):
         LEFT JOIN (
             SELECT sale_id, MIN(due_date) as due_date
             FROM payment_due
+            WHERE paid=0 and cancelled=0
             GROUP BY sale_id
         ) pd_min ON s.id = pd_min.sale_id
-        LEFT JOIN payment_due pd ON s.id = pd.sale_id AND pd.due_date = pd_min.due_date and pd.paid=0 and pd.cancelled=0
+        LEFT JOIN payment_due pd ON s.id = pd.sale_id AND pd.due_date = pd_min.due_date
         LEFT JOIN products prd ON s.product = prd.id
         JOIN opportunity o ON s.opportunity_id = o.id
         WHERE o.name LIKE '%{opportunity_name}%'
