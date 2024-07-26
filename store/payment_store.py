@@ -248,14 +248,12 @@ def process_payment(email, phone, amount, charges, mode, method, date, reference
     
     opportunity_id = None
     opportunity = get_opportunity_by_email(email)   
+    print(f'Got payment for the opportunity: {opportunity}')
     if opportunity:
         opportunity_id = opportunity['id']
 
-    if date == 1720433278:
-        payment_date = datetime.now()
-    else:
-        payment_date = datetime.fromtimestamp(date / 1000)
-
+    payment_date = datetime.now()
+    
     payment_mode = get_payment_mode_id_by_name(mode)
 
     sale_id = get_first_sale_id(opportunity_id)
@@ -270,7 +268,8 @@ def process_payment(email, phone, amount, charges, mode, method, date, reference
             'payment_method': method,
             'payor_email': email,
             'payor_phone': phone,
-            'is_deposit': False
+            'is_deposit': False,
+            'opportunity_id': opportunity_id
         })
     else:
         try:
