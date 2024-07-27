@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 import csv
 from store.payment_store import store_sales
-from store.sales_store import get_sales_data, mark_sale_final, mark_sale_not_final
+from store.sales_store import get_sales_data, mark_sale_final, mark_sale_not_final, get_monthly_sales_data
 from store.payment_store import get_unassigned_payments
 from routers.opportunity import get_opportunity_detail
 
@@ -58,3 +58,15 @@ def mark_sale_status(opportunity_id, sale_id, status):
     elif status == 0:
         mark_sale_not_final(sale_id)
         return get_opportunity_detail(opportunity_id)
+    
+@sales_blueprint.route('report')
+def sales_report():
+    # Generate the sales report
+    # For example, retrieve sales data from the database and format it
+    formatted_report = get_monthly_sales_data()
+    print(formatted_report)
+    return jsonify(formatted_report), 200
+
+@sales_blueprint.route('report/load')
+def sales_report_load():
+    return render_template('sales/report.html'), 200

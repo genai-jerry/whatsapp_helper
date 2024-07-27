@@ -1,0 +1,26 @@
+<h2>Overall Metrics</h2>
+<table class="table table-striped" id="overallMetrics">
+    <thead>
+        <tr>
+            <th>Metric</th>
+            <th>Count </th>
+            <th>Percentage</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Metrics data will be inserted here -->
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function() {
+        currentDate = new Date();
+        endDate = new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), currentDate.getDate());
+        startDate = new Date(2023, 0, 1);
+        formattedStartDate = formatDate(startDate);
+        formattedEndDate = formatDate(endDate);
+        
+        metricsTable = $('#overallMetrics');
+        fetchAndDisplayMetrics(formattedStartDate, formattedEndDate, metricsTable.find('tbody'));
+    });
+</script>

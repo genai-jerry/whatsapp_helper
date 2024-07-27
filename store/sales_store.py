@@ -1,5 +1,7 @@
 from db.connection_manager import *
 from store.opportunity_store import get_opportunity_by_id, handle_opportunity_update
+import datetime
+import json
 
 def get_sales_data(page_number, page_size, opportunity_name):
     try:
@@ -175,6 +177,55 @@ def mark_sale_final(sale_id):
         values = (True, sale_id)
         cursor.execute(sql, values)
         connection.commit()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_monthly_sales_data(start_date = None, end_date = None):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Get the current date
+        if not end_date:
+            end_date = datetime.date.today()
+
+        if not start_date:
+            start_date = end_date - datetime.timedelta(days=365)
+
+        # SQL query to select sale, collection, and pending amount for each month
+        query = f'''SELECT 
+            EXTRACT(MONTH FROM s.sale_date) as month,
+            EXTRACT(YEAR FROM s.sale_date) as year,
+            SUM(s.sale_value) as sale_amount,
+            SUM(s.total_paid) as collection_amount,
+            SUM(s.sale_value - s.total_paid) as pending_amount
+        FROM sale s
+        WHERE s.sale_date >= '{start_date}' AND s.sale_date <= '{end_date}'
+        GROUP BY month, year
+        ORDER BY year asc, month asc'''
+
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch all rows from the query result
+        rows = cursor.fetchall()
+
+        # Format each row into a dictionary and append to monthly_sales_data list
+        monthly_sales_data = []
+        for row in rows:
+            month = datetime.datetime.strptime(str(row[0]), '%m').strftime('%b')
+            monthly_sales_data.append({
+                'month': month,
+                'year': datetime.datetime.strptime(str(row[1]), '%Y').strftime('%Y'),
+                'sale_amount': int(row[2]),
+                'collection_amount': int(row[3]),
+                'pending_amount': int(row[4])
+            })
+
+        return monthly_sales_data
     finally:
         if cursor:
             cursor.close()

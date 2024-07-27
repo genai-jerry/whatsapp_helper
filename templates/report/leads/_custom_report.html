@@ -1,0 +1,60 @@
+<h2>Metrics</h2>
+<label for="start_date">Start Date:</label>
+<input type="date" id="start_date">
+
+<label for="end_date">End Date:</label>
+<input type="date" id="end_date">
+
+<button id="generate_report">Generate Report</button>
+<table class="table table-striped" id="periodicMetrics">
+    <thead>
+        <tr>
+            <th>Metric</th>
+            <th>Count</th>
+            <th>Percentage</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Metrics data will be inserted here -->
+    </tbody>
+</table>
+<h2>Custom Report</h2>
+
+<table class="table table-striped" id="customReportTable">
+    <thead>
+        <tr>
+            <th>Status</th>
+            <th>Count</th>
+            <th>Percentage</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Custom report data will be inserted here -->
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function() {
+        currentDate = new Date();
+        endDate = new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), currentDate.getDate());
+        startDate = new Date(2023, 0, 1);
+    
+        startDateInput = $('#start_date');
+        endDateInput = $('#end_date');
+        // Set default values for start and end date inputs
+        startDateInput.val(formatDate(startDate));
+        endDateInput.val(formatDate(endDate));
+        // Fetch custom report data for the last 7 days
+        rangeStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7);
+        rangeEndDate = currentDate;
+        formattedRangeStartDate = formatDate(rangeStartDate)
+        formattedRangeEndDate = formatDate(rangeEndDate)
+        customReportTable = $('#customReportTable');
+        fetchAndDisplayReport(formattedRangeStartDate, formattedRangeEndDate, customReportTable.find('tbody'));
+        periodicMetrics = $('#periodicMetrics');
+        fetchAndDisplayMetrics(formattedRangeStartDate, formattedRangeEndDate, periodicMetrics.find('tbody'));
+        // Set last 7 days start and end date as the default values for start and end date inputs
+        startDateInput.val(formattedRangeStartDate);
+        endDateInput.val(formattedRangeEndDate);
+    });
+</script>

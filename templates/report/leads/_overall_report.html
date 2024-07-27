@@ -1,0 +1,28 @@
+<h2>Overall Report</h2>
+<table class="table table-striped" id="overallReportTable">
+    <thead>
+        <tr>
+            <th>Status</th>
+            <th>Count</th>
+            <th>Percentage</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Overall report data will be inserted here -->
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function() {
+        currentDate = new Date();
+        endDate = new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), currentDate.getDate());
+        startDate = new Date(2023, 0, 1);
+        // endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+        overallReportTable = $('#overallReportTable');
+        
+        formattedStartDate = formatDate(startDate);
+        formattedEndDate = formatDate(endDate);
+        fetchAndDisplayReport(formattedStartDate, formattedEndDate, overallReportTable.find('tbody'));
+    });
+
+</script>
