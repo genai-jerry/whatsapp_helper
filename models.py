@@ -74,7 +74,8 @@ class Opportunity(db.Model):
     last_register_time = db.Column(db.DateTime, nullable=True)
     opportunity_status = db.Column(db.Integer, db.ForeignKey('opportunity_status.id'))
     call_status = db.Column(db.Integer, db.ForeignKey('lead_call_status.id'))
-    sales_agent = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
+    call_setter = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
+    optin_caller = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
     company_type = db.Column(db.Integer, db.ForeignKey('company_type.id'))
     challenge_type = db.Column(db.Integer, db.ForeignKey('challenge_type.id'))
 
@@ -200,6 +201,7 @@ class Sale(db.Model):
     is_final = db.Column(db.Boolean, nullable=False, default=False)
     opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'))
     sales_agent = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
+    call_setter = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
     product = db.Column(db.Integer, db.ForeignKey('products.id'))
     cancelled = db.Column(db.Boolean, nullable=False, default=False)
     

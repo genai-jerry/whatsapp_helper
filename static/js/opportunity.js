@@ -99,7 +99,7 @@ function loadOpportunities(searchTerm, searchType, filters) {
         });
         $.getJSON('/opportunity/sales_agents', function(data) {
             var opportunityStatusFilter = createFilterDropdown(null, filters && filters.hasOwnProperty("sa.id") ? filters['sa.id'].name: null, data, 
-                'name', 'color_code', 'text_color', 'sa.id', 'Sales Agent');
+                'name', 'color_code', 'text_color', 'sa.id', 'Optin Caller');
             $('#agent_heading').empty();
             $('#agent_heading').append(opportunityStatusFilter);
         });

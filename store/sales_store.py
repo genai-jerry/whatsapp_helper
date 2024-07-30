@@ -75,15 +75,17 @@ def record_new_sale(opportunity_id, sale_date, sale_value, note, sales_agent, pr
         sql = "UPDATE opportunity SET opportunity_status = %s WHERE id = %s"
         values = (2, opportunity_id)
         cursor.execute(sql, values)
-
+        opportunity = get_opportunity_by_id(opportunity_id)
+        
         # Insert data into 'sales' table
         sql_sales = '''INSERT INTO sale (opportunity_id, sale_date, sale_value, 
-                note, sales_agent, product, total_paid, is_final, currency, cancelled) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-        sales_data = (opportunity_id, sale_date, sale_value, note, sales_agent, product, 0, False, 'INR', False)
+                note, sales_agent, product, total_paid, is_final, currency, cancelled,
+                call_setter) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+        sales_data = (opportunity_id, sale_date, sale_value, note, sales_agent, 
+                      product, 0, False, 'INR', False, opportunity['call_setter'])
         cursor.execute(sql_sales, sales_data)
         connection.commit()
-        opportunity = get_opportunity_by_id(opportunity_id)
         opportunity_data = {
                 'id': opportunity['id'],
                 'name': opportunity['name'],
@@ -92,9 +94,9 @@ def record_new_sale(opportunity_id, sale_date, sale_value, note, sales_agent, pr
                 'fbp': opportunity['fbp'],
                 'fbc': opportunity['fbc'],
                 'ad_account': opportunity['ad_account']
-            }
-        handle_opportunity_update(opportunity_data, 
-                                  'opportunity_status', '2')
+        }
+        # handle_opportunity_update(opportunity_data, 
+                                 # 'opportunity_status', '2')
     finally:
         if cursor:
             cursor.close()

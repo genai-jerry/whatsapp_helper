@@ -223,7 +223,8 @@ def get_opportunity_detail(opportunity_id):
             'register_time': opportunity['register_time'],
             'opportunity_status': opportunity['opportunity_status'],
             'call_status': opportunity['call_status'],
-            'sales_agent': opportunity['sales_agent'],
+            'call_setter': opportunity['call_setter'],
+            'optin_caller': opportunity['optin_caller'],
             'messages': opportunity['messages'],
             'templates': opportunity['templates'],
             'appointments': opportunity['appointments'],
@@ -264,7 +265,8 @@ def update_opportunity_detail():
         phone = request.form.get('phone')
         call_status = request.form.get('call_status')
         # opportunity_status = request.form.get('opportunity_status')
-        sales_agent = request.form.get('optin_caller')
+        optin_caller = request.form.get('optin_caller')
+        call_setter = request.form.get('call_setter')
         comment = request.form.get('comment')
         sales_date = request.form.get('sales_date')
         gender = request.form.get('gender')
@@ -278,7 +280,8 @@ def update_opportunity_detail():
             'phone': phone,
             'call_status': call_status,
             #'opportunity_status': opportunity_status,
-            'sales_agent': sales_agent,
+            'optin_caller': optin_caller,
+            'call_setter': call_setter,
             'comment': comment,
             'sales_date': sales_date,
             'gender': gender,

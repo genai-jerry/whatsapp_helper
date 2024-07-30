@@ -71,7 +71,7 @@ def store_opportunity(opportunity_data):
             # Insert the opportunity
             sql_insert = """
                 INSERT INTO opportunity (name, email, phone, register_time, last_register_time, 
-                opportunity_status, call_status, sales_agent, comment, campaign, ad_name, ad_id, medium,
+                opportunity_status, call_status, call_setter, comment, campaign, ad_name, ad_id, medium,
                 ad_fbp, ad_fbc, video_watched, ad_placement, ad_account)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
@@ -85,7 +85,7 @@ def store_opportunity(opportunity_data):
             # Update the opportunity
             sql_update = """
                 UPDATE opportunity 
-                SET opportunity_status = %s, call_status = %s, sales_agent = %s, comment = %s, campaign = %s,
+                SET opportunity_status = %s, call_status = %s, call_setter = %s, comment = %s, campaign = %s,
                 ad_name = %s, ad_id = %s, medium = %s, ad_fbp = %s, ad_fbc = %s, last_register_time = %s, ad_placement = %s, ad_account = %s
                 WHERE email = %s or phone = %s
             """
@@ -135,7 +135,7 @@ def update_opportunity_status(opportunity_data, status_columns=None):
         elif status_type == "opportunity_status":
             sql = "UPDATE opportunity SET opportunity_status = %s "
         elif status_type == "agent":
-            sql = "UPDATE opportunity SET sales_agent = %s "
+            sql = "UPDATE opportunity SET optin_caller = %s "
         else:
             raise ValueError("Invalid status type")
 
@@ -177,9 +177,10 @@ def update_opportunity_status(opportunity_data, status_columns=None):
             'fbp': row[4],
             'fbc': row[5],
             'ad_account': row[6]
-            }
+        }
 
-        handle_opportunity_update(opportunity, status_type, status)
+        if status_type != "agent":
+            handle_opportunity_update(opportunity, status_type, status)
 
     finally:
         if cursor:
@@ -199,7 +200,7 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             LEFT JOIN 
             opportunity_status os ON o.opportunity_status = os.id
             LEFT JOIN 
-            sales_agent sa ON o.sales_agent = sa.id
+            sales_agent sa ON o.call_setter = sa.id
             """
         select_sql = """
             SELECT 
@@ -230,7 +231,7 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
             LEFT JOIN 
             opportunity_status os ON o.opportunity_status = os.id
             LEFT JOIN 
-            sales_agent sa ON o.sales_agent = sa.id
+            sales_agent sa ON o.optin_caller = sa.id
         """
         params = []
 
@@ -335,7 +336,7 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.register_time,
                 opportunity.opportunity_status AS opportunity_status,
                 opportunity.call_status AS call_status,
-                opportunity.sales_agent AS sales_agent,
+                opportunity.call_setter AS call_setter,
                 opportunity.gender AS gender,
                 opportunity.company_type AS company_type,
                 opportunity.challenge_type AS challenge_type,
@@ -344,7 +345,8 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.sale_event_fired as sale_event_fired,
                 opportunity.ad_fbp as fbp,
                 opportunity.ad_fbc as fbc,
-                opportunity.ad_account as ad_account
+                opportunity.ad_account as ad_account,
+                opportunity.optin_caller as optin_caller
             FROM 
                 opportunity
             WHERE 
@@ -391,7 +393,7 @@ def get_opportunity_by_id(opportunity_id):
             'register_time': opportunity[5],
             'opportunity_status': opportunity[6],
             'call_status': opportunity[7],
-            'sales_agent': opportunity[8],
+            'call_setter': opportunity[8],
             'gender': opportunity[9],
             'company_type': opportunity[10],
             'challenge_type': opportunity[11],
@@ -401,6 +403,7 @@ def get_opportunity_by_id(opportunity_id):
             'fbp': opportunity[15],
             'fbc': opportunity[16],
             'ad_account': opportunity[17],
+            'optin_caller': opportunity[18],
             'appointments': appointment_data,
             'messages': [{'type': message[1], 'sender': message[2], 'receiver': message[3], 'message': message[5], 'template': message[6], 'status': message[7], 'error_message': message[8], 'create_time': message[9], 'update_time': message[10]} for message in messages],
             'templates': [{'id': template[0], 'name': template[1], 'active': template[2], 'template_text': template[3]} for template in templates]
@@ -467,7 +470,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
         # Prepare the SQL query with placeholders
         sql = """
         UPDATE opportunity
-        SET name = %s, email = %s, phone = %s, call_status = %s, sales_agent = %s,
+        SET name = %s, email = %s, phone = %s, call_status = %s, call_setter = %s, optin_caller = %s,
         comment = %s, gender = %s, company_type = %s, challenge_type = %s
         WHERE id = %s
         """
@@ -479,7 +482,8 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             format_phone_number(opportunity_data['phone']),
             opportunity_data['call_status'] if int(opportunity_data['call_status']) > 0 else None,
             #opportunity_data['opportunity_status'] if int(opportunity_data['opportunity_status']) > 0 else None,
-            opportunity_data['sales_agent'] if int(opportunity_data['sales_agent']) > 0 else None,
+            opportunity_data['call_setter'] if int(opportunity_data['call_setter']) > 0 else None,
+            opportunity_data['optin_caller'] if int(opportunity_data['optin_caller']) > 0 else None,
             opportunity_data['comment'],
             opportunity_data['gender'] if opportunity_data['gender'] != '-1' else None,
             opportunity_data['company_type'] if opportunity_data['company_type'] != '-1' else None,
@@ -692,8 +696,8 @@ def generate_metrics(start_date, end_date):
 
         # Define the SQL queries to get the data for the conversion metrics
         load_total_opportunities = 'SELECT COUNT(*) FROM opportunity WHERE register_time BETWEEN %s AND %s'
-        load_followup_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (o.call_status !=9) AND o.sales_agent != 4 and o.sales_agent is not Null'
-        load_self_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (o.call_status !=9) AND (o.sales_agent = 4 or o.sales_agent is Null)'
+        load_followup_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (o.call_status !=9) AND o.call_setter != 4 and o.call_setter is not Null'
+        load_self_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (o.call_status !=9) AND (o.call_setter = 4 or o.call_setter is Null)'
         load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (o.call_status !=9)'
         queries = {
             'total_leads': load_total_opportunities,
