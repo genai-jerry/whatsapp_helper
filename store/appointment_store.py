@@ -4,6 +4,8 @@ import pytz
 from db.connection_manager import *
 from facebook.fb_ads_manager import *
 from .opportunity_store import get_opportunity_by_email, update_opportunity_status
+from store.config_store import retrieve_config
+from datetime import datetime
 
 def store_appointment(profile_details, application_form_details, mentor_name, import_app=False):
     try:
@@ -159,8 +161,6 @@ def get_scores_from_database():
         if cursor:
             cursor.close()
 
-from store.config_store import retrieve_config
-
 def grade_application(application_form_details):
 
     # Calculate the total score
@@ -208,7 +208,21 @@ def calculate_final_score(application_form_details):
     # Return the final score
     return final_score
 
-def retrieve_appointments(page_number, page_size, max=0):
+def convert_date_str_to_datetime(date_str):
+    # Convert the date string to a datetime object
+    appointment_date = datetime.strptime(date_str, '%a, %b %d, %Y')
+
+    # Get the current year
+    current_year = datetime.now().year
+
+    # Set the year of the appointment date to the current year
+    appointment_date = appointment_date.replace(year=current_year)
+
+    # Convert the appointment date to a string in the format 'YYYY-MM-DD'
+    appointment_date_str = appointment_date.strftime('%Y-%m-%d')
+    return appointment_date_str
+
+def retrieve_appointments(page_number, page_size, max=0, app_date=None):
     # Define the SQL query for retrieving appointments with associated opportunities and mentors
     
     query = """
@@ -219,9 +233,10 @@ def retrieve_appointments(page_number, page_size, max=0):
     LEFT JOIN opportunity AS o ON a.opportunity_id = o.id
     LEFT JOIN opportunity_status AS os ON a.status = os.id
     LEFT JOIN sales_agent AS m ON a.mentor_id = m.id
-    WHERE a.appointment_time > %s and (a.canceled = FALSE OR a.canceled IS NULL)
+    WHERE (a.canceled = FALSE OR a.canceled IS NULL)
     """
-    count_query = "SELECT COUNT(*) FROM appointments WHERE appointment_time > %s and (canceled = FALSE OR canceled IS NULL)"
+    count_query = "SELECT COUNT(*) FROM appointments WHERE (canceled = FALSE OR canceled IS NULL)"
+            
     try:
         # Create a new database connection
         cnx = create_connection()
@@ -230,21 +245,41 @@ def retrieve_appointments(page_number, page_size, max=0):
         if max == 1:
             current_time = datetime(2023, 1, 1).date()
             query = query + '''
+                AND a.appointment_time > %s
                 ORDER BY a.appointment_time DESC
                 LIMIT %s OFFSET %s
             '''
-        else:
-            current_time = datetime.now(pytz.timezone('GMT')).date()
-            query = query + '''
-                ORDER BY a.appointment_time ASC
-                LIMIT %s OFFSET %s
+            count_query = count_query + '''
+                AND appointment_time > %s
             '''
+        else:
+            if app_date:
+                current_time = convert_date_str_to_datetime(app_date)
+                query = query + '''
+                    and DATE(a.appointment_time) = %s 
+                    ORDER BY a.appointment_time ASC
+                    LIMIT %s OFFSET %s
+                '''
+                count_query = count_query + '''
+                    AND DATE(appointment_time) = %s
+                '''
+            else:
+                current_time = datetime.now(pytz.timezone('GMT')).date()
+                query = query + '''
+                    and a.appointment_time > %s 
+                    ORDER BY a.appointment_time ASC
+                    LIMIT %s OFFSET %s
+                '''
+                count_query = count_query + '''
+                    AND appointment_time > %s
+                '''
         # Create a new cursor
         cursor = cnx.cursor()
 
+        #print(f'Query: {query}')
         # Calculate the offset based on the page number and page size
         offset = (page_number - 1) * page_size
-        print(f'Retrieving appointments for page size {page_size} with page offset {offset}')
+        
         # Execute the SQL query with the page size and offset as parameters
         cursor.execute(query, (current_time, page_size, offset))
 
@@ -288,7 +323,7 @@ def retrieve_appointments(page_number, page_size, max=0):
 
         # Calculate the total number of pages
         total_pages = (total_appointments + page_size - 1) // page_size
- 
+        print(f'Appointments: {appointments}, Total pages: {total_pages}')
         # Return the result
         return total_pages, total_appointments, appointments
     except Exception as err:

@@ -54,15 +54,29 @@ function confirmAppointment(appointmentId) {
     });
 }
 
-function loadAppointments(max) {
+function loadAppointments(max, date) {
     if(max == -1){
         max = max_setting;
         current_max_setting = max_setting;
         max_setting = max_setting === 0 ? 1 : 0;
         currentPage = 1;
     }
-    url = '/appointment/list?max=' + max + '&page=' + currentPage;
+    url = '/appointment/list?';
+
+    if (date) {
+        dateVal = getDateForDaysFromCurrentDate(date);
+        dateVal = dateVal.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        url += 'date=' + dateVal;
+        max = 0;
+        max_setting = 0;
+    }
+    url+='&max=' + max + '&page=' + currentPage;
+
     $.get(url, function(data) {
+        if(date){
+            resetListItem();
+            setActiveListItem(date)
+        }
         // Clear the current list of appointments
         $('#appointmentsTable tbody').empty();
 
@@ -143,6 +157,20 @@ function loadAppointments(max) {
             $(this).closest('tr').next('.details').toggle();
         });           
     });
+}
+
+function setActiveListItem(value) {
+    // Add active class and white-text to the li element with id data-{value}
+    $('#li-'+value).addClass('selected-date');
+    $('#li-'+value).removeClass('normal-date');
+}
+
+function resetListItem() {
+    // Remove active class and white-text from all li elements
+    for (var i = 0; i <= 6; i++) {
+        $('#li-'+i).removeClass('selected-date');
+        $('#li-'+i).addClass('normal-date');
+    }
 }
 
 $(document).ready(function() {

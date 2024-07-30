@@ -35,6 +35,11 @@ function createFilterDropdown(opportunity_id, selectedValue, options, nameKey, c
     return dropdown;
 }
 
+function formatDate(date) {
+    var options = { weekday: 'short',day: 'numeric' , month: 'short'};
+    return date.toLocaleDateString(undefined, options);
+}
+
 
 function getOptionColor(selectedValue, options, colorKey) {
     var selectedOption = options.find(function(option) {

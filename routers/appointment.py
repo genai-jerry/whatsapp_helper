@@ -59,9 +59,9 @@ def list_appointments():
     page = request.args.get('page', default=1, type=int)
     per_page = request.args.get('per_page', default=10, type=int)
     max_appointments = request.args.get('max', default=0, type=int)
-    print(f'Page: {page}, per_page: {per_page}, max_appointments: {max_appointments}')
+    app_date = request.args.get('date', default=None, type=str)
     pages, total_items, appointments = retrieve_appointments(page, per_page, 
-                                                             max_appointments)
+                                                             max_appointments, app_date)
     opportunity_statuses = get_all_opportunity_status()
     return jsonify({
         'appointments': appointments, 

@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, g, jsonify, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from routers.driver import driver_blueprint
@@ -121,6 +122,15 @@ def tax(value):
 def formatDate(value):
     formatted_date = value.strftime('%d %b %Y')
     return formatted_date
+
+from datetime import timedelta
+@app.template_filter()
+def date_add(value):
+    if not value:
+        value = 0
+    today = datetime.now().date()
+    new_date = today + timedelta(days=value)
+    return new_date.strftime('%a, %d %b')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=30000, debug=True)
