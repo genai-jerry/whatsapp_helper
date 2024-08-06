@@ -8,22 +8,7 @@ List of Appointments
 
 <div class="container mt-5">
     <h2>List of Appointments</h2>
-    
-    <ul class="list-group list-group-horizontal">
-        <button class="btn btn-primary" id="prevBtn" onclick="advAppointments(-1, 'prev')" style="border-radius: 0;">
-            <i class="bi bi-arrow-left">Previous</i>
-        </button>
-        {% for i in range(7) %}
-        <span class="date-range">
-            <li id="li-{{i}}" class="list-group-item normal-date">
-                <span id="date-{{i}}" href="#" onclick="loadAppointments(-1, '{{ i }}')">{{ i|date_add }}</span>
-            </li>
-        </span>
-        {% endfor %}
-        <button class="btn btn-primary" id="nextBtn" onclick="advAppointments(-1, 'next')" style="border-radius: 0;">
-            <i class="bi bi-arrow-right">Next</i>
-        </button>
-    </ul>
+    {% include 'calendar/weekly.html' %}
     
     <table class="table table-striped" id="appointmentsTable">
         <thead>
@@ -55,19 +40,5 @@ List of Appointments
 </style>
 <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
 <script src="{{ url_for('static', filename='js/appointment.js') }}"></script>
-<script src="{{ url_for('static', filename='js/calendar_list.js') }}">
 
-</script>
-<style>
-    .selected-date {
-        color: white;
-        background-color: blue;
-        cursor: pointer;
-    }
-    .normal-date {
-        color: blue;
-        background-color: white;
-        cursor: pointer;
-    }
-</style>
 {% endblock %}

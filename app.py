@@ -18,6 +18,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_login import current_user
 from store.user_store import create_new_user, load_user_by_username
 from utils import require_api_key
+from dateutil.relativedelta import *
 
 # Read the config.ini file
 config = configparser.ConfigParser()
@@ -131,6 +132,14 @@ def date_add(value):
     today = datetime.now().date()
     new_date = today + timedelta(days=value)
     return new_date.strftime('%a, %d %b')
+
+@app.template_filter()
+def month_add(value):
+    if not value:
+        value = 0
+    today = datetime.now().date()
+    new_date = today - relativedelta(months=value)
+    return new_date.strftime('%B %Y')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=30000, debug=True)

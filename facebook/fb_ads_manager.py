@@ -7,11 +7,11 @@ def handle_opportunity_update(opportunity, event_type, event_value=None):
     print('Getting producer')
     producer = KafkaProducerFactory.get_producer('admanager')
     print('Sending message to Kafka ad manager')
-    producer.get_producer().produce(producer.get_topic(),
-                        json.dumps({'opportunity': opportunity, 
-                                    'event_type': event_type,
-                                    'event_value': event_value}).encode('utf-8')
-                        )
+    # producer.get_producer().produce(producer.get_topic(),
+                        #json.dumps({'opportunity': opportunity, 
+                        #            'event_type': event_type,
+                        #            'event_value': event_value}).encode('utf-8')
+                       # )
     print('Sending message to Kafka ad manager')
-    producer.get_producer().flush()
+    # producer.get_producer().flush()
     print('Sent message to Kafka ad manager')

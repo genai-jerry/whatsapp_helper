@@ -1,0 +1,28 @@
+<div class="dropdown">
+    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        {{ selected_date|date_add if calendar_type == 'weekly' else selected_date|month_add }}
+    </button>
+    <ul class="dropdown-menu">
+    {% for i in range(range_span) %}
+      <li><a class="dropdown-item {% if i == selected_date %}active{% endif %}" 
+        href="/sales/monthly?month={{ i|date_add if calendar_type == 'weekly' else i|month_add }}&selected_date={{ i }}" 
+        onchange="handleCalendarSelect('{{ i|date_add if calendar_type == 'weekly' else i|month_add }}', {{i}})">
+            {{ i|date_add if calendar_type == 'weekly' else i|month_add }}</a></li>
+    {% endfor %}
+    </ul>
+</div>
+
+<style>
+    .selected-date {
+        color: white;
+        background-color: blue;
+        cursor: pointer;
+    }
+    .normal-date {
+        color: blue;
+        background-color: white;
+        cursor: pointer;
+    }
+</style>
+<script src="{{ url_for('static', filename='js/calendar_list.js') }}"></script>
+

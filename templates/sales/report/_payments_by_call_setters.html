@@ -1,0 +1,16 @@
+<table class="table table-striped" id="overallReportTable">
+    <thead>
+        <tr>
+            <th>Call Setter</th>
+            <th>Payment Collected</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in formatted_payments_report_by_call_setters %}
+        <tr>
+            <td>{{ item.call_setter_name }}</td>
+            <td>{{ item.total_payment }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

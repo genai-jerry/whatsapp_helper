@@ -6,20 +6,31 @@
                 <th>Sale Value</th>
                 <th>Amount Paid</th>
                 <th>Pending Amount</th>
+                <th>Next Payment Amount</th>
                 <th>Next Due Date</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
             {% for sale in sales %}
             <tr>
-                <td><a href="/opportunity/{{sale.opportunity_id}}">{{ sale.opportunity_name }}</a></td>
+                <td><a href="/opportunity/{{sale.opportunity_id}}">
+                    {{ sale.opportunity_name }}<br></a>
+                    {{ sale.email }}<br>
+                    {{ sale.phone }}<br>
+
+                </td>
                 <td>{{ sale.sale_value }}</td>
                 <td>{{ sale.amount_paid }}</td>
                 <td>{{ sale.sale_value - sale.amount_paid }}</td>
+                <td>{{ sale.next_due_amount }}</td>
                 <td>{% if sale.due_date %}
                     {{ sale.due_date | formatDate }}
                     {% endif %}
                 </td>
+                <td><button class="btn-primary" onclick="window.location.href='/payments/{{sale.opportunity_id}}/{{sale.sale_id}}/due/{{sale.due_id}}/paid'">
+                    Mark As Paid
+                </button></td>
             </tr>
             {% endfor %}
         </tbody>

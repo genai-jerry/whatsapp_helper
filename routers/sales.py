@@ -2,9 +2,11 @@ from flask import Blueprint, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 import csv
 from store.payment_store import store_sales
-from store.sales_store import get_sales_data, mark_sale_final, mark_sale_not_final, get_monthly_sales_data
+from store.sales_store import *
 from store.payment_store import get_unassigned_payments
 from routers.opportunity import get_opportunity_detail
+import calendar
+from datetime import datetime
 
 sales_blueprint = Blueprint('sales', __name__)
 
@@ -66,6 +68,39 @@ def sales_report():
     formatted_report = get_monthly_sales_data()
     print(formatted_report)
     return jsonify(formatted_report), 200
+
+def get_month_dates(month):
+    if month:
+        month = datetime.strptime(month, '%B %Y')
+        first_day = month.replace(day=1)
+        last_day = month.replace(day=calendar.monthrange(month.year, month.month)[1])
+    else:
+        first_day = datetime.now().replace(day=1)
+        last_day = datetime.now().replace(day=calendar.monthrange(datetime.now().year, datetime.now().month)[1])
+    
+    return first_day, last_day
+
+@sales_blueprint.route('monthly')
+def monthly_report():
+    selected_date = request.args.get('selected_date', 0, type=int)
+    month = request.args.get('month', None)
+    print('Getting monthly report')
+    if month:
+        first_day, last_day = get_month_dates(month)
+    else:
+        first_day, last_day = get_month_dates(None)
+    print(f'first_day: {first_day}, last_day: {last_day}, selected_date: {selected_date}, month: {month}')
+    # Generate the sales report
+    # For example, retrieve sales data from the database and format it
+    formatted_sales_report = get_sales_report_by_call_setter(first_day, last_day)
+    formatted_payments_report_by_call_setters = get_payments_report_call_setters(first_day, last_day)
+    formatted_payments_report_by_sales_agents = get_payments_report_sales_agents(first_day, last_day)
+    payments_collected = get_payments_collected(first_day, last_day)
+    return render_template('sales/report.html', 
+                           formatted_sales_report=formatted_sales_report,
+                           formatted_payments_report_by_call_setters=formatted_payments_report_by_call_setters,
+                           formatted_payments_report_by_sales_agents=formatted_payments_report_by_sales_agents,
+                           payments_collected=payments_collected, selected_date=int(selected_date)), 200
 
 @sales_blueprint.route('report/load')
 def sales_report_load():

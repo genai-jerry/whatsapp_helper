@@ -1,0 +1,18 @@
+<table class="table table-striped" id="overallReportTable">
+    <thead>
+        <tr>
+            <th>Payment Type</th>
+            <th>Number of payments of the type</th>
+            <th>Payment Collected</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in payments_collected %}
+        <tr>
+            <td>{{ item.payment_category }}</td>
+            <td>{{ item.payment_count }}</td>
+            <td>{{ item.total_payment }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

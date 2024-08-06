@@ -4,47 +4,59 @@
         <ul class="nav flex-column">
             {% if g.user_logged_in %}
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/">
+                <a class="nav-link" aria-current="page" href="/dashboard">
                     Home
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/appointment">
+                <a class="nav-link" aria-current="page" href="/appointment">
                     Appointments
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/instance">
+                <a class="nav-link" aria-current="page" href="/instance">
                     Instances
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/template">
+                <a class="nav-link" aria-current="page" href="/template">
                     Templates
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/opportunity">
+                <a class="nav-link" aria-current="page" href="/opportunity">
                     Opportunities
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/message/">
+                <a class="nav-link" aria-current="page" href="/message/">
                     Messages
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/sales">
+                <a class="nav-link nav-main" aria-current="page" href="/sales">
                     Sales
                 </a>
+                <ul class="submenu" style="display: none;">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/sales">
+                            All Sales
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/sales/monthly">
+                            Report
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/import">
+                <a class="nav-link" aria-current="page" href="/import">
                     Import
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/logout">
+                <a class="nav-link" aria-current="page" href="/logout">
                     Logout
                 </a>
             </li>
@@ -53,3 +65,17 @@
         </ul>
     </div>
 </nav>
+<script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+<style>
+    .active {
+        background-color: blue;
+        transition: background-color 0.3s;
+        color: white;
+    }
+    .active:hover {
+        color: white; /* Ensure text color stays white on hover */
+    }
+    .submenu {
+        list-style-type: none;
+    }
+</style>

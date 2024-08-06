@@ -1,98 +1,36 @@
 {% extends "base.html" %}
 
 {% block title %}
-    List Sales
+Report
 {% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <div class="col-md-6">
-        <div class="legend" style="text-align: center; font-weight: bold;">
-            Sales across the last 12 months
+    <div class="row">
+        <div class="col-md-4">
+            {% include 'calendar/monthly_dropdown.html' %}
         </div>
-        <canvas id="salesChart"></canvas>
+    </div>
+    <hr/>
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Sales Generated For the Month</h2>
+            {% include "sales/report/_sales.html" %}
+        </div>
+        <div class="col-md-6">
+            <h2>All Payments Collected For the Month</h2>
+            {% include "sales/report/_all_payments.html" %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Payments Collected By Sales Agents</h2>
+            {% include "sales/report/_payments_by_sales_agent.html" %}
+        </div>
+        <div class="col-md-6">
+            <h2>Payments Collected By Call Setters</h2>
+            {% include "sales/report/_payments_by_call_setters.html" %}
+        </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/adapters/moment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Make an AJAX call to load the report
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/sales/report', true);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                var reportData = JSON.parse(xhr.responseText);
-                // Update the chart with the new data
-                updateChart(reportData);
-            }
-        };
-        xhr.send();
-
-        function updateChart(reportData) {
-            // Prepare data for chart
-            var chartData = reportData.map(function(item) {
-                return {
-                    x: item.month + '-' + item.year ,
-                    y1: parseInt(item.sale_amount),
-                    y2: parseInt(item.collection_amount),
-                    y3: parseInt(item.pending_amount)
-                };
-            });
-            var ctx = document.getElementById('salesChart').getContext('2d');
-            var chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: chartData.map(function(item) {
-                        return item.x;
-                    }),
-                    datasets: [{
-                        label: 'Sale Amount',
-                        data: chartData.map(function(item) {
-                            return item.y1;
-                        }),
-                        backgroundColor: 'rgb(75, 192, 192)',
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Collected Amount',
-                        data: chartData.map(function(item) {
-                            return item.y2;
-                        }),
-                        backgroundColor: 'rgb(54, 162, 235)',
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Pending Amount',
-                        data: chartData.map(function(item) {
-                            return item.y3;
-                        }),
-                        backgroundColor: 'rgb(255, 99, 132)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Month'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Amount (Rupees)'
-                            }
-                        }
-                    }
-                }
-            });
-            // Update the chart
-            chart.update();
-        }
-    });
-</script>
 {% endblock %}

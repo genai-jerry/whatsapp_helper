@@ -1,0 +1,31 @@
+<ul class="list-group list-group-horizontal">
+    <button class="btn btn-primary" id="prevBtn" onclick="prev('{{calendar_type}}')" style="border-radius: 0;">
+        <i class="bi bi-arrow-left">Previous</i>
+    </button>
+   
+    {% for i in range(range_span) %}
+        <span class="date-range">
+            <li id="li-{{i}}" class="list-group-item normal-date">
+                <span id="date-{{i}}" href="#" onclick="handleCalendarSelect('{{ i }}')">
+                    {{ i|date_add if calendar_type == 'weekly' else i|month_add }}
+                </span>
+            </li>
+        </span>
+    {% endfor %}
+    <button class="btn btn-primary" id="nextBtn" onclick="next('{{calendar_type}}')" style="border-radius: 0;">
+        <i class="bi bi-arrow-right">Next</i>
+    </button>
+</ul>
+<style>
+    .selected-date {
+        color: white;
+        background-color: blue;
+        cursor: pointer;
+    }
+    .normal-date {
+        color: blue;
+        background-color: white;
+        cursor: pointer;
+    }
+</style>
+<script src="{{ url_for('static', filename='js/calendar_list.js') }}"></script>

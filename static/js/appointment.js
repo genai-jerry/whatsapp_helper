@@ -159,18 +159,10 @@ function loadAppointments(max, date) {
     });
 }
 
-function setActiveListItem(value) {
-    // Add active class and white-text to the li element with id data-{value}
-    $('#li-'+value).addClass('selected-date');
-    $('#li-'+value).removeClass('normal-date');
-}
 
-function resetListItem() {
-    // Remove active class and white-text from all li elements
-    for (var i = 0; i <= 6; i++) {
-        $('#li-'+i).removeClass('selected-date');
-        $('#li-'+i).addClass('normal-date');
-    }
+
+function handleCalendarSelect(date){
+    loadAppointments(-1, date);
 }
 
 $(document).ready(function() {

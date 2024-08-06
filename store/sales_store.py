@@ -19,7 +19,11 @@ def get_sales_data(page_number, page_size, opportunity_name):
             s.total_paid as amount_paid,
             (s.sale_value - s.total_paid) as balance,
             pd.due_date as due_date,
-            prd.name as product_name
+            prd.name as product_name,
+            pd.payment_value as due_amount,
+            o.email,
+            o.phone,
+            pd.id
         FROM sale s
         LEFT JOIN (
             SELECT sale_id, MIN(due_date) as due_date
@@ -50,7 +54,11 @@ def get_sales_data(page_number, page_size, opportunity_name):
                 'due_date': row[6],
                 'opportunity_id': row[1],
                 'product_name': row[7],
-                'sale_id': row[0]
+                'sale_id': row[0],
+                'next_due_amount': row[8],
+                'email': row[9],
+                'phone': row[10],
+                'due_id': row[11]
             })
 
         # Get the total number of sales records
@@ -95,8 +103,8 @@ def record_new_sale(opportunity_id, sale_date, sale_value, note, sales_agent, pr
                 'fbc': opportunity['fbc'],
                 'ad_account': opportunity['ad_account']
         }
-        # handle_opportunity_update(opportunity_data, 
-                                 # 'opportunity_status', '2')
+        handle_opportunity_update(opportunity_data, 
+                                 'opportunity_status', '2')
     finally:
         if cursor:
             cursor.close()
@@ -228,6 +236,179 @@ def get_monthly_sales_data(start_date = None, end_date = None):
             })
 
         return monthly_sales_data
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_sales_report_by_call_setter(start_date=None, end_date=None):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Get the current date
+        if not end_date:
+            end_date = datetime.date.today()
+
+        if not start_date:
+            start_date = datetime.date(end_date.year, end_date.month, 1)
+
+        # SQL query to select sales report grouped by call setter
+        query = f'''SELECT 
+            s.call_setter as call_setter,
+            sa.name as call_setter_name,
+            SUM(s.total_paid) as total_payment
+        FROM sale s
+        LEFT JOIN sales_agent sa ON sa.id = s.call_setter
+        WHERE s.sale_date >= '{start_date}' AND s.sale_date <= '{end_date}' AND s.is_final = 1
+        GROUP BY call_setter_name, call_setter'''
+
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch all rows from the query result
+        rows = cursor.fetchall()
+
+        # Format each row into a dictionary and append to sales_report list
+        sales_report = []
+        for row in rows:
+            sales_report.append({
+                'call_setter': row[0],
+                'call_setter_name': row[1],
+                'total_payment': int(row[2])
+            })
+        return sales_report
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_payments_report_call_setters(start_date=None, end_date=None):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Get the current date
+        if not end_date:
+            end_date = datetime.date.today()
+
+        if not start_date:
+            start_date = datetime.date(end_date.year, end_date.month, 1)
+
+        # SQL query to select payments within the specified duration
+        query = f'''SELECT s.call_setter, sa.name as call_setter_name, SUM(p.payment_value) as total_payment
+        FROM payments p
+        LEFT JOIN sale s ON p.sale = s.id
+        LEFT JOIN sales_agent sa ON sa.id = s.call_setter
+        WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}' AND s.is_final = 1
+        GROUP BY call_setter, call_setter_name'''
+
+
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch all rows from the query result
+        rows = cursor.fetchall()
+
+        # Format each row into a dictionary and append to payments list
+        payments = []
+        for row in rows:
+            payments.append({
+                'call_setter': row[0],
+                'call_setter_name': row[1],
+                'total_payment': int(row[2])
+            })
+
+        return payments
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_payments_report_sales_agents(start_date=None, end_date=None):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Get the current date
+        if not end_date:
+            end_date = datetime.date.today()
+
+        if not start_date:
+            start_date = datetime.date(end_date.year, end_date.month, 1)
+
+        # SQL query to select payments within the specified duration
+        query = f'''SELECT s.sales_agent, sa.name as sales_agent_name, SUM(p.payment_value) as total_payment
+        FROM payments p
+        LEFT JOIN sale s ON p.sale = s.id
+        LEFT JOIN sales_agent sa ON sa.id = s.sales_agent
+        WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}' AND s.is_final = 1
+        GROUP BY sales_agent, sales_agent_name'''
+
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch all rows from the query result
+        rows = cursor.fetchall()
+
+        # Format each row into a dictionary and append to payments list
+        payments = []
+        for row in rows:
+            payments.append({
+                'sales_agent': row[0],
+                'sales_agent_name': row[1],
+                'total_payment': int(row[2])
+            })
+
+        return payments
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_payments_collected(start_date=None, end_date=None):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Get the current date
+        if not end_date:
+            end_date = datetime.date.today()
+
+        if not start_date:
+            start_date = datetime.date(end_date.year, end_date.month, 1)
+
+        # SQL query to select payments within the specified duration
+        query = f'''SELECT 
+            CASE
+            WHEN is_deposit = 0 THEN 'Final Payments'
+            WHEN is_deposit = 1 THEN 'Deposits'
+            END as payment_category,
+            COUNT(*) as payment_count,
+            SUM(payment_value) as total_payment
+        FROM payments
+        WHERE payment_date >= '{start_date}' AND payment_date <= '{end_date}'
+        GROUP BY payment_category'''
+
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch all rows from the query result
+        rows = cursor.fetchall()
+
+        # Format each row into a dictionary and append to payments list
+        payments = []
+        for row in rows:
+            payments.append({
+                'payment_category': row[0],
+                'payment_count': int(row[1]),
+                'total_payment': int(row[2])
+            })
+        return payments
     finally:
         if cursor:
             cursor.close()

@@ -5,16 +5,17 @@ Report
 {% endblock %}
 
 {% block content %}
-
-<div class="row">
-    <div class="col-md-6">
-        {% include "report/sales/_monthly_report.html" %}
-        {% include "report/leads/_overall_metrics.html" %}
-    </div>
-    <div class="col-md-6">
-     
-        <div class="table-responsive">
-            {% include "report/leads/_custom_report.html" %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            {% include "report/sales/_monthly_report.html" %}
+            {% include "report/leads/_overall_metrics.html" %}
+        </div>
+        <div class="col-md-6">
+        
+            <div class="table-responsive">
+                {% include "report/leads/_custom_report.html" %}
+            </div>
         </div>
     </div>
 </div>
