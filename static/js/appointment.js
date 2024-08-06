@@ -123,7 +123,8 @@ function loadAppointments(max, date) {
                     '</svg>' : '') + '</td>' +
                     '<td><button class="btn btn-info btn-sm expand mb-2">See Details</button>' +
                     '<button id="canceled" class="btn btn-danger btn-sm mb-2" onclick="cancelAppointment('+ appointment.id +')">Mark as Canceled</button>' +
-                    '<button id="confirmed" class="btn btn-success btn-sm mb-2" onclick="confirmAppointment('+ appointment.id +')" ' + (appointment.confirmed ? 'disabled' : '') + '>Confirm</button></td>' +
+                    (appointment.confirmed ? '' : '<button id="confirmed" class="btn btn-success btn-sm mb-2" onclick="confirmAppointment(' + appointment.id + ')">Confirm</button>')  +
+                    '</td>' +
                     '<td style="color: #c8cdd5">' + opportunityStatusSelect + '</td>' +
                     '</tr>'
                 );
