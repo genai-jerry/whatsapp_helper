@@ -30,7 +30,8 @@ def create_new_appointment():
             'financial_situation': request.json.get('financial_situation', 'Not Set'),
             'availability': request.json.get('availability', 'Not Set'),
             'whatsapp_number': request.json.get('whatsapp_number', 'Not Set'),
-            'appointment_time': request.json.get('appointment_time', 'Not Set')
+            'appointment_time': request.json.get('appointment_time', 'Not Set'),
+            'appointment_number': request.json.get('whatsapp_number', 'Not Set')
         }
 
         # Create new appointment in database

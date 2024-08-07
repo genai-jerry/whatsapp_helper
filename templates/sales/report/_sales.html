@@ -2,15 +2,29 @@
     <thead>
         <tr>
             <th>Call Setter</th>
+            <th>Total Sale Value</th>
             <th>Payment Collected</th>
         </tr>
     </thead>
+    {% set ns = namespace(total_payment = 0, sale_value=0) %}
     <tbody>
         {% for item in formatted_sales_report %}
         <tr>
             <td>{{ item.call_setter_name }}</td>
+            <td>{{ item.total_sale_value }}</td>
             <td>{{ item.total_payment }}</td>
         </tr>
+        {% set ns.total_payment = ns.total_payment + item.total_payment %}
+        {% set ns.sale_value = ns.sale_value + item.total_sale_value %}
         {% endfor %}
+        <tr>
+            <td><b>Total</b></td>
+            <td>
+                <b>{{ ns.sale_value }}</b>
+            </td>
+            <td>
+                <b>{{ ns.total_payment }}</b>
+            </td>
+        </tr>
     </tbody>
 </table>

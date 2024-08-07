@@ -44,6 +44,7 @@ def import_sales():
 def list_sales():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
+    
     opportunity_name = request.args.get('opportunity_name', '')
     sales_data, total_pages = get_sales_data(page, per_page, opportunity_name)
     unassigned_payments = get_unassigned_payments()

@@ -258,6 +258,7 @@ def get_sales_report_by_call_setter(start_date=None, end_date=None):
         query = f'''SELECT 
             s.call_setter as call_setter,
             sa.name as call_setter_name,
+            SUM(s.sale_value) as total_sale_value,
             SUM(s.total_paid) as total_payment
         FROM sale s
         LEFT JOIN sales_agent sa ON sa.id = s.call_setter
@@ -276,7 +277,8 @@ def get_sales_report_by_call_setter(start_date=None, end_date=None):
             sales_report.append({
                 'call_setter': row[0],
                 'call_setter_name': row[1],
-                'total_payment': int(row[2])
+                'total_sale_value': int(row[2]),
+                'total_payment': int(row[3])
             })
         return sales_report
     finally:
@@ -298,7 +300,9 @@ def get_payments_report_call_setters(start_date=None, end_date=None):
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
         # SQL query to select payments within the specified duration
-        query = f'''SELECT s.call_setter, sa.name as call_setter_name, SUM(p.payment_value) as total_payment
+        query = f'''SELECT s.call_setter, sa.name as call_setter_name, 
+        SUM(p.payment_value) as total_payment,
+        SUM(s.sale_value) as total_sale_value
         FROM payments p
         LEFT JOIN sale s ON p.sale = s.id
         LEFT JOIN sales_agent sa ON sa.id = s.call_setter
@@ -318,7 +322,8 @@ def get_payments_report_call_setters(start_date=None, end_date=None):
             payments.append({
                 'call_setter': row[0],
                 'call_setter_name': row[1],
-                'total_payment': int(row[2])
+                'total_payment': int(row[2]),
+                'total_sale_value': int(row[3])
             })
 
         return payments
@@ -341,7 +346,9 @@ def get_payments_report_sales_agents(start_date=None, end_date=None):
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
         # SQL query to select payments within the specified duration
-        query = f'''SELECT s.sales_agent, sa.name as sales_agent_name, SUM(p.payment_value) as total_payment
+        query = f'''SELECT s.sales_agent, sa.name as sales_agent_name, 
+        SUM(p.payment_value) as total_payment,
+        SUM(s.sale_value) as total_sale_value
         FROM payments p
         LEFT JOIN sale s ON p.sale = s.id
         LEFT JOIN sales_agent sa ON sa.id = s.sales_agent
@@ -360,7 +367,8 @@ def get_payments_report_sales_agents(start_date=None, end_date=None):
             payments.append({
                 'sales_agent': row[0],
                 'sales_agent_name': row[1],
-                'total_payment': int(row[2])
+                'total_payment': int(row[2]),
+                'total_sale_value': int(row[3])
             })
 
         return payments
@@ -389,8 +397,10 @@ def get_payments_collected(start_date=None, end_date=None):
             WHEN is_deposit = 1 THEN 'Deposits'
             END as payment_category,
             COUNT(*) as payment_count,
-            SUM(payment_value) as total_payment
+            SUM(payment_value) as total_payment,
+            SUM(s.sale_value) as total_sale_value
         FROM payments
+        JOIN sale s ON payments.sale = s.id
         WHERE payment_date >= '{start_date}' AND payment_date <= '{end_date}'
         GROUP BY payment_category'''
 
@@ -406,7 +416,8 @@ def get_payments_collected(start_date=None, end_date=None):
             payments.append({
                 'payment_category': row[0],
                 'payment_count': int(row[1]),
-                'total_payment': int(row[2])
+                'total_payment': int(row[2]),
+                'total_sale_value': int(row[3])
             })
         return payments
     finally:

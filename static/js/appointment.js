@@ -138,7 +138,9 @@ function loadAppointments(max, date) {
                     '<strong>Salary Range:</strong> ' + appointment.salary_range + '<br>' +
                     '<strong>Expected Salary:</strong> ' + appointment.expected_salary + '<br>' +
                     '<strong>Current Employer:</strong> ' + appointment.current_employer + '<br>' +
-                    '<strong>Financial Situation:</strong> ' + appointment.financial_situation +
+                    '<strong>Financial Situation:</strong> ' + appointment.financial_situation +'<br>' +
+                    '<strong>Whatsapp Number:</strong> ' + appointment.appointment_number +
+                    
                     '</td>' +
                     '</tr>'
                 );

@@ -144,6 +144,7 @@ class Appointment(db.Model):
     name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=False)
     telephone = db.Column(db.String(15), nullable=False)
+    appointment_number = db.Column(db.String(15), nullable=False)
     career_challenge = db.Column(db.String(255), nullable=False)
     challenge_description = db.Column(db.Text, nullable=False)
     urgency = db.Column(db.String(255), nullable=False)

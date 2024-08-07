@@ -7,12 +7,21 @@
         </tr>
     </thead>
     <tbody>
+        {% set ns = namespace(total_payment = 0) %}
         {% for item in payments_collected %}
         <tr>
             <td>{{ item.payment_category }}</td>
             <td>{{ item.payment_count }}</td>
             <td>{{ item.total_payment }}</td>
         </tr>
+        {% set ns.total_payment = ns.total_payment + item.total_payment %}
         {% endfor %}
+        <tr>
+            <td><b>Total</b></td>
+            <td></td>
+            <td>
+                <b>{{ ns.total_payment }}</b>
+            </td>
+        </tr>
     </tbody>
 </table>

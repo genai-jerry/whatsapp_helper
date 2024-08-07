@@ -20,15 +20,20 @@ def store_appointment(profile_details, application_form_details, mentor_name, im
         print(f'Verified: {verified}')
 
         # Look up the opportunity using the name or email in the opportunities table
-        query = "SELECT id FROM opportunity WHERE email = %s"
+        query = "SELECT id, phone FROM opportunity WHERE email = %s"
         cursor.execute(query, (profile_details['email'],))
-        opportunity_id = cursor.fetchone()
+        row = cursor.fetchone()
+        
         cursor.fetchall()
-        if opportunity_id is not None:
-            opportunity_id = opportunity_id[0]
+        if row is not None:
+            opportunity_id = row[0]
         else:
             opportunity_id = None
         print(f'Opportunity ID: {opportunity_id}')
+        phone_number = format_phone_number(profile_details.get('telephone', '')) if profile_details.get('telephone') else row[1]
+        if phone_number is None:
+            phone_number = ''
+        
         # Look up the mentor using the mentor name in the mentors table
         query = "SELECT id FROM sales_agent WHERE name = %s"
         mentor_name = ''.join(c for c in mentor_name if c.isalpha())
@@ -44,8 +49,8 @@ def store_appointment(profile_details, application_form_details, mentor_name, im
         query = """
         INSERT INTO appointments (name, email, telephone, career_challenge, challenge_description, urgency, salary_range, 
         expected_salary, current_employer, financial_situation, grade, mentor_id, opportunity_id, appointment_time, 
-        verified, conflicted, canceled, confirmed)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, False)
+        verified, conflicted, canceled, confirmed, appointment_number, is_initial_discussion)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, False, %s, False)
         """
         date_str = application_form_details['appointment_time']
         if import_app:
@@ -75,10 +80,11 @@ def store_appointment(profile_details, application_form_details, mentor_name, im
         else:
             canceled = False
         # Define the values for the SQL query
+        print(phone_number)
         values = (
             profile_details.get('name', ''),
             profile_details.get('email', ''),
-            format_phone_number(profile_details.get('telephone', '')) if profile_details.get('telephone') else None,
+            phone_number,
             application_form_details.get('career_challenge', ''),
             application_form_details.get('challenge_description', ''),
             application_form_details.get('urgency', ''),
@@ -92,7 +98,8 @@ def store_appointment(profile_details, application_form_details, mentor_name, im
             appointment_time,
             verified,
             conflicted,
-            canceled
+            canceled,
+            application_form_details.get('appointment_number', ''),
         )
 
         # Execute the SQL query
@@ -228,7 +235,7 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None):
     query = """
     SELECT a.id, o.name, o.email, o.phone, o.name AS opportunity_name, o.id AS opportunity_id, m.name AS mentor_name, m.id AS mentor_id, a.appointment_time AS appointment_time,
     a.career_challenge, a.challenge_description, a.urgency, a.salary_range, a.expected_salary, a.current_employer, a.financial_situation, a.grade, 
-    a.verified, a.conflicted, a.canceled, a.confirmed, os.name as opportunity_status
+    a.verified, a.conflicted, a.canceled, a.confirmed, os.name as opportunity_status, a.appointment_number
     FROM appointments AS a
     LEFT JOIN opportunity AS o ON a.opportunity_id = o.id
     LEFT JOIN opportunity_status AS os ON a.status = os.id
@@ -313,7 +320,8 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None):
                 'conflicted': row[18],
                 'canceled': row[19],
                 'confirmed': row[20],
-                'opportunity_status': row[21]
+                'opportunity_status': row[21],
+                'appointment_number': row[22]
             }
             appointments.append(appointment)
 
