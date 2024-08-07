@@ -235,7 +235,7 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None):
     query = """
     SELECT a.id, o.name, o.email, o.phone, o.name AS opportunity_name, o.id AS opportunity_id, m.name AS mentor_name, m.id AS mentor_id, a.appointment_time AS appointment_time,
     a.career_challenge, a.challenge_description, a.urgency, a.salary_range, a.expected_salary, a.current_employer, a.financial_situation, a.grade, 
-    a.verified, a.conflicted, a.canceled, a.confirmed, os.name as opportunity_status, a.appointment_number
+    a.verified, a.conflicted, a.canceled, a.confirmed, os.name as opportunity_status, a.appointment_number, a.name, a.email, a.telephone
     FROM appointments AS a
     LEFT JOIN opportunity AS o ON a.opportunity_id = o.id
     LEFT JOIN opportunity_status AS os ON a.status = os.id
@@ -321,7 +321,10 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None):
                 'canceled': row[19],
                 'confirmed': row[20],
                 'opportunity_status': row[21],
-                'appointment_number': row[22]
+                'appointment_number': row[22],
+                'applicant_name': row[23],
+                'applicant_email': row[24],
+                'applicant_telephone': row[25]
             }
             appointments.append(appointment)
 
