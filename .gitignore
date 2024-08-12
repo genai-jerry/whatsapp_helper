@@ -4,3 +4,4 @@ driver/*
 static/images/*
 static/media/*
 .idea
+.venv

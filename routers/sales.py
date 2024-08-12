@@ -81,6 +81,28 @@ def get_month_dates(month):
     
     return first_day, last_day
 
+@sales_blueprint.route('monthly/opportunities')
+def monthly_sales_opportunities_report():
+    selected_date = request.args.get('selected_date', 0, type=int)
+    month = request.args.get('month', None)
+    print('Getting monthly report')
+    if month:
+        first_day, last_day = get_month_dates(month)
+    else:
+        first_day, last_day = get_month_dates(None)
+    print(f'first_day: {first_day}, last_day: {last_day}, selected_date: {selected_date}, month: {month}')
+    # Generate the sales report
+    # For example, retrieve sales data from the database and format it
+    formatted_sales_report = get_final_sales_for_month(first_day, last_day)
+    formatted_payments_report_by_call_setters = get_payments_report_call_setters(first_day, last_day)
+    formatted_payments_report_by_sales_agents = get_payments_report_sales_agents(first_day, last_day)
+    payments_collected = get_payments_collected(first_day, last_day)
+    return render_template('sales/report_opportunities.html', 
+                           formatted_sales_report=formatted_sales_report,
+                           formatted_payments_report_by_call_setters=formatted_payments_report_by_call_setters,
+                           formatted_payments_report_by_sales_agents=formatted_payments_report_by_sales_agents,
+                           payments_collected=payments_collected, selected_date=int(selected_date)), 200
+
 @sales_blueprint.route('monthly')
 def monthly_report():
     selected_date = request.args.get('selected_date', 0, type=int)
@@ -93,7 +115,7 @@ def monthly_report():
     print(f'first_day: {first_day}, last_day: {last_day}, selected_date: {selected_date}, month: {month}')
     # Generate the sales report
     # For example, retrieve sales data from the database and format it
-    formatted_sales_report = get_sales_report_by_call_setter(first_day, last_day)
+    formatted_sales_report = get_final_sales_for_month(first_day, last_day)
     formatted_payments_report_by_call_setters = get_payments_report_call_setters(first_day, last_day)
     formatted_payments_report_by_sales_agents = get_payments_report_sales_agents(first_day, last_day)
     payments_collected = get_payments_collected(first_day, last_day)

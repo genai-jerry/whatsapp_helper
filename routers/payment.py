@@ -144,7 +144,6 @@ def record_payment():
         if mode == "Razorpay":
             amount = round(amount / 100, 2)
             charges = round(charges / 100, 2)
-            amount = amount - charges
 
         # Process the payment information (e.g., validate data, store in database)
         # This is a placeholder for your logic

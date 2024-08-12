@@ -7,7 +7,12 @@
 {% block content %}
     <div class="container mt-5">
         <h3>Manage payments for <a href="/opportunity/{{opportunity_id}}">{{opportunity_name}}</a></h3>
-        <button id="addPaymentButton" class="btn btn-primary">Add Payment</button>
+        <div class="row">
+
+            <div class="col-md-12">
+                <button id="addPaymentButton" class="btn btn-primary float-end">Add Payment</button>
+            </div>
+        </div>
 
         <form id="paymentForm" action="{{sale_id}}" method="post" style="display: none;">
             <!-- Existing fields here -->
@@ -85,7 +90,7 @@
                     <div class="card">
                         <h5 class="card-header {% if not payment.is_deposit %}bg-success{% else %}bg-warning{% endif %}" style="color: white;">GenAI Leap - Date: {{ payment.date.strftime('%b %d, %Y') }}</h5>
                         <div class="card-body">
-                            <p class="card-text">Payment Amount: <b>{{ payment.amount | exclTax | numberFormat }}</b></p>
+                            <p class="card-text">Payment Amount: <b>{{ payment.amount | numberFormat }}</b></p>
                             <p class="card-text">GST: <b>{{ payment.amount | tax | numberFormat }}</b></p>
                             <p class="card-text">Payment Mode: <b>{{ payment.mode }}</b></p>
                             <p class="card-text">Payment Charges: <b>{{ payment.charges }}</b></p>
@@ -120,7 +125,7 @@
     </div>
     <div class="container mt-5">
         <h3>Payments Due</h3>
-        <button id="addDueButton" class="btn btn-primary">Add Due</button>
+        <button id="addDueButton" class="btn btn-primary float-end">Add Due</button>
 
         <form id="dueForm" action="/payments/{{opportunity_id}}/{{sale_id}}/due" method="post" style="display: none;">
             <div class="row">

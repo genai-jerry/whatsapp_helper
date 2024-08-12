@@ -408,7 +408,7 @@ def assign_payment_to_sale(payment_id, sale_id, payment_amount):
         sql_update = "UPDATE payments SET sale = %s, opportunity = %s WHERE id = %s"
         cursor.execute(sql_update, (sale_id, opportunity_id, payment_id))
 
-        update_sale_payment(cursor, sale_id, payment_amount, False)
+        update_sale_payment(cursor, sale_id, payment_amount, False, datetime.now())
         connection.commit()
         print("Payment assigned to sale successfully.")
         return opportunity_id

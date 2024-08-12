@@ -10,3 +10,6 @@ confluent-kafka
 flask-migrate
 pymysql
 flask_login
+flask_sqlalchemy
+pytz
+dateutil

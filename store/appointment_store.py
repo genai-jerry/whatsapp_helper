@@ -200,15 +200,14 @@ def grade_application(application_form_details):
 def calculate_final_score(application_form_details):
     # Get the max scores from the database
     max_scores = get_scores_from_database()
-    print(f'Got the max scores: {max_scores}')
 
     # Initialize the final score
     final_score = 0
 
     # Add the score for each detail to the final score
     for detail, value in application_form_details.items():
-        print(f'Detail: {detail}, Value: {value}')
         if value in max_scores:
+            print(f'Adding score for {detail}: {max_scores[value]} to final score {final_score}')
             final_score += max_scores[value]
 
     print(f'Final score: {final_score}')
@@ -334,7 +333,6 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None):
 
         # Calculate the total number of pages
         total_pages = (total_appointments + page_size - 1) // page_size
-        print(f'Appointments: {appointments}, Total pages: {total_pages}')
         # Return the result
         return total_pages, total_appointments, appointments
     except Exception as err:
