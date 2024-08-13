@@ -6,7 +6,7 @@
     {% for i in range(range_span) %}
       <li><a class="dropdown-item {% if i == selected_date %}active{% endif %}" 
         href="/sales/monthly?month={{ i|date_add if calendar_type == 'weekly' else i|month_add }}&selected_date={{ i }}" 
-        onchange="handleCalendarSelect('{{ i|date_add if calendar_type == 'weekly' else i|month_add }}', {{i}})">
+        >
             {{ i|date_add if calendar_type == 'weekly' else i|month_add }}</a></li>
     {% endfor %}
     </ul>

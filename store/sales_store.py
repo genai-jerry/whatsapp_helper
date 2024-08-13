@@ -298,13 +298,15 @@ def get_all_opportunities_with_final_sales( page, page_size, start_date=None, en
         query = f'''SELECT 
             o.id as opportunity_id,
             o.name as opportunity_name,
-            s.sale_value as total_sale_value,
-            s.total_paid as total_payment
+            s.sale_date as date_of_sale,
+            s.sale_value as sale_amount,
+            s.total_paid as amount_paid,
+            (s.sale_value - s.total_paid) as pending_amount,
+            s.is_final as is_final
         FROM opportunity o
         LEFT JOIN sale s ON o.id = s.opportunity_id
         WHERE s.sale_date >= '{start_date}' AND s.sale_date <= '{end_date}' AND s.is_final = 1
-        GROUP BY opportunity_name
-        ORDER BY opportunity_name
+        Order by date_of_sale DESC
         LIMIT {page_size} OFFSET {(page - 1) * page_size}
         '''
 
@@ -318,13 +320,22 @@ def get_all_opportunities_with_final_sales( page, page_size, start_date=None, en
         opportunities = []
         for row in rows:
             opportunities.append({
-                'opportunity_id': row[0],
-                'opportunity_name': row[1],
-                'total_sale_value': int(row[2]),
-                'total_payment': int(row[3])
+            'opportunity_id': row[0],
+            'opportunity_name': row[1],
+            'date_of_sale': row[2],
+            'sale_amount': int(row[3]),
+            'amount_paid': int(row[4]),
+            'pending_amount': int(row[5]),
+            'is_final': bool(row[6])
             })
+        total_count_query = f'''SELECT COUNT(*) FROM opportunity o
+            LEFT JOIN sale s ON o.id = s.opportunity_id
+            WHERE s.sale_date >= '{start_date}' AND s.sale_date <= '{end_date}' AND s.is_final = 1'''
 
-        return opportunities
+        cursor.execute(total_count_query)
+        total_count = cursor.fetchone()[0]
+
+        return opportunities, total_count
     finally:
         if cursor:
             cursor.close()
@@ -468,6 +479,142 @@ def get_payments_report_call_setters(start_date=None, end_date=None):
             })
 
         return payments
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_payments_oppotunities_by_call_setter(page, page_size, start_date=None, end_date=None):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        # Get the current date
+        if not end_date:
+            end_date = datetime.date.today()
+
+        if not start_date:
+            start_date = datetime.date(end_date.year, end_date.month, 1)
+
+        # SQL query to select opportunities with final sales for a specific month
+        query = f'''SELECT 
+            o.name as opportunity_name,
+            sa.name as call_setter,
+            s.sale_date,
+            s.sale_value,
+            s.total_paid,
+            p.payment_value as payment_value,
+            s.is_final as sale_status,
+            p.payment_date as payment_date,
+            o.id as opportunity_id
+        FROM opportunity o
+        LEFT JOIN sale s ON o.id = s.opportunity_id
+        LEFT JOIN sales_agent sa ON sa.id = s.call_setter
+        LEFT JOIN payments p ON p.sale = s.id
+        WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}'
+        ORDER BY p.payment_date DESC
+        LIMIT {page_size} OFFSET {(page - 1) * page_size}
+        '''
+
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch all rows from the query result
+        rows = cursor.fetchall()
+
+        # Format each row into a dictionary and append to opportunities list
+        opportunities = []
+        for row in rows:
+            opportunities.append({
+            'opportunity_name': row[0],
+            'call_setter': row[1],
+            'sale_date': row[2],
+            'sale_value': int(row[3]),
+            'total_paid': int(row[4]),
+            'payment_value': int(row[5]),
+            'is_final': row[6],
+            'payment_date': row[7],
+            'opportunity_id': row[8]
+            })
+
+        # Count the total number of rows
+        count_query = f'''SELECT COUNT(*) FROM opportunity o
+                LEFT JOIN sale s ON o.id = s.opportunity_id
+                LEFT JOIN payments p ON p.sale = s.id
+                WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}'
+                '''
+        cursor.execute(count_query)
+        total_count = cursor.fetchone()[0]
+
+        return opportunities, total_count
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_payments_oppotunities_by_sales_agent(page, page_size, start_date=None, end_date=None):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        # Get the current date
+        if not end_date:
+            end_date = datetime.date.today()
+
+        if not start_date:
+            start_date = datetime.date(end_date.year, end_date.month, 1)
+
+        # SQL query to select opportunities with final sales for a specific month
+        query = f'''SELECT 
+            o.name as opportunity_name,
+            sa.name as sales_agent,
+            s.sale_date,
+            s.sale_value,
+            s.total_paid,
+            p.payment_value as payment_value,
+            s.is_final as sale_status,
+            p.payment_date as payment_date,
+            o.id as opportunity_id
+        FROM opportunity o
+        LEFT JOIN sale s ON o.id = s.opportunity_id
+        LEFT JOIN sales_agent sa ON sa.id = s.sales_agent
+        LEFT JOIN payments p ON p.sale = s.id
+        WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}'
+        ORDER BY p.payment_date DESC
+        LIMIT {page_size} OFFSET {(page - 1) * page_size}
+        '''
+
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch all rows from the query result
+        rows = cursor.fetchall()
+
+        # Format each row into a dictionary and append to opportunities list
+        opportunities = []
+        for row in rows:
+            opportunities.append({
+            'opportunity_name': row[0],
+            'sales_agent': row[1],
+            'sale_date': row[2],
+            'sale_value': int(row[3]),
+            'total_paid': int(row[4]),
+            'payment_value': int(row[5]),
+            'is_final': row[6],
+            'payment_date': row[7],
+            'opportunity_id': row[8]
+        })
+
+        # Count the total number of rows
+        count_query = f'''SELECT COUNT(*) FROM opportunity o
+                LEFT JOIN sale s ON o.id = s.opportunity_id
+                LEFT JOIN payments p ON p.sale = s.id
+                WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}'
+                '''
+        cursor.execute(count_query)
+        total_count = cursor.fetchone()[0]
+
+        return opportunities, total_count
     finally:
         if cursor:
             cursor.close()
@@ -632,15 +779,19 @@ def get_opportunities_for_payments_collected(page, page_size, start_date=None, e
 
         # SQL query to select opportunities with final sales for a specific month
         query = f'''SELECT 
-            o.id as opportunity_id,
             o.name as opportunity_name,
-            s.sale_value as total_sale_value,
-            s.total_paid as total_payment
+            s.sale_date,
+            s.sale_value,
+            s.total_paid,
+            p.payment_date,
+            p.payment_value,
+            s.is_final as sale_status,
+            o.id as opportunity_id
         FROM opportunity o
         LEFT JOIN sale s ON o.id = s.opportunity_id
-        WHERE s.sale_date >= '{start_date}' AND s.sale_date <= '{end_date}' AND s.is_final = 1
-        GROUP BY opportunity_name
-        ORDER BY opportunity_name
+        LEFT JOIN payments p ON p.sale = s.id
+        WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}'
+        ORDER BY p.payment_date DESC
         LIMIT {page_size} OFFSET {(page - 1) * page_size}
         '''
 
@@ -654,13 +805,26 @@ def get_opportunities_for_payments_collected(page, page_size, start_date=None, e
         opportunities = []
         for row in rows:
             opportunities.append({
-                'opportunity_id': row[0],
-                'opportunity_name': row[1],
-                'total_sale_value': int(row[2]),
-                'total_payment': int(row[3])
-            })
+            'opportunity_name': row[0],
+            'sale_date': row[1],
+            'sale_value': int(row[2]),
+            'total_paid': int(row[3]),
+            'payment_date': row[4],
+            'payment_amount': int(row[5]),
+            'is_final': row[6],
+            'opportunity_id': row[7]
+        })
 
-        return opportunities
+        # Count the total number of rows
+        count_query = f'''SELECT COUNT(*) FROM opportunity o
+                        LEFT JOIN sale s ON o.id = s.opportunity_id
+                        LEFT JOIN payments p ON p.sale = s.id
+                        WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}'
+                        '''
+        cursor.execute(count_query)
+        total_count = cursor.fetchone()[0]
+
+        return opportunities, total_count
     finally:
         if cursor:
             cursor.close()

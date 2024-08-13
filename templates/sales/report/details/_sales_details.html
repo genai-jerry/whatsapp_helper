@@ -1,0 +1,86 @@
+<script>
+    let current_sales_page = 1;
+    
+    function loadSalesDetails(month, page = 1) {
+        // Code to load sales data from the server
+        // and display it in the salesModal
+        const feedbackElement = document.querySelector('#salesModal .feedback');
+        feedbackElement.textContent = 'Loading...';
+        const url = '/sales/monthly/opportunities?' + (month ? `month=${month}&` : '');
+        const urlWithParams = `${url}page=${page}&page_size=${page_size}`;
+        fetch(urlWithParams)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('#salesModal tbody');
+                tableBody.innerHTML = '';
+
+                data['formatted_sales_report'].forEach(sale => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><a href="/opportunity/${sale.opportunity_id}">
+                            ${sale.opportunity_name}</a></td>
+                        <td>${new Date(sale.date_of_sale).toLocaleDateString('en-US', 
+                            { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                        <td>${sale.sale_amount}</td>
+                        <td>${sale.amount_paid}</td>
+                        <td>${sale.pending_amount}</td>
+                        <td>${sale.is_final ? 'Sale' : 'Deposit'}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                feedbackElement.textContent = ''; // Clear the feedback
+                total_pages = data['total_count'];
+                current_sales_page = page;
+                updatePagination('salesModal', current_sales_page, total_pages, loadSalesDetails);
+            })
+            .catch(error => {
+                console.error('Error loading sales data:', error);
+                feedbackElement.textContent = 'Error loading sales data';
+            });
+    }
+    
+</script>
+
+<!-- Sales Modal -->
+<div class="modal fade" id="salesModal" tabindex="-1" role="dialog" aria-labelledby="salesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="salesModalLabel">Sales Details</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="feedback"></div> <!-- Add this div to show feedback -->
+                <!-- Add your sales details here -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Opportunity Name</th>
+                            <th>Date of Sale</th>
+                            <th>Sale Amount</th>
+                            <th>Amount Paid</th>
+                            <th>Pending Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <!-- Add more rows for each opportunity -->
+                    </tbody>
+                </table>
+                <nav aria-label="Page navigation" class="justify-content-start">
+                    <ul class="pagination justify-content-start">
+                        <!-- Add pagination links here -->
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

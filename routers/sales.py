@@ -83,35 +83,80 @@ def get_month_dates(month):
 
 @sales_blueprint.route('monthly/opportunities')
 def monthly_sales_opportunities_report():
-    selected_date = request.args.get('selected_date', 0, type=int)
-    month = request.args.get('month', None)
     print('Getting monthly report')
-    if month:
-        first_day, last_day = get_month_dates(month)
-    else:
-        first_day, last_day = get_month_dates(None)
-    print(f'first_day: {first_day}, last_day: {last_day}, selected_date: {selected_date}, month: {month}')
+    month = request.args.get('month', datetime.now().strftime('%B %Y'))
+    page = request.args.get('page', 1, type=int)
+    page_size = request.args.get('page_size', 10, type=int)
+
+    first_day, last_day = get_month_dates(month)
+
+    print(f'first_day: {first_day}, last_day: {last_day}, month: {month}')
     # Generate the sales report
     # For example, retrieve sales data from the database and format it
-    formatted_sales_report = get_final_sales_for_month(first_day, last_day)
-    formatted_payments_report_by_call_setters = get_payments_report_call_setters(first_day, last_day)
-    formatted_payments_report_by_sales_agents = get_payments_report_sales_agents(first_day, last_day)
-    payments_collected = get_payments_collected(first_day, last_day)
-    return render_template('sales/report_opportunities.html', 
-                           formatted_sales_report=formatted_sales_report,
-                           formatted_payments_report_by_call_setters=formatted_payments_report_by_call_setters,
-                           formatted_payments_report_by_sales_agents=formatted_payments_report_by_sales_agents,
-                           payments_collected=payments_collected, selected_date=int(selected_date)), 200
+    formatted_sales_report, total_count = get_all_opportunities_with_final_sales(page, page_size, first_day, last_day)
+    return jsonify({
+        'formatted_sales_report': formatted_sales_report,
+        'total_count': total_count
+    }), 200
+
+@sales_blueprint.route('monthly/payments')
+def monthly_sales_opportunities_payments():
+    month = request.args.get('month', datetime.now().strftime('%B %Y'))
+    page = request.args.get('page', 1, type=int)
+    page_size = request.args.get('page_size', 10, type=int)
+    print('Getting monthly report')
+    first_day, last_day = get_month_dates(month)
+    
+    print(f'first_day: {first_day}, last_day: {last_day}, month: {month}')
+    # Generate the sales report
+    # For example, retrieve sales data from the database and format it
+    formatted_payment_report, total_count = get_opportunities_for_payments_collected(page, page_size, first_day, last_day)
+    return jsonify({
+        'formatted_payment_report': formatted_payment_report,
+        'total_count': total_count
+    }), 200
+
+@sales_blueprint.route('monthly/payments/call_setter')
+def monthly_call_setter_opportunities_payments():
+    month = request.args.get('month', datetime.now().strftime('%B %Y'))
+    page = request.args.get('page', 1, type=int)
+    page_size = request.args.get('page_size', 10, type=int)
+    print('Getting monthly report')
+    first_day, last_day = get_month_dates(month)
+    
+    print(f'first_day: {first_day}, last_day: {last_day}, month: {month}')
+    # Generate the sales report
+    # For example, retrieve sales data from the database and format it
+    formatted_payment_report, total_count = get_payments_oppotunities_by_call_setter(page, page_size, first_day, last_day)
+    return jsonify({
+        'formatted_payment_report': formatted_payment_report,
+        'total_count': total_count
+    }), 200
+
+@sales_blueprint.route('monthly/payments/sales_agent')
+def monthly_sales_agent_opportunities_payments():
+    month = request.args.get('month', datetime.now().strftime('%B %Y'))
+    page = request.args.get('page', 1, type=int)
+    page_size = request.args.get('page_size', 10, type=int)
+    print('Getting monthly report')
+    first_day, last_day = get_month_dates(month)
+    
+    print(f'first_day: {first_day}, last_day: {last_day}, month: {month}')
+    # Generate the sales report
+    # For example, retrieve sales data from the database and format it
+    formatted_payment_report, total_count = get_payments_oppotunities_by_sales_agent(page, page_size, first_day, last_day)
+    return jsonify({
+        'formatted_payment_report': formatted_payment_report,
+        'total_count': total_count
+    }), 200
 
 @sales_blueprint.route('monthly')
 def monthly_report():
     selected_date = request.args.get('selected_date', 0, type=int)
-    month = request.args.get('month', None)
+    month = request.args.get('month', datetime.now().strftime('%B %Y'))
     print('Getting monthly report')
-    if month:
-        first_day, last_day = get_month_dates(month)
-    else:
-        first_day, last_day = get_month_dates(None)
+    first_day, last_day = get_month_dates(month)
+    
     print(f'first_day: {first_day}, last_day: {last_day}, selected_date: {selected_date}, month: {month}')
     # Generate the sales report
     # For example, retrieve sales data from the database and format it

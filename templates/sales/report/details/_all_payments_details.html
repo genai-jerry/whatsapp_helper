@@ -1,0 +1,85 @@
+<script>
+    let current_payments_page = 1;
+    function loadPaymentsDetails(month, page=1) {
+        // Code to load sales data from the server
+        // and display it in the salesModal
+        const feedbackElement = document.querySelector('#paymentsModal .feedback');
+        feedbackElement.textContent = 'Loading...';
+        const url = '/sales/monthly/payments?' + (month ? `month=${month}&` : '');
+        const urlWithParams = `${url}page=${page}&page_size=${page_size}`;
+        fetch(urlWithParams)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('#paymentsModal tbody');
+                tableBody.innerHTML = '';
+
+                data['formatted_payment_report'].forEach(sale => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><a href="/opportunity/${sale.opportunity_id}">
+                            ${sale.opportunity_name}</a></td>
+                        <td>${new Date(sale.sale_date).toLocaleDateString('en-US', 
+                            { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                        <td>${sale.sale_value}</td>
+                        <td>${sale.total_paid}</td>
+                        <td>${new Date(sale.payment_date).toLocaleDateString('en-US', 
+                            { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                        <td>${sale.payment_amount}</td>
+                        <td>${sale.is_final ? 'Sale' : 'Deposit'}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                feedbackElement.textContent = ''; // Clear the feedback
+                total_pages = data['total_count'];
+                current_payments_page = page;
+                updatePagination('paymentsModal', current_payments_page, total_pages, loadPaymentsDetails);
+            })
+            .catch(error => {
+                console.error('Error loading sales data:', error);
+                feedbackElement.textContent = 'Error loading sales data';
+            });
+    }
+</script>
+<!-- Payments Modal -->
+<div class="modal fade" id="paymentsModal" tabindex="-1" role="dialog" aria-labelledby="paymentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentsModalLabel">Payments Details</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Add your payments details here -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Opportunity Name</th>
+                            <th>Sale Date</th>
+                            <th>Sale Value</th>
+                            <th>Total Paid</th>
+                            <th>Payment Date</th>
+                            <th>Payment Amount</th>
+                            <th>Sale Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Add your table rows here -->
+                        
+                        <!-- Add more table rows for each payment -->
+                    </tbody>
+                </table>
+                <nav aria-label="Page navigation" class="justify-content-start">
+                    <ul class="pagination justify-content-start">
+                        <!-- Add pagination links here -->
+                    </ul>
+                </nav>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

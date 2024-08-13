@@ -15,22 +15,66 @@ Report
     <div class="row">
         <div class="col-md-6">
             <h2>Sales Generated For the Month</h2>
+            <p><a href="#" data-bs-toggle="modal" data-bs-target="#salesModal" onclick="loadSalesDetails(month)">View Details</a></p>
             {% include "sales/report/_sales.html" %}
         </div>
         <div class="col-md-6">
             <h2>All Payments Collected For the Month</h2>
+            <p><a href="#" data-bs-toggle="modal" data-bs-target="#paymentsModal" onclick="loadPaymentsDetails(month)">View Details</a></p>
             {% include "sales/report/_all_payments.html" %}
         </div>
     </div>
     <div class="row">
         <div class="col-md-6">
             <h2>Payments Collected By Sales Agents</h2>
+            <p><a href="#" data-bs-toggle="modal" data-bs-target="#salesAgentsModal" onclick="loadSalesAgentPaymentsDetails(month)">View Details</a></p>
             {% include "sales/report/_payments_by_sales_agent.html" %}
         </div>
         <div class="col-md-6">
             <h2>Payments Collected By Call Setters</h2>
+            <p><a href="#" data-bs-toggle="modal" data-bs-target="#callSettersModal" onclick="loadCallSetterPaymentsDetails(month)">View Details</a></p>
             {% include "sales/report/_payments_by_call_setters.html" %}
         </div>
     </div>
 </div>
+{% include "sales/report/details/_sales_details.html" %}
+{% include "sales/report/details/_call_setter_payments_details.html" %}
+{% include "sales/report/details/_sales_agents_payments_details.html" %}
+{% include "sales/report/details/_all_payments_details.html" %}
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const month = urlParams.get('month') || null;
+    let page_size = 10;
+    function updatePagination(modal_name, current_page, total_count, fn) {
+        total_pages = Math.ceil(total_count / page_size);
+        const paginationNav = $(`#${modal_name} nav ul`);
+        paginationNav.empty();
+        if (current_page > 1){
+            let prev = `<li class="page-item">
+            </li>`;
+            let action = `<a class="page-link" href="#">Previous</a>`;
+            let action_elem = $(action);
+            action_elem.on('click', function() {
+                fn(month, current_page-1);
+            });
+            let prev_elem = $(prev);
+            prev_elem.append(action_elem);
+            paginationNav.append(prev_elem);
+        }
+        if (current_page < total_pages){
+            let action = `<a class="page-link" href="#">Next</a>`;
+            let action_elem = $(action);
+            action_elem.on('click', function() {
+                fn(month, current_page+1);
+            });
+            let next = `<li class="page-item">
+                </li>`;
+            let next_elem = $(next);
+            next_elem.append(action_elem);
+            paginationNav.append(next_elem);
+        }
+        
+    }
+</script>
 {% endblock %}
