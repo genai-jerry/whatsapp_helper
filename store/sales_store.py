@@ -207,15 +207,40 @@ def get_monthly_sales_data(start_date = None, end_date = None):
 
         # SQL query to select sale, collection, and pending amount for each month
         query = f'''SELECT 
-            EXTRACT(MONTH FROM s.sale_date) as month,
-            EXTRACT(YEAR FROM s.sale_date) as year,
-            SUM(s.sale_value) as sale_amount,
-            SUM(s.total_paid) as collection_amount,
-            SUM(s.sale_value - s.total_paid) as pending_amount
-        FROM sale s
-        WHERE s.sale_date >= '{start_date}' AND s.sale_date <= '{end_date}'
-        GROUP BY month, year
-        ORDER BY year asc, month asc'''
+                EXTRACT(MONTH FROM month_year) as month,
+                EXTRACT(YEAR FROM month_year) as year,
+                SUM(total_sales) AS total_sales,
+                SUM(total_payments) AS total_payments,
+                SUM(total_outstanding) AS total_outstanding
+            FROM (
+                SELECT 
+                    DATE_FORMAT(sale_date, '%Y-%m-01') AS month_year,
+                    sale_value AS total_sales,
+                    0 AS total_payments,
+                    sale_value - total_paid AS total_outstanding
+                FROM 
+                    sale
+                WHERE 
+                    sale_date BETWEEN '{start_date}' AND '{end_date}' 
+                    AND is_final = 1
+                
+                UNION ALL
+                
+                SELECT 
+                    DATE_FORMAT(payment_date, '%Y-%m-01') AS month_year,
+                    0 AS total_sales,
+                    payment_value AS total_payments,
+                    0 AS total_outstanding
+                FROM 
+                    payments
+                WHERE 
+                    payment_date BETWEEN '{start_date}' AND '{end_date}' 
+                    AND is_deposit = 0
+            ) combined_data
+            GROUP BY 
+                month_year
+            ORDER BY 
+                month_year;'''
 
         # Execute the query
         cursor.execute(query)
