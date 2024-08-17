@@ -222,7 +222,7 @@ def get_monthly_sales_data(start_date = None, end_date = None):
                     sale
                 WHERE 
                     sale_date BETWEEN '{start_date}' AND '{end_date}' 
-                    AND is_final = 1
+                    AND is_final = 1 AND cancelled != 1
                 
                 UNION ALL
                 
@@ -756,7 +756,7 @@ def get_payments_collected(start_date=None, end_date=None):
         # SQL query to select payments within the specified duration
         query = f'''SELECT 
             CASE
-            WHEN is_deposit = 0 THEN 'Final Payments'
+            WHEN is_deposit = 0 THEN 'Instalments'
             WHEN is_deposit = 1 THEN 'Deposits'
             END as payment_category,
             COUNT(*) as payment_count,

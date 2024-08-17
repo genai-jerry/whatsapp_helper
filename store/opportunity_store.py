@@ -705,7 +705,7 @@ def generate_metrics(start_date, end_date):
             'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status != 1 AND (a.status !=6 and a.status != 5) AND a.appointment_time BETWEEN %s AND %s",
             'call_booked_vsl': f"{load_self_opportunities} AND a.appointment_time BETWEEN %s AND %s",
             'call_show_up_self': f"{load_self_opportunities} AND a.status != 1 AND a.appointment_time BETWEEN %s AND %s",
-            'sale_conversion': f"SELECT count(s.id) from sale s where s.sale_date BETWEEN %s AND %s AND s.is_final = 1",
+            'sale_conversion': f"SELECT count(s.id) from sale s where s.sale_date BETWEEN %s AND %s AND s.is_final = 1 AND s.cancelled != 1",
             'total_calls_booked': f"{load_opportunities_not_canceled} AND a.appointment_time BETWEEN %s AND %s",
         }
 
