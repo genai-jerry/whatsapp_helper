@@ -294,12 +294,14 @@ def get_final_sales_for_month(start_date=None, end_date=None):
 
         # Format each row into a dictionary and append to sales list
         sales = []
-        for row in rows:
-            sales.append({
-                'sale_value': int(row[0]),
-                'total_paid': int(row[1]),
-                'pending_amount': int(row[2])
-            })
+        if rows:
+            for row in rows:
+                if row[0]:
+                    sales.append({
+                        'sale_value': int(row[0]),
+                        'total_paid': int(row[1]),
+                        'pending_amount': int(row[2])
+                    })
 
         return sales
     finally:
