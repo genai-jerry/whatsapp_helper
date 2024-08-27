@@ -1,6 +1,7 @@
 __pycache__
 venv
 driver/*
+static/images/*
 static/media/*
 .idea
 .venv
