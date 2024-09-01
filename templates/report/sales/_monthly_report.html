@@ -27,8 +27,8 @@
                 return {
                     x: item.month + '-' + item.year ,
                     y1: parseInt(item.sale_amount),
-                    y2: parseInt(item.collection_amount),
-                    y3: parseInt(item.pending_amount)
+                    y2: parseInt(item.pending_amount),
+                    y3: parseInt(item.collection_amount)
                 };
             });
             var ctx = document.getElementById('salesChart').getContext('2d');
@@ -47,21 +47,22 @@
                         tension: 0.1
                     },
                     {
-                        label: 'Collected Amount',
+                        label: 'Pending Amount',
                         data: chartData.map(function(item) {
                             return item.y2;
                         }),
-                        backgroundColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgb(255, 99, 132)',
                         tension: 0.1
                     },
                     {
-                        label: 'Pending Amount',
+                        label: 'Collected Amount',
                         data: chartData.map(function(item) {
                             return item.y3;
                         }),
-                        backgroundColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgb(54, 162, 235)',
                         tension: 0.1
-                    }]
+                    }
+                    ]
                 },
                 options: {
                     scales: {

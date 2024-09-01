@@ -658,7 +658,7 @@ def generate_report(start_date, end_date):
     try:
         conn = create_connection()
         cursor = conn.cursor()
-
+        end_date = f'{end_date} 23:59:59'
         query = """
             SELECT call_status, lcs.name, COUNT(*)  
             FROM opportunity 
@@ -693,7 +693,8 @@ def generate_metrics(start_date, end_date):
     try:
         conn = create_connection()
         cursor = conn.cursor()
-
+        end_date = f'{end_date} 23:59:59'
+        print(f'Getting metrics for {start_date} and {end_date}')
         # Define the SQL queries to get the data for the conversion metrics
         load_total_opportunities = 'SELECT COUNT(*) FROM opportunity WHERE register_time BETWEEN %s AND %s'
         load_followup_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where o.call_setter != 4 and o.call_setter is not Null'

@@ -499,7 +499,7 @@ def get_payments_report_call_setters(start_date=None, end_date=None):
         for row in rows:
             payments.append({
                 'call_setter': row[0],
-                'call_setter_name': row[1],
+                'call_setter_name': row[1] if row[1] else "Not Specified",
                 'total_payment': int(row[2]),
                 'total_sale_value': int(row[3]),
                 'pending_amount': int(row[4])
@@ -553,15 +553,15 @@ def get_payments_oppotunities_by_call_setter(page, page_size, start_date=None, e
         opportunities = []
         for row in rows:
             opportunities.append({
-            'opportunity_name': row[0],
-            'call_setter': row[1],
-            'sale_date': row[2],
-            'sale_value': int(row[3]),
-            'total_paid': int(row[4]),
-            'payment_value': int(row[5]),
-            'is_final': row[6],
-            'payment_date': row[7],
-            'opportunity_id': row[8]
+                'opportunity_name': row[0],
+                'call_setter': row[1] if row[1] else "Self",
+                'sale_date': row[2],
+                'sale_value': int(row[3]),
+                'total_paid': int(row[4]),
+                'payment_value': int(row[5]),
+                'is_final': row[6],
+                'payment_date': row[7],
+                'opportunity_id': row[8]
             })
 
         # Count the total number of rows

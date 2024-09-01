@@ -6,7 +6,7 @@ from store.sales_store import *
 from store.payment_store import get_unassigned_payments
 from routers.opportunity import get_opportunity_detail
 import calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 
 sales_blueprint = Blueprint('sales', __name__)
 
@@ -67,17 +67,16 @@ def sales_report():
     # Generate the sales report
     # For example, retrieve sales data from the database and format it
     formatted_report = get_monthly_sales_data()
-    print(formatted_report)
     return jsonify(formatted_report), 200
 
 def get_month_dates(month):
     if month:
         month = datetime.strptime(month, '%B %Y')
         first_day = month.replace(day=1)
-        last_day = month.replace(day=calendar.monthrange(month.year, month.month)[1])
+        last_day = month.replace(day=calendar.monthrange(month.year, month.month)[1]) + timedelta(days=1)
     else:
         first_day = datetime.now().replace(day=1)
-        last_day = datetime.now().replace(day=calendar.monthrange(datetime.now().year, datetime.now().month)[1])
+        last_day = datetime.now().replace(day=calendar.monthrange(datetime.now().year, datetime.now().month)[1]) + timedelta(days=1)
     
     return first_day, last_day
 
