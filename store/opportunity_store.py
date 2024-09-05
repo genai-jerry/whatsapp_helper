@@ -372,7 +372,9 @@ def get_opportunity_by_id(opportunity_id):
         templates = cursor.fetchall()
         # Fetch appointments related to the opportunity
         cursor.execute("""
-            SELECT CONVERT_TZ(a.appointment_time, 'UTC', 'Asia/Kolkata') AS appointment_time, cs.name AS call_status, os.name AS opportunity_status, a.canceled
+            SELECT CONVERT_TZ(a.appointment_time, 'UTC', 'Asia/Kolkata') AS appointment_time, cs.name AS call_status, 
+                       os.name AS appointment_status, a.canceled, 
+                       CONVERT_TZ(a.created_at, 'UTC', 'Asia/Kolkata') AS appointment_create_time
             FROM appointments a
             LEFT JOIN opportunity o ON a.opportunity_id = o.id
             LEFT JOIN lead_call_status cs ON o.call_status = cs.id
@@ -381,7 +383,10 @@ def get_opportunity_by_id(opportunity_id):
         """, (opportunity_id,))
         appointments = cursor.fetchall()
         # Prepare the appointment data to return
-        appointment_data = [{'time': appointment[0], 'call_status': appointment[1], 'appointment_status': appointment[2], 'cancelled': appointment[3]} for appointment in appointments]
+        appointment_data = [{'time': appointment[0], 'call_status': appointment[1],
+                              'appointment_status': appointment[2], 
+                              'cancelled': appointment[3],
+                               'appointment_create_time': appointment[4] } for appointment in appointments]
 
         # Prepare the data to return
         data = {
