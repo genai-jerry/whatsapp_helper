@@ -813,7 +813,8 @@ def get_opportunities_for_payments_collected(page, page_size, start_date=None, e
             p.payment_date,
             p.payment_value,
             s.is_final as sale_status,
-            o.id as opportunity_id
+            o.id as opportunity_id,
+            p.id as payment_id
         FROM opportunity o
         LEFT JOIN sale s ON o.id = s.opportunity_id
         LEFT JOIN payments p ON p.sale = s.id
@@ -839,7 +840,8 @@ def get_opportunities_for_payments_collected(page, page_size, start_date=None, e
             'payment_date': row[4],
             'payment_amount': int(row[5]),
             'is_final': row[6],
-            'opportunity_id': row[7]
+            'opportunity_id': row[7],
+            'payment_id': row[8]
         })
 
         # Count the total number of rows
@@ -852,6 +854,53 @@ def get_opportunities_for_payments_collected(page, page_size, start_date=None, e
         total_count = cursor.fetchone()[0]
 
         return opportunities, total_count
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_invoice_data(payment_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # SQL query to select invoice data for a specific payment id
+        query = f'''SELECT 
+            p.payment_date as invoice_date,
+            CONCAT(DATE_FORMAT(p.payment_date, '%b-%d--'), o.id, '//', DATE_FORMAT(p.payment_date, '%y')) as invoice_no,
+            o.name as to_name,
+            o.email as to_email,
+            o.phone as to_phone,
+            o.address as to_address,
+            o.gst as to_gst,
+            p.payment_value as amount,
+            CASE WHEN o.same_state THEN TRUE ELSE FALSE END as is_same_state
+        FROM payments p
+        LEFT JOIN sale s ON p.sale = s.id
+        LEFT JOIN opportunity o ON o.id = s.opportunity_id
+        WHERE p.id = {payment_id}'''
+
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch the row from the query result
+        row = cursor.fetchone()
+
+        # Format the row into the invoice_data dictionary
+        invoice_data = {
+            'invoice_date': row[0],
+            'invoice_no': row[1],
+            'to_name': row[2],
+            'to_email': row[3],
+            'to_phone': row[4],
+            'to_address': row[5],
+            'to_gst': row[6],
+            'amount': row[7],
+            'is_same_state': row[8]
+        }
+
+        return invoice_data
     finally:
         if cursor:
             cursor.close()

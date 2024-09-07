@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .invoice-box {
+            width: 100%;
+            padding: 20px;
+            border: 1px solid #eee;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        }
+        table {
+            width: 100%;
+            line-height: inherit;
+            text-align: left;
+        }
+        table td {
+            padding: 5px;
+            vertical-align: top;
+        }
+        .heading {
+            background: #eee;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        .details td {
+            padding-bottom: 20px;
+        }
+        .totals td {
+            border-top: 2px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-box">
+        <table>
+            <tr class="top">
+                <td>
+                    <img src="{{ url_for('static', filename='images/logo.ico', _external=True) }}" width="100px">
+                </td>
+            </tr>
+            <tr class="top">
+                <td colspan="2">
+                    <h2>Invoice</h2>
+                    <b>Date:</b> {{ data.invoice_date | formatDate }}<br>
+                    <b>Invoice No:</b> {{ data.invoice_no }}<br>
+                </td>
+            </tr>
+            <tr class="details">
+                <td>
+                    <b>To:</b><br>
+                    {{ data.to_name }}<br>
+                    <b>Email:</b> {{ data.to_email }}<br>
+                    <b>Phone:</b> {{ data.to_phone }}<br>
+                    {% if data.to_gst %}
+                        <b>GST:</b> {{ data.to_gst }}<br>
+                    {% endif %}
+                    <b>Address:</b> {{ data.to_address }}<br>
+                </td>
+                <td>
+                    <b>From:</b><br>
+                    {{ data.from_name }}<br>
+                    <b>GST:</b> 29AANCR1319R1ZL<br>
+                    <b>LUT ARN:</b> AD2912230189811<br>
+                    <b>Phone:</b> 8123041415<br>
+                    <b>Address:</b> RTJ Education Services Pvt Ltd<br>
+                    No 389, 3rd MnHMT L/O Ward No 96,<br> Hebbal, Kempapura<br>
+                    Bangalore - 560024
+                    <br>
+                </td>
+            </tr>
+            <tr class="heading">
+                <td>Description</td>
+                <td>Amount (INR)</td>
+            </tr>
+            <tr class="details">
+                <td>Installment for 6 month GenAI Leap program</td>
+                <td>{{ (data.amount / 1.18) | round_up }}</td>
+            </tr>
+            {% if data.is_same_state %}
+            <tr>
+                <td>CGST @9%</td>
+                <td>{{ ((data.amount / 1.18) * 0.9) | round_up }}</td>
+            </tr>
+            <tr>
+                <td>SGST @9%</td>
+                <td>{{ ((data.amount / 1.18) * 0.9) | round_up }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td>IGST @18%</td>
+                <td>{{ ((data.amount / 1.18) * 0.18) | round_up}}</td>
+            </tr>
+            {% endif %}
+            <tr class="totals">
+                <td><b>Total</b></td>
+                <td><b>{{ data.amount }}</b></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <b>Bank:</b> State Bank Of India, Vibhutipura, Bangalore<br>
+                    <b>Account No / IFSC:</b> 36473165388 / SBIN0016336
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

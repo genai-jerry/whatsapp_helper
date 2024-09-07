@@ -346,7 +346,10 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.ad_fbp as fbp,
                 opportunity.ad_fbc as fbc,
                 opportunity.ad_account as ad_account,
-                opportunity.optin_caller as optin_caller
+                opportunity.optin_caller as optin_caller,
+                opportunity.address,
+                opportunity.same_state,
+                opportunity.gst
             FROM 
                 opportunity
             WHERE 
@@ -409,6 +412,9 @@ def get_opportunity_by_id(opportunity_id):
             'fbc': opportunity[16],
             'ad_account': opportunity[17],
             'optin_caller': opportunity[18],
+            'address': opportunity[19],
+            'same_state': opportunity[20],
+            'gst': opportunity[21],
             'appointments': appointment_data,
             'messages': [{'type': message[1], 'sender': message[2], 'receiver': message[3], 'message': message[5], 'template': message[6], 'status': message[7], 'error_message': message[8], 'create_time': message[9], 'update_time': message[10]} for message in messages],
             'templates': [{'id': template[0], 'name': template[1], 'active': template[2], 'template_text': template[3]} for template in templates]
@@ -476,7 +482,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
         sql = """
         UPDATE opportunity
         SET name = %s, email = %s, phone = %s, call_status = %s, call_setter = %s, optin_caller = %s,
-        comment = %s, gender = %s, company_type = %s, challenge_type = %s
+        comment = %s, gender = %s, company_type = %s, challenge_type = %s, address = %s, same_state = %s, gst = %s
         WHERE id = %s
         """
 
@@ -493,6 +499,9 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             opportunity_data['gender'] if opportunity_data['gender'] != '-1' else None,
             opportunity_data['company_type'] if opportunity_data['company_type'] != '-1' else None,
             opportunity_data['challenge_type'] if opportunity_data['challenge_type'] != '-1' else None,
+            opportunity_data['address'],
+            opportunity_data['same_state'],
+            opportunity_data['gst'],
             opportunity_id
         )
 

@@ -141,5 +141,13 @@ def month_add(value):
     new_date = today - relativedelta(months=value)
     return new_date.strftime('%B %Y')
 
+@app.template_filter()
+def round_up(value):
+    return round(value)
+
+@app.template_filter()
+def round_down(value):
+    return int(value)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=30000, debug=True)

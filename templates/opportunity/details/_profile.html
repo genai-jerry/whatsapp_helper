@@ -33,6 +33,31 @@
                 <input type="text" class="form-control" id="phone" name="phone" value="{{ opportunity.phone }}">
               </div>
         </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="address">Postal Address:</label>
+                <textarea class="form-control" id="address" name="address">{{ opportunity.address }}</textarea>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label for="state">Tax Jurisdiction:</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="same_state" name="same_state" {% if opportunity.same_state %}checked{% endif %}>
+                    <label class="form-check-label" for="same_state">
+                        Within State
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="name">GST:</label>
+                <input type="text" class="form-control" id="gst" name="gst" value="{{ opportunity.gst }}">
+            </div>
+        </div>
     </div>
     <div class="row">
         <div class="col-md-4">

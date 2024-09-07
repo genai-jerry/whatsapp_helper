@@ -13,3 +13,5 @@ flask_login
 flask_sqlalchemy
 pytz
 dateutil
+pdfkit
+wkhtmltopdf

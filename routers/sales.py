@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, make_response, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 import csv
 from store.payment_store import store_sales
@@ -172,3 +172,22 @@ def monthly_report():
 @sales_blueprint.route('report/load')
 def sales_report_load():
     return render_template('sales/report.html'), 200
+
+import pdfkit
+@sales_blueprint.route('invoice/<int:payment_id>')
+def generate_invoice(payment_id):
+    # Invoice data
+    invoice_data = get_invoice_data(payment_id)
+
+    # Render the invoice HTML template
+    rendered = render_template('sales/invoice/invoice.html', data=invoice_data)
+
+    # Generate PDF from the rendered HTML
+    pdf = pdfkit.from_string(rendered, False)
+
+    # Send the PDF as a response
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename=invoice.pdf'
+
+    return response

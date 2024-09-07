@@ -232,6 +232,9 @@ def get_opportunity_detail(opportunity_id):
             'gender': opportunity['gender'],
             'challenge_type': opportunity['challenge_type'],
             'company_type': opportunity['company_type'],
+            'address': opportunity['address'],
+            'same_state': opportunity['same_state'],
+            'gst': opportunity['gst']
         }
         call_statuses = get_all_call_status()
          # Get a list of opportunity statuses
@@ -272,6 +275,13 @@ def update_opportunity_detail():
         gender = request.form.get('gender')
         challenge_type = request.form.get('challenge_type')
         company_type = request.form.get('company_type')
+        address = request.form.get('address')
+        same_state = request.form.get('same_state')
+        if same_state == 'on':
+            same_state = True
+        else:
+            same_state = False
+        gst = request.form.get('gst')
 
         # Prepare the data for the update_opportunity function
         opportunity_data = {
@@ -286,7 +296,10 @@ def update_opportunity_detail():
             'sales_date': sales_date,
             'gender': gender,
             'challenge_type': challenge_type,
-            'company_type': company_type
+            'company_type': company_type,
+            'address': address,
+            'same_state': same_state,
+            'gst': gst
         }
         print('Updating Opportunity Data:', opportunity_data)
         # Call the update_opportunity function

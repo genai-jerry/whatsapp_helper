@@ -26,6 +26,7 @@
                             { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                         <td>${sale.payment_amount}</td>
                         <td>${sale.is_final ? 'Sale' : 'Deposit'}</td>
+                        <td><a target="_new" href="/sales/invoice/${sale.payment_id}">Invoice</a></td>
                     `;
                     tableBody.appendChild(row);
                 });
