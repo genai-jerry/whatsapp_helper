@@ -205,6 +205,7 @@ def get_monthly_sales_data(start_date = None, end_date = None):
         if not start_date:
             start_date = end_date - datetime.timedelta(days=365)
 
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select sale, collection, and pending amount for each month
         query = f'''SELECT 
                 EXTRACT(MONTH FROM month_year) as month,
@@ -277,7 +278,7 @@ def get_final_sales_for_month(start_date=None, end_date=None):
 
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
-
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select final sales for a specific month
         query = f'''SELECT 
             SUM(s.sale_value) as sale_value,
@@ -321,6 +322,7 @@ def get_all_opportunities_with_final_sales( page, page_size, start_date=None, en
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select opportunities with final sales for a specific month
         query = f'''SELECT 
             o.id as opportunity_id,
@@ -381,6 +383,7 @@ def get_sales_report_by_call_setter(start_date=None, end_date=None):
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select sales report grouped by call setter
         query = f'''SELECT 
             s.call_setter as call_setter,
@@ -427,6 +430,7 @@ def get_sales_opportunities_by_call_setter(page, page_size, start_date=None, end
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select opportunities with final sales for a specific month
         query = f'''SELECT 
             o.id as opportunity_id,
@@ -476,6 +480,7 @@ def get_payments_report_call_setters(start_date=None, end_date=None):
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select payments within the specified duration
         query = f'''SELECT s.call_setter, sa.name as call_setter_name, 
         SUM(p.payment_value) as total_payment,
@@ -523,6 +528,7 @@ def get_payments_oppotunities_by_call_setter(page, page_size, start_date=None, e
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select opportunities with final sales for a specific month
         query = f'''SELECT 
             o.name as opportunity_name,
@@ -591,6 +597,7 @@ def get_payments_oppotunities_by_sales_agent(page, page_size, start_date=None, e
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select opportunities with final sales for a specific month
         query = f'''SELECT 
             o.name as opportunity_name,
@@ -660,6 +667,7 @@ def get_payments_report_sales_agents(start_date=None, end_date=None):
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select payments within the specified duration
         query = f'''SELECT s.sales_agent, sa.name as sales_agent_name, 
         SUM(p.payment_value) as total_payment,
@@ -706,6 +714,7 @@ def get_sales_opportunities_by_sales_agent(page, page_size, start_date=None, end
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select opportunities with final sales for a specific month
         query = f'''SELECT 
             o.id as opportunity_id,
@@ -755,6 +764,7 @@ def get_payments_collected(start_date=None, end_date=None):
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select payments within the specified duration
         query = f'''SELECT 
             CASE
@@ -804,6 +814,7 @@ def get_opportunities_for_payments_collected(page, page_size, start_date=None, e
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
 
+        end_date = f'{end_date} 23:59:59'
         # SQL query to select opportunities with final sales for a specific month
         query = f'''SELECT 
             o.name as opportunity_name,
