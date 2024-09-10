@@ -29,11 +29,13 @@ def store_appointment(profile_details, application_form_details, mentor_name, im
             opportunity_id = row[0]
         else:
             opportunity_id = None
-        print(f'Opportunity ID: {opportunity_id}')
-        phone_number = format_phone_number(profile_details.get('telephone', '')) if profile_details.get('telephone') else row[1]
+        phone_number = profile_details.get('telephone', '')
+        
+        phone_number = format_phone_number(phone_number) if phone_number else row[1] if row else None
         if phone_number is None:
             phone_number = ''
-        
+
+        print('Getting Sales agent')
         # Look up the mentor using the mentor name in the mentors table
         query = "SELECT id FROM sales_agent WHERE name = %s"
         mentor_name = ''.join(c for c in mentor_name if c.isalpha())
