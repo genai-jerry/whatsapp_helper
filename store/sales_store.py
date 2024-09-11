@@ -825,7 +825,8 @@ def get_opportunities_for_payments_collected(page, page_size, start_date=None, e
             p.payment_value,
             s.is_final as sale_status,
             o.id as opportunity_id,
-            p.id as payment_id
+            p.id as payment_id,
+            p.charges as charges
         FROM opportunity o
         LEFT JOIN sale s ON o.id = s.opportunity_id
         LEFT JOIN payments p ON p.sale = s.id
@@ -852,7 +853,8 @@ def get_opportunities_for_payments_collected(page, page_size, start_date=None, e
             'payment_amount': int(row[5]),
             'is_final': row[6],
             'opportunity_id': row[7],
-            'payment_id': row[8]
+            'payment_id': row[8],
+            'charges': row[9]
         })
 
         # Count the total number of rows
