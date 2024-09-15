@@ -823,7 +823,7 @@ def get_opportunities_for_payments_collected(page, page_size, start_date=None, e
             s.total_paid,
             p.payment_date,
             p.payment_value,
-            s.is_final as sale_status,
+            p.is_deposit as sale_status,
             o.id as opportunity_id,
             p.id as payment_id,
             p.charges as charges
@@ -851,7 +851,7 @@ def get_opportunities_for_payments_collected(page, page_size, start_date=None, e
             'total_paid': int(row[3]),
             'payment_date': row[4],
             'payment_amount': int(row[5]),
-            'is_final': row[6],
+            'is_final': not row[6],
             'opportunity_id': row[7],
             'payment_id': row[8],
             'charges': row[9]
