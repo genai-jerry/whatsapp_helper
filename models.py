@@ -57,7 +57,7 @@ class Opportunity(db.Model):
     name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=False, unique=True)
     phone = db.Column(db.String(15), nullable=False, unique=True)
-    comment = db.Column(db.String(250))
+    comment = db.Column(db.Text, nullable=True)
     ad_name = db.Column(db.String(250))
     ad_id = db.Column(db.String(250))
     ad_fbp = db.Column(db.String(500))
