@@ -1,0 +1,29 @@
+<div class="card">
+    <div class="card-header">
+        <h3>Pipeline</h3>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Opportunity Name</th>
+                    <th>Deposit Paid</th>
+                    <th>Planned Joining Date</th>
+                    <th>Next Action</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pipeline_item in pipeline %}
+                <tr>
+                    <td>{{ pipeline_item.name }}</td>
+                    <td>{{ pipeline_item.deposit_paid }}</td>
+                    <td>{{ pipeline_item.planned_joining_date }}</td>
+                    <td>{{ pipeline_item.next_action }}</td>
+                    <td>{{ pipeline_item.comments }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

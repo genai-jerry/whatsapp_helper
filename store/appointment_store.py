@@ -230,7 +230,10 @@ def convert_date_str_to_datetime(date_str):
     appointment_date_str = appointment_date.strftime('%Y-%m-%d')
     return appointment_date_str
 
-def retrieve_appointments(page_number, page_size, max=0, app_date=None):
+def retrieve_appointments_for_mentor(mentor_id, page_number, page_size, max=0, app_date=None):
+    return retrieve_appointments(page_number, page_size, max, app_date, mentor_id)
+
+def retrieve_appointments(page_number, page_size, max=0, app_date=None, mentor_id=None):
     # Define the SQL query for retrieving appointments with associated opportunities and mentors
     
     query = """
@@ -248,6 +251,10 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None):
     try:
         # Create a new database connection
         cnx = create_connection()
+
+        if mentor_id:
+            query = query + " AND a.mentor_id = %s"
+            count_query = count_query + " AND a.mentor_id = %s"
 
         # Get the current time in GMT
         if max == 1:

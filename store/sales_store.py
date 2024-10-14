@@ -2,6 +2,7 @@ from db.connection_manager import *
 from store.opportunity_store import get_opportunity_by_id, handle_opportunity_update
 import datetime
 import json
+from datetime import datetime, timedelta
 
 def get_sales_data(page_number, page_size, opportunity_name):
     try:
@@ -914,6 +915,143 @@ def get_invoice_data(payment_id):
         }
 
         return invoice_data
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_weekly_summary(start_date, end_date, page=1, per_page=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        weeks = []
+        current_date = start_date - timedelta(days=start_date.weekday())  # Move to the previous Monday
+        week_number = 1
+
+        while current_date <= end_date:
+            week_end = current_date + timedelta(days=6)  # Sunday of the same week
+            
+            query = f'''SELECT 
+                COUNT(*) as calls_scheduled,
+                SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as no_shows,
+                SUM(CASE WHEN status = 6 THEN 1 ELSE 0 END) as cancelled,
+                SUM(CASE WHEN status = 4 THEN 1 ELSE 0 END) as follow_up,
+                SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as sale,
+                SUM(CASE WHEN status = 5 THEN 1 ELSE 0 END) as rescheduled,
+                SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as no_sale,
+                SUM(CASE WHEN status = 7 THEN 1 ELSE 0 END) as completed
+            FROM appointments
+            WHERE appointment_time >= '{current_date}' AND appointment_time <= '{week_end}'
+            '''
+            
+            cursor.execute(query)
+            result = cursor.fetchone()
+
+            weeks.append({
+                'start_date': current_date.strftime('%Y-%m-%d'),
+                'end_date': week_end.strftime('%Y-%m-%d'),
+                'number': week_number,
+                'calls_scheduled': result[0] or 0,
+                'no_shows': result[1] or 0,
+                'cancelled': result[2] or 0,
+                'follow_up': result[3] or 0,
+                'sale': result[4] or 0,
+                'rescheduled': result[5] or 0,
+                'no_sale': result[6] or 0,
+                'completed': result[7] or 0
+            })
+
+            current_date = week_end + timedelta(days=1)  # Move to next Monday
+            week_number += 1
+
+        total_weeks = len(weeks)
+        start = (page - 1) * per_page
+        end = start + per_page
+        paginated_weeks = weeks[start:end]
+
+        return paginated_weeks, total_weeks
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_opportunities(start_date, end_date, page=1, per_page=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        query = f'''SELECT 
+            a.name
+        FROM appointments a
+        WHERE a.appointment_time >= '{start_date}' AND a.appointment_time <= '{end_date}'
+        LIMIT {per_page} OFFSET {(page - 1) * per_page}
+        '''
+
+        cursor.execute(query)
+        opportunities = cursor.fetchall()
+
+        count_query = f'''SELECT COUNT(*) FROM appointments
+        WHERE appointment_time >= '{start_date}' AND appointment_time <= '{end_date}'
+        '''
+        cursor.execute(count_query)
+        total_count = cursor.fetchone()[0]
+
+        return [
+            {
+                'name': opp[0]
+            } for opp in opportunities
+        ], total_count
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_pipeline(start_date, end_date, page=1, per_page=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        query = f'''SELECT 
+            a.name
+        FROM appointments a
+        WHERE a.appointment_time >= '{start_date}' AND a.appointment_time <= '{end_date}'
+        LIMIT {per_page} OFFSET {(page - 1) * per_page}
+        '''
+
+        cursor.execute(query)
+        pipeline = cursor.fetchall()
+
+        count_query = f'''SELECT COUNT(*) FROM appointments
+        WHERE appointment_time >= '{start_date}' AND appointment_time <= '{end_date}'
+        '''
+        cursor.execute(count_query)
+        total_count = cursor.fetchone()[0]
+
+        return [
+            {
+                'name': item[0]
+            } for item in pipeline
+        ], total_count
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_tasks_due(start_date, end_date, page=1, per_page=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        
+
+        return [
+            
+        ], 0
     finally:
         if cursor:
             cursor.close()
