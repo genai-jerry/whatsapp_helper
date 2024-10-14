@@ -16,7 +16,7 @@
             <tr>
                 <td>{{ payment.email }}</td>
                 <td>{{ payment.phone }}</td>
-                <td>{{ (payment.amount + payment.charges) }}</td>
+                <td>{{ (payment.amount) }}</td>
                 <td>{{ payment.date | formatDate }}</td>
                 <td>
                     <form action="/payments/assign" method="POST">
@@ -27,7 +27,7 @@
                         </select>
                         <span>
                             <input type="hidden" name="payment_id" value="{{ payment.payment_id }}">
-                            <input type="hidden" name="payment_amount" value="{{ (payment.amount + payment.charges) }}">
+                            <input type="hidden" name="payment_amount" value="{{ (payment.amount) }}">
                             <button type="submit" class="btn btn-primary ml-2">Assign</button>
                         </span>
                     </form>
