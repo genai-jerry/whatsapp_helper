@@ -5,9 +5,9 @@
         <div class="card">
             <h5 class="card-header {% if sale.is_final %}bg-success{% else %}bg-warning{% endif %}" style="color: white;">GenAI Leap - Date: {{ sale.sale_date.strftime('%b %d, %Y') }}</h5>
             <div class="card-body">
-                <p class="card-text">Sale Value: <b>{{ sale.sale_value  | numberFormat }}</b></p>
-                <p class="card-text">Amount Paid: <b>{{ sale.amount_paid | numberFormat }}</b></p>
-                <p class="card-text">Amount Pending: <b>{{ (sale.sale_value - sale.amount_paid) | numberFormat }}</b></p>
+                <p class="card-text">Sale Value: <b>{{ sale.sale_value  | number_format }}</b></p>
+                <p class="card-text">Amount Paid: <b>{{ sale.amount_paid | number_format }}</b></p>
+                <p class="card-text">Amount Pending: <b>{{ (sale.sale_value - sale.amount_paid) | number_format }}</b></p>
             </div>
             <div class="card-footer">
                 <div class="float-end"><a href="/payments/{{opportunity.id}}/{{sale.id}}">Manage Payments</a></div>

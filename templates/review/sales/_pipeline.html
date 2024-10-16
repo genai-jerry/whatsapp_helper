@@ -1,0 +1,60 @@
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Pipeline</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Opportunity Name</th>
+                    <th>Follow Up Date</th>
+                    <th>Next Action</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pipeline_item in pipeline %}
+                <tr>
+                    <td><a href="/opportunity/{{ pipeline_item.opportunity_id }}">{{ pipeline_item.name }}</a></td>
+                    <td>{{ pipeline_item.follow_up_date | convert_to_ist | format_date_time }}</td>
+                    <td>{{ pipeline_item.next_action }}</td>
+                    <td>{{ pipeline_item.comments }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        <nav aria-label="pipeline pagination">
+            <ul class="pagination justify-content-start">
+                {% if pipeline_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?pipeline_page=1">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?pipeline_page={{ pipeline_page - 1 }}">&laquo; Previous</a>
+                    </li>
+                {% endif %}
+                
+                {% set start_page = pipeline_page - 2 if pipeline_page > 2 else 1 %}
+                {% set end_page = start_page + 4 if start_page + 4 <= pipeline_count else pipeline_count %}
+                {% set start_page = end_page - 4 if end_page - 4 > 0 else 1 %}
+                
+                {% for p in range(start_page, end_page + 1) %}
+                    <li class="page-item {% if p == pipeline_page %}active{% endif %}">
+                        <a class="page-link" href="?pipeline_page={{ p }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+                
+                {% if pipeline_page < pipeline_count %}
+                    <li class="page-item">
+                        <a class="page-link" href="?pipeline_page={{ pipeline_page + 1 }}">Next &raquo;</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?pipeline_page={{ pipeline_count }}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>

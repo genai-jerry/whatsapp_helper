@@ -8,6 +8,7 @@ from store.opportunity_store import *  # Import the store_opportunity function
 from store.sales_store import record_new_sale, get_all_sales
 from store.instance_store import get_senders
 from whatsapp.message_sender import send_template_message
+
 import datetime
 
 # Import your database model and messaging system here
@@ -392,3 +393,13 @@ def record_sale(opportunity_id):
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
+    
+@opportunity_blueprint.route('search_opportunities', methods=['POST'])
+@login_required
+def search_partial_opportunities():
+    data = request.get_json()
+    search_query = data.get('query', '')
+    
+    opportunities = search_opportunities(search_query, 'name')
+    
+    return jsonify(opportunities)

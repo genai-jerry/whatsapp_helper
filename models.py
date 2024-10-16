@@ -121,6 +121,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
     active = db.Column(db.Boolean, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime)
@@ -246,3 +247,44 @@ class PaymentDue(db.Model):
     paid = db.Column(db.Boolean, nullable=False, default=False)
     cancelled = db.Column(db.Boolean, nullable=False, default=False)
 
+class Task(db.Model):
+    __tablename__ = 'tasks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    due_date = db.Column(db.DateTime, nullable=False)
+    completed = db.Column(db.Boolean, nullable=False, default=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'), nullable=True)
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime)
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'), nullable=True)
+    appointment_id = db.Column(db.Integer, db.ForeignKey('appointments.id'), nullable=True)
+
+class Win(db.Model):
+    __tablename__ = 'wins'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    win_type = db.Column(db.Integer, db.ForeignKey('win_types.id'), nullable=True)
+    description = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+class WinType(db.Model):
+    __tablename__ = 'win_types'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    
+    

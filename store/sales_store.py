@@ -1,8 +1,8 @@
 from db.connection_manager import *
 from store.opportunity_store import get_opportunity_by_id, handle_opportunity_update
 import datetime
-import json
-from datetime import datetime, timedelta
+from datetime import timedelta
+import math
 
 def get_sales_data(page_number, page_size, opportunity_name):
     try:
@@ -978,80 +978,107 @@ def get_weekly_summary(start_date, end_date, page=1, per_page=10):
         if connection:
             connection.close()
 
-def get_opportunities(start_date, end_date, page=1, per_page=10):
+def get_hot_list(page=1, per_page=10):
     try:
         connection = create_connection()
         cursor = connection.cursor()
 
         query = f'''SELECT 
-            a.name
-        FROM appointments a
-        WHERE a.appointment_time >= '{start_date}' AND a.appointment_time <= '{end_date}'
+        DISTINCT o.id as opportunity_id, o.name, s.sale_date
+        FROM sale s
+        LEFT JOIN opportunity o ON o.id = s.opportunity_id
+        WHERE s.is_final = 0 AND s.cancelled = 0
+        ORDER BY s.sale_date ASC
         LIMIT {per_page} OFFSET {(page - 1) * per_page}
         '''
 
         cursor.execute(query)
         opportunities = cursor.fetchall()
 
-        count_query = f'''SELECT COUNT(*) FROM appointments
-        WHERE appointment_time >= '{start_date}' AND appointment_time <= '{end_date}'
+        count_query = f'''SELECt
+        count(DISTINCT o.id) as opportunity_id
+        FROM sale s
+        LEFT JOIN opportunity o ON o.id = s.opportunity_id
+        WHERE s.is_final = 0 AND s.cancelled = 0
         '''
         cursor.execute(count_query)
         total_count = cursor.fetchone()[0]
-
+        total_pages = math.ceil(total_count / per_page)
         return [
             {
-                'name': opp[0]
+                'opportunity_id': opp[0],
+                'name': opp[1],
+                'sale_date': opp[2]
             } for opp in opportunities
-        ], total_count
+        ], total_pages
     finally:
         if cursor:
             cursor.close()
         if connection:
             connection.close()
 
-def get_pipeline(start_date, end_date, page=1, per_page=10):
+def get_pipeline(page=1, per_page=10):
     try:
         connection = create_connection()
         cursor = connection.cursor()
 
-        query = f'''SELECT 
-            a.name
-        FROM appointments a
-        WHERE a.appointment_time >= '{start_date}' AND a.appointment_time <= '{end_date}'
+        query = f'''
+        WITH FollowUps AS (
+            SELECT DISTINCT opportunity_id
+            FROM appointments
+            WHERE status = 4
+        ),
+        LatestAppointment AS (
+            SELECT a.opportunity_id, MAX(a.appointment_time) as latest_appointment_time
+            FROM appointments a
+            INNER JOIN FollowUps f ON f.opportunity_id = a.opportunity_id
+            GROUP BY a.opportunity_id
+        )
+        SELECT DISTINCT o.id AS opportunity_id, o.name,
+               la.latest_appointment_time as follow_up_date
+        FROM opportunity o
+        INNER JOIN LatestAppointment la ON o.id = la.opportunity_id
+        INNER JOIN appointments a ON o.id = a.opportunity_id 
+            AND a.appointment_time = la.latest_appointment_time
+            AND (a.status = 4 or a.status is NULL)
+        ORDER BY la.latest_appointment_time DESC
         LIMIT {per_page} OFFSET {(page - 1) * per_page}
         '''
 
         cursor.execute(query)
         pipeline = cursor.fetchall()
 
-        count_query = f'''SELECT COUNT(*) FROM appointments
-        WHERE appointment_time >= '{start_date}' AND appointment_time <= '{end_date}'
+        count_query = f'''
+        WITH FollowUps AS (
+            SELECT DISTINCT opportunity_id
+            FROM appointments
+            WHERE status = 4
+        ),
+        LatestAppointment AS (
+            SELECT a.opportunity_id, MAX(a.appointment_time) as latest_appointment_time
+            FROM appointments a
+            INNER JOIN FollowUps f ON f.opportunity_id = a.opportunity_id
+            GROUP BY a.opportunity_id
+        )
+        SELECT COUNT(DISTINCT o.id) AS opportunity_id
+        FROM opportunity o
+        INNER JOIN LatestAppointment la ON o.id = la.opportunity_id
+        INNER JOIN appointments a ON o.id = a.opportunity_id 
+            AND a.appointment_time = la.latest_appointment_time
+            AND (a.status = 4 or a.status is NULL)
+        ORDER BY la.latest_appointment_time DESC
         '''
         cursor.execute(count_query)
         total_count = cursor.fetchone()[0]
-
+        total_pages = math.ceil(total_count / per_page)
+        print(f'total_pages: {total_pages}')
         return [
             {
-                'name': item[0]
+                'opportunity_id': item[0],
+                'name': item[1],
+                'follow_up_date': item[2]
             } for item in pipeline
-        ], total_count
-    finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
-
-def get_tasks_due(start_date, end_date, page=1, per_page=10):
-    try:
-        connection = create_connection()
-        cursor = connection.cursor()
-
-        
-
-        return [
-            
-        ], 0
+        ], total_pages
     finally:
         if cursor:
             cursor.close()

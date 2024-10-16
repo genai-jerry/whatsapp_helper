@@ -636,37 +636,6 @@ def get_all_sales_agents():
         if cursor:
             cursor.close()
 
-def search_opportunities(search_term, search_type):
-    try:
-        connection = create_connection()
-        cursor = connection.cursor()
-
-        # Prepare the SQL query with placeholders
-        sql = f"SELECT * FROM opportunity WHERE {search_type} LIKE %s"
-        formatted_search_term = "%" + search_term + "%"
-
-        # Execute the query with the provided values
-        cursor.execute(sql, (formatted_search_term,))
-
-        # Fetch all matching opportunities
-        results = cursor.fetchall()
-
-        # Prepare the response data
-        opportunities = []
-        for row in results:
-            opportunity = {
-                'id': row[0],
-                'name': row[1],
-                'email': row[2],
-                'phone': row[3],
-                # Add other fields as needed
-            }
-            opportunities.append(opportunity)
-
-        return opportunities
-    finally:
-        if cursor:
-            cursor.close()
 
 def generate_report(start_date, end_date):
     try:
@@ -769,3 +738,31 @@ def handle_video_watch_event(email):
     opportunity_data = {'status': '15', 'status_type': 'call_status', 'opportunity_id': opportunity['id']}
     # Update the opportunity status in your database
     update_opportunity_status(opportunity_data)
+
+def search_opportunities(search_term, search_type):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Prepare the SQL query with placeholders
+        sql = f"SELECT id, name, email, phone FROM opportunity WHERE {search_type} LIKE %s"
+        formatted_search_term = "%" + search_term + "%"
+        cursor.execute(sql, (formatted_search_term,))
+        results = cursor.fetchall()
+        opportunities = []
+        for row in results:
+            opportunity = {
+                'id': row[0],
+                'name': row[1],
+                'email': row[2],
+                'phone': row[3],   
+            }
+            opportunities.append(opportunity)
+        return opportunities
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+        
+

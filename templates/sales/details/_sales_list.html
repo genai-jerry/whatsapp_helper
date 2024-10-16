@@ -25,7 +25,7 @@
                 <td>{{ sale.sale_value - sale.amount_paid }}</td>
                 <td>{{ sale.next_due_amount }}</td>
                 <td>{% if sale.due_date %}
-                    {{ sale.due_date | formatDate }}
+                    {{ sale.due_date | format_date }}
                     {% endif %}
                 </td>
                 <td><button class="btn-primary" onclick="window.location.href='/payments/{{sale.opportunity_id}}/{{sale.sale_id}}/due/{{sale.due_id}}/paid'">

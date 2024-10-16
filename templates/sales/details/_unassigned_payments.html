@@ -17,7 +17,7 @@
                 <td>{{ payment.email }}</td>
                 <td>{{ payment.phone }}</td>
                 <td>{{ (payment.amount + payment.charges) }}</td>
-                <td>{{ payment.date | formatDate }}</td>
+                <td>{{ payment.date | format_date }}</td>
                 <td>
                     <form action="/payments/assign" method="POST">
                         <select name="sale_id">

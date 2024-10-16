@@ -5,7 +5,7 @@
     <ul class="dropdown-menu">
     {% for i in range(range_span) %}
       <li><a class="dropdown-item {% if i == selected_date %}active{% endif %}" 
-        href="/sales/monthly?month={{ i|date_add if calendar_type == 'weekly' else i|month_add }}&selected_date={{ i }}" 
+        href="{{link_url}}?month={{ i|date_add if calendar_type == 'weekly' else i|month_add }}&selected_date={{ i }}" 
         >
             {{ i|date_add if calendar_type == 'weekly' else i|month_add }}</a></li>
     {% endfor %}

@@ -3,8 +3,8 @@ from werkzeug.utils import secure_filename
 import csv
 from store.payment_store import store_sales, get_unassigned_payments
 from store.sales_store import *
-from routers.opportunity import get_opportunity_detail
-import calendar
+from routers.opportunity import get_opportunity_detail, get_opportunities
+from utils import get_month_dates
 from datetime import datetime, timedelta
 
 sales_blueprint = Blueprint('sales', __name__)
@@ -67,17 +67,6 @@ def sales_report():
     # For example, retrieve sales data from the database and format it
     formatted_report = get_monthly_sales_data()
     return jsonify(formatted_report), 200
-
-def get_month_dates(month):
-    if month:
-        month = datetime.strptime(month, '%B %Y')
-        first_day = month.replace(day=1)
-        last_day = month.replace(day=calendar.monthrange(month.year, month.month)[1]) + timedelta(days=1)
-    else:
-        first_day = datetime.now().replace(day=1)
-        last_day = datetime.now().replace(day=calendar.monthrange(datetime.now().year, datetime.now().month)[1]) + timedelta(days=1)
-    
-    return first_day, last_day
 
 @sales_blueprint.route('monthly/opportunities')
 def monthly_sales_opportunities_report():
@@ -191,64 +180,4 @@ def generate_invoice(payment_id):
 
     return response
 
-@sales_blueprint.route('weekly-summary', methods=['GET'])
-def get_weekly_summary_route():
-    start_date = request.args.get('start_date', type=lambda x: datetime.strptime(x, '%Y-%m-%d'))
-    end_date = request.args.get('end_date', type=lambda x: datetime.strptime(x, '%Y-%m-%d'))
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
-    summary, total = get_weekly_summary(start_date, end_date, page, per_page)
-    return jsonify({'data': summary, 'total': total, 'page': page, 'per_page': per_page})
 
-@sales_blueprint.route('opportunities', methods=['GET'])
-def get_opportunities_route():
-    start_date = request.args.get('start_date', type=lambda x: datetime.strptime(x, '%Y-%m-%d'))
-    end_date = request.args.get('end_date', type=lambda x: datetime.strptime(x, '%Y-%m-%d'))
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
-    opportunities, total = get_opportunities(start_date, end_date, page, per_page)
-    return jsonify({'data': opportunities, 'total': total, 'page': page, 'per_page': per_page})
-
-@sales_blueprint.route('pipeline', methods=['GET'])
-def get_pipeline_route():
-    start_date = request.args.get('start_date', type=lambda x: datetime.strptime(x, '%Y-%m-%d'))
-    end_date = request.args.get('end_date', type=lambda x: datetime.strptime(x, '%Y-%m-%d'))
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
-    pipeline, total = get_pipeline(start_date, end_date, page, per_page)
-    return jsonify({'data': pipeline, 'total': total, 'page': page, 'per_page': per_page})
-
-@sales_blueprint.route('tasks-due', methods=['GET'])
-def get_tasks_due_route():
-    start_date = request.args.get('start_date', type=lambda x: datetime.strptime(x, '%Y-%m-%d'))
-    end_date = request.args.get('end_date', type=lambda x: datetime.strptime(x, '%Y-%m-%d'))
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
-    tasks, total = get_tasks_due(start_date, end_date, page, per_page)
-    return jsonify({'data': tasks, 'total': total, 'page': page, 'per_page': per_page})
-
-@sales_blueprint.route('review', methods=['GET'])
-def get_review_dashboard():
-    date_str = request.args.get('date')
-    if date_str is None:
-        date = datetime.now()
-    else:
-        date = datetime.strptime(date_str, '%Y-%m-%d')
-    
-    start_date = date.replace(day=1)
-    end_date = (start_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-
-    weekly_summary, _ = get_weekly_summary(start_date, end_date)
-    opportunities, _ = get_opportunities(start_date, end_date)
-    pipeline, _ = get_pipeline(start_date, end_date)
-    tasks_due, _ = get_tasks_due(start_date, end_date)
-
-    dashboard_data = {
-        "month": date.strftime('%B'),
-        "year": date.year,
-        "weekly_summary": weekly_summary,
-        "opportunities": opportunities,
-        "pipeline": pipeline,
-        "tasks_due": tasks_due,
-    }
-    return jsonify(dashboard_data)

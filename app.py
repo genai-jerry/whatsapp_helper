@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask import Flask, g, jsonify, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
+import pytz
 from routers.driver import driver_blueprint
 from routers.instance import instance_blueprint
 from routers.message import message_blueprint
@@ -12,6 +13,9 @@ from routers.dashboard import dashboard_blueprint
 from routers.opportunity import opportunity_blueprint
 from routers.payment import payments_blueprint
 from routers.sales import sales_blueprint
+from routers.review import review_blueprint
+from routers.task import task_blueprint
+from routers.win import win_blueprint
 from flask_migrate import Migrate
 import configparser
 from flask_login import LoginManager, login_user, logout_user, login_required
@@ -46,6 +50,9 @@ app.register_blueprint(appointment_blueprint, url_prefix='/appointment')
 app.register_blueprint(dashboard_blueprint, url_prefix='/dashboard')
 app.register_blueprint(payments_blueprint, url_prefix='/payments')
 app.register_blueprint(sales_blueprint, url_prefix='/sales')
+app.register_blueprint(review_blueprint, url_prefix='/review')
+app.register_blueprint(task_blueprint, url_prefix='/task')
+app.register_blueprint(win_blueprint, url_prefix='/win')
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -107,22 +114,66 @@ def logout():
     return redirect('/login')
     
 @app.template_filter()
-def numberFormat(value):
+def number_format(value):
     converted_value = format(int(value), ',d')
     return converted_value
 
 @app.template_filter()
-def exclTax(value):
+def excl_tax(value):
     return int(value) / 1.18
 
 @app.template_filter()
 def tax(value):
-    return value - exclTax(value)
+    return value - excl_tax(value)
 
 @app.template_filter()
-def formatDate(value):
-    formatted_date = value.strftime('%d %b %Y')
+def format_date(value):
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        try:
+            value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            try:
+                value = datetime.strptime(value, '%Y-%m-%d')
+            except ValueError:
+                return value  # Return the original string if it can't be parsed
+    
+    formatted_date = value.strftime('%d %b')
     return formatted_date
+
+@app.template_filter()
+def format_date_time(value):
+    formatted_date = value.strftime('%d %b %Y %H:%M')
+    return formatted_date
+
+@app.template_filter()
+def convert_to_date(value):
+    print(f'value: {value}')
+    return value.strftime('%d %b %Y')
+
+@app.template_filter()
+def convert_to_ist(utc_dt):
+    """
+    Convert a datetime object from UTC to IST (Indian Standard Time).
+    
+    :param utc_dt: datetime object in UTC
+    :return: datetime object in IST
+    """
+    if utc_dt is None:
+        return None
+    
+    utc = pytz.UTC
+    ist = pytz.timezone('Asia/Kolkata')
+    
+    # Ensure the input datetime is UTC
+    if utc_dt.tzinfo is None or utc_dt.tzinfo.utcoffset(utc_dt) is None:
+        utc_dt = utc.localize(utc_dt)
+    
+    # Convert to IST
+    ist_dt = utc_dt.astimezone(ist)
+    
+    return ist_dt
 
 from datetime import timedelta
 @app.template_filter()

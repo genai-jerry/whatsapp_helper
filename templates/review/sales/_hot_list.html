@@ -1,0 +1,58 @@
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Hot List</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Opportunity Name</th>
+                    <th>Sale Date</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for opportunity in opportunities %}
+                <tr>
+                    <td><a href="/opportunity/{{ opportunity.opportunity_id }}">{{ opportunity.name }}</a></td>
+                    <td>{{ opportunity.sale_date | convert_to_ist | format_date_time  }}</td>
+                    <td>{{ opportunity.comments }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        <nav aria-label="hot_list pagination">
+            <ul class="pagination justify-content-start">
+                {% if pipeline_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?hot_list_page=1">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?hot_list_page={{ hot_list_page - 1 }}">&laquo; Previous</a>
+                    </li>
+                {% endif %}
+                
+                {% set start_page = hot_list_page - 2 if hot_list_page > 2 else 1 %}
+                {% set end_page = start_page + 4 if start_page + 4 <= hot_list_count else hot_list_count %}
+                {% set start_page = end_page - 4 if end_page - 4 > 0 else 1 %}
+                
+                {% for p in range(start_page, end_page + 1) %}
+                    <li class="page-item {% if p == hot_list_page %}active{% endif %}">
+                        <a class="page-link" href="?hot_list_page={{ p }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+                
+                {% if pipeline_page < pipeline_count %}
+                    <li class="page-item">
+                        <a class="page-link" href="?hot_list_page={{ hot_list_page + 1 }}">Next &raquo;</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?hot_list_page={{ hot_list_count }}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
