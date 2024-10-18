@@ -33,7 +33,7 @@ def create_task_api():
     task_data = {
         "opportunity_id": request.form.get("opportunity_id"),
         "due_date": request.form.get("due_date"),
-        "task_details": request.form.get("task_details"),
+        "task_details": request.form.get("description"),
         "status": "pending",
         "user_id": current_user.id  # Add the current user's ID
     }

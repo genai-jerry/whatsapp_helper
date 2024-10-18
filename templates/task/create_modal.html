@@ -11,7 +11,9 @@
           <input type="hidden" id="taskOpportunityId" name="opportunity_id">
           <div class="mb-3">
             <label for="opportunityName" class="form-label">Opportunity</label>
-            <input type="text" class="form-control" id="opportunityName">
+            <input type="text" class="form-control" id="opportunityName" name="opportunityName" required>
+            <input type="hidden" id="taskOpportunityId" name="opportunity_id">
+            <ul id="opportunityList" class="list-group position-absolute w-100" style="z-index: 1000;"></ul>
           </div>
           <div class="mb-3">
             <label for="taskDescription" class="form-label">Task Description</label>
@@ -36,87 +38,4 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script src="{{ url_for('static', filename='js/task.js') }}"></script>
-<script>
-$(document).ready(function() {
-  var opportunitySearch = $('#opportunitySearch');
-  var opportunityList = $('#opportunityList');
-  var selectedOpportunityId = $('#selectedOpportunityId');
-  var searchTimeout;
-  var taskFeedback = $('#taskFeedback');
 
-  function showFeedback(message, isSuccess) {
-    taskFeedback.removeClass('alert-success alert-danger').addClass(isSuccess ? 'alert-success' : 'alert-danger');
-    taskFeedback.text(message).show();
-    setTimeout(function() {
-      taskFeedback.hide();
-    }, 5000);
-  }
-
-  opportunitySearch.on('input', function() {
-    clearTimeout(searchTimeout);
-    var query = $(this).val();
-
-    if (query.length < 2) {
-      opportunityList.empty();
-      return;
-    }
-
-    searchTimeout = setTimeout(function() {
-      $.ajax({
-        url: '{{ url_for("opportunity.search_partial_opportunities") }}',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ query: query }),
-        success: function(data) {
-          opportunityList.empty();
-          data.forEach(function(opportunity) {
-            var listItem = $('<li>')
-              .addClass('list-group-item list-group-item-action')
-              .text(opportunity.name + ' (' + opportunity.email + ') - ' + opportunity.phone)
-              .data('id', opportunity.id)
-              .data('name', opportunity.name);
-            opportunityList.append(listItem);
-          });
-        },
-        error: function(xhr, status, error) {
-          console.error('Error searching opportunities:', error);
-          showFeedback('Error searching opportunities. Please try again.', false);
-        }
-      });
-    }, 300);
-  });
-
-  opportunityList.on('click', 'li', function() {
-    var selected = $(this);
-    selectedOpportunityId.val(selected.data('id'));
-    opportunitySearch.val(selected.data('name'));
-    opportunityList.empty();
-  });
-
-  $('#submitCreateTask').click(function() {
-    var form = $('#createTaskForm');
-    var formData = new FormData(form[0]);
-
-    $.ajax({
-      url: '/task',
-      type: 'POST',
-      data: formData,
-      processData: false,
-      contentType: false,
-      success: function(response) {
-        showFeedback(response.message, true);
-        form[0].reset();
-        opportunityList.empty();
-        selectedOpportunityId.val('');
-        setTimeout(function() {
-          $('#createTaskModal').modal('hide');
-        }, 2000);
-      },
-      error: function(xhr, status, error) {
-        console.error(error);
-        showFeedback('An error occurred while creating the task. Please try again.', false);
-      }
-    });
-  });
-});
-</script>

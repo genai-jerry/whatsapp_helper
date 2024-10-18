@@ -1,7 +1,7 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Tasks Due</h5>
-        <button type="button" class="btn btn-primary btn-sm" id="openCreateTaskModal">
+        <button type="button" onclick="showCreateTaskModal()" class="btn btn-primary btn-sm" id="openCreateTaskModal">
             Create New Task
         </button>
     </div>
@@ -34,46 +34,4 @@
     {% include "task/create_modal.html" %}
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const openCreateTaskModal = document.getElementById('openCreateTaskModal');
-    const createTaskModal = new bootstrap.Modal(document.getElementById('createTaskModal'));
 
-    openCreateTaskModal.addEventListener('click', function() {
-        createTaskModal.show();
-    });
-
-    document.getElementById('createTaskModal').addEventListener('hidden.bs.modal', function () {
-        fetchAndUpdateTasks();
-    });
-
-    function fetchAndUpdateTasks() {
-        $.ajax({
-            url: '{{ url_for("task.get_tasks_api") }}',
-            method: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                updateTasksTable(data.tasks);
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching tasks:', error);
-            }
-        });
-    }
-
-    function updateTasksTable(tasks) {
-        const tableBody = document.querySelector('#tasksTable tbody');
-        tableBody.innerHTML = '';
-
-        tasks.forEach(function(task) {
-            const row = tableBody.insertRow();
-            row.innerHTML = `
-                <td>${task.opportunity_name}</td>
-                <td>${task.task_date}</td>
-                <td>${task.action}</td>
-                <td>${task.status}</td>
-            `;
-        });
-    }
-});
-</script>

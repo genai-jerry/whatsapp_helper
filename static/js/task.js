@@ -60,21 +60,16 @@ function createTask() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            taskFeedback.classList.remove('alert-danger');
-            taskFeedback.classList.add('alert-success');
-            taskFeedback.textContent = 'Task created successfully';
-            form.reset();
-            setTimeout(() => {
-                const createTaskModal = bootstrap.Modal.getInstance(document.getElementById('createTaskModal'));
-                createTaskModal.hide();
-                listTasks(document.getElementById('taskOpportunityId').value);
-            }, 1500);
-        } else {
-            taskFeedback.classList.remove('alert-success');
-            taskFeedback.classList.add('alert-danger');
-            taskFeedback.textContent = 'Error creating task: ' + data.message;
-        }
+        taskFeedback.classList.remove('alert-danger');
+        taskFeedback.classList.add('alert-success');
+        taskFeedback.textContent = data.message;
+        form.reset();
+        setTimeout(() => {
+            const createTaskModal = bootstrap.Modal.getInstance(document.getElementById('createTaskModal'));
+            createTaskModal.hide();
+            listTasks(document.getElementById('taskOpportunityId').value);
+        }, 1500);
+        
         taskFeedback.style.display = 'block';
         setTimeout(() => {
             taskFeedback.style.display = 'none';
@@ -112,3 +107,97 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+$(document).ready(function() {
+    var opportunitySearch = $('#opportunityName');
+    var opportunityList = $('#opportunityList');
+    var selectedOpportunityId = $('#taskOpportunityId');
+    var searchTimeout;
+    var taskFeedback = $('#taskFeedback');
+  
+    function showFeedback(message, isSuccess) {
+      taskFeedback.removeClass('alert-success alert-danger').addClass(isSuccess ? 'alert-success' : 'alert-danger');
+      taskFeedback.text(message).show();
+      setTimeout(function() {
+        taskFeedback.hide();
+      }, 5000);
+    }
+  
+    opportunitySearch.on('input', function() {
+      clearTimeout(searchTimeout);
+      var query = $(this).val();
+  
+      if (query.length < 2) {
+        opportunityList.empty();
+        return;
+      }
+  
+      searchTimeout = setTimeout(function() {
+        $.ajax({
+          url: '/opportunity/search_opportunities',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ query: query }),
+          success: function(data) {
+            opportunityList.empty();
+            data.forEach(function(opportunity) {
+              var listItem = $('<li>')
+                .addClass('list-group-item list-group-item-action')
+                .text(opportunity.name + ' (' + opportunity.email + ') - ' + opportunity.phone)
+                .data('id', opportunity.id)
+                .data('name', opportunity.name);
+              opportunityList.append(listItem);
+            });
+            opportunityList.show(); // Make sure the list is visible
+          },
+          error: function(xhr, status, error) {
+            console.error('Error searching opportunities:', error);
+            showFeedback('Error searching opportunities. Please try again.', false);
+          }
+        });
+      }, 300);
+    });
+  
+    opportunityList.on('click', 'li', function() {
+      var selected = $(this);
+      selectedOpportunityId.val(selected.data('id'));
+      opportunitySearch.val(selected.data('name'));
+      opportunityList.hide(); // Hide the list after selection
+    });
+  
+    $('#submitCreateTask').click(function() {
+      var form = $('#createTaskForm');
+      var formData = new FormData(form[0]);
+  
+      $.ajax({
+        url: '/task',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+          showFeedback(response.message, true);
+          form[0].reset();
+          opportunityList.empty();
+          selectedOpportunityId.val('');
+          setTimeout(function() {
+            // clear the form data
+            $('#createTaskModal').modal('hide');
+            form.reset();  
+            opportunityList.empty();
+            selectedOpportunityId.val('');
+          }, 2000);
+        },
+        error: function(xhr, status, error) {
+          console.error(error);
+          showFeedback('An error occurred while creating the task. Please try again.', false);
+        }
+      });
+    });
+  
+    $(document).on('click', function(event) {
+      if (!$(event.target).closest('#opportunityList, #opportunityName').length) {
+        opportunityList.hide();
+      }
+    });
+  });
