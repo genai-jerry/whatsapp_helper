@@ -1,6 +1,6 @@
 from db.connection_manager import *
 
-def get_tasks_due(user_id=None, page=1, per_page=10):
+def get_tasks_due(user_id, page=1, per_page=10):
     try:
         connection = create_connection()
         cursor = connection.cursor()
@@ -20,7 +20,6 @@ def get_tasks_due(user_id=None, page=1, per_page=10):
                      ORDER BY t.due_date ASC
                      LIMIT %s OFFSET %s'''
             cursor.execute(sql, (per_page, (page-1)*per_page))
-        print(f'sql: {sql} - user_id: {user_id} - page: {page} - per_page: {per_page}')
         tasks = cursor.fetchall()
         tasks_list = []
         for task in tasks:
@@ -125,17 +124,32 @@ def get_all_tasks_for_opportunity(opportunity_id, page=1, per_page=10):
         connection = create_connection()
         cursor = connection.cursor()
 
-        sql = '''SELECT * FROM tasks WHERE opportunity_id = %s
-                ORDER BY due_date ASC
+        sql = '''SELECT t.id, o.name, t.description, t.due_date, t.completed , t.last_updated, u.name as creator_name
+                FROM tasks t
+                LEFT JOIN opportunity o ON t.opportunity_id = o.id
+                LEFT JOIN users u ON t.user_id = u.id
+                WHERE t.opportunity_id = %s
+                ORDER BY t.due_date ASC
                 LIMIT %s OFFSET %s'''
         cursor.execute(sql, (opportunity_id, per_page, (page-1)*per_page))
         tasks = cursor.fetchall()
 
         sql = '''SELECT COUNT(*) FROM tasks WHERE opportunity_id = %s'''
-        cursor.execute(sql, (opportunity_id))
+        cursor.execute(sql, (opportunity_id,))
         total_tasks = cursor.fetchone()[0]
-
-        return tasks, total_tasks
+        tasks_list = []
+        for task in tasks:
+            tasks_list.append({
+                'id': task[0],
+                'opportunity_name': task[1],
+                'description': task[2],
+                'due_date': task[3],
+                'status': task[4],
+                'last_updated': task[5],
+                'creator_name': task[6]
+            })
+        print(tasks_list)
+        return tasks_list, total_tasks
     finally:
         if cursor:
             cursor.close()
@@ -155,7 +169,7 @@ def get_all_tasks_for_user(user_id, page=1, per_page=10):
         tasks = cursor.fetchall()
 
         sql = '''SELECT COUNT(*) FROM tasks WHERE user_id = %s'''
-        cursor.execute(sql, (user_id))
+        cursor.execute(sql, (user_id,))
         total_tasks = cursor.fetchone()[0]
 
         return tasks, total_tasks
@@ -221,7 +235,7 @@ def get_all_tasks_for_appointment(appointment_id, page=1, per_page=10):
         tasks = cursor.fetchall()
 
         sql = '''SELECT COUNT(*) FROM tasks WHERE appointment_id = %s'''
-        cursor.execute(sql, (appointment_id))
+        cursor.execute(sql, (appointment_id,))
         total_tasks = cursor.fetchone()[0]
 
         return tasks, total_tasks

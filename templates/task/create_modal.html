@@ -1,3 +1,4 @@
+<!-- Create Task Modal -->
 <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -6,31 +7,26 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <!-- Add feedback message container -->
-        <div id="taskFeedback" class="alert" style="display: none;"></div>
-        
         <form id="createTaskForm">
+          <input type="hidden" id="taskOpportunityId" name="opportunity_id">
           <div class="mb-3">
-            <label for="opportunitySearch" class="form-label">Search Opportunities</label>
-            <input type="text" class="form-control" id="opportunitySearch" name="opportunity_search" placeholder="Start typing to search..." required>
-            <input type="hidden" id="selectedOpportunityId" name="opportunity_id">
-            <ul id="opportunityList" class="list-group mt-2"></ul>
+            <label for="opportunityName" class="form-label">Opportunity</label>
+            <input type="text" class="form-control" id="opportunityName">
           </div>
-
           <div class="mb-3">
-            <label for="dueDate" class="form-label">Due Date</label>
-            <input type="date" class="form-control" id="dueDate" name="due_date" required>
+            <label for="taskDescription" class="form-label">Task Description</label>
+            <textarea class="form-control" id="taskDescription" name="description" rows="3" required></textarea>
           </div>
-
           <div class="mb-3">
-            <label for="taskDetails" class="form-label">Task Details</label>
-            <textarea class="form-control" id="taskDetails" name="task_details" rows="3" required></textarea>
+            <label for="taskDueDate" class="form-label">Due Date</label>
+            <input type="date" class="form-control" id="taskDueDate" name="due_date" required>
           </div>
+          <div id="taskFeedback" class="alert" style="display: none;"></div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="submitCreateTask">Create Task</button>
+        <button type="button" class="btn btn-primary" onclick="createTask()">Create Task</button>
       </div>
     </div>
   </div>
@@ -39,6 +35,7 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+<script src="{{ url_for('static', filename='js/task.js') }}"></script>
 <script>
 $(document).ready(function() {
   var opportunitySearch = $('#opportunitySearch');

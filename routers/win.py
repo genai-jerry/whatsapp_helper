@@ -2,6 +2,7 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify, render_template
 from flask_login import current_user, login_required
 
+from routers.review import review
 from store.win_store import get_all_wins_for_date, store_win, get_win_types
 
 win_blueprint = Blueprint('win', __name__)
@@ -21,7 +22,7 @@ def create_new_win():
     description = data.get('description')
     current_date = datetime.now().strftime('%Y-%m-%d')
     store_win(current_date, current_user.id, win_type, description)
-    return jsonify({'message': 'Win created successfully'}), 201
+    return review()
 
 @win_blueprint.route('/types', methods=['GET'])
 @login_required

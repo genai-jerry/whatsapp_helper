@@ -893,10 +893,10 @@ def get_invoice_data(payment_id):
         FROM payments p
         LEFT JOIN sale s ON p.sale = s.id
         LEFT JOIN opportunity o ON o.id = s.opportunity_id
-        WHERE p.id = {payment_id}'''
+        WHERE p.id = %s'''
 
         # Execute the query
-        cursor.execute(query)
+        cursor.execute(query, (payment_id,))
 
         # Fetch the row from the query result
         row = cursor.fetchone()
@@ -921,8 +921,9 @@ def get_invoice_data(payment_id):
         if connection:
             connection.close()
 
-def get_weekly_summary(start_date, end_date, page=1, per_page=10):
+def get_weekly_summary(user_id, start_date, end_date, page=1, per_page=10):
     try:
+        print(f'user_id: {user_id}')
         connection = create_connection()
         cursor = connection.cursor()
 
@@ -942,11 +943,16 @@ def get_weekly_summary(start_date, end_date, page=1, per_page=10):
                 SUM(CASE WHEN status = 5 THEN 1 ELSE 0 END) as rescheduled,
                 SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as no_sale,
                 SUM(CASE WHEN status = 7 THEN 1 ELSE 0 END) as completed
-            FROM appointments
-            WHERE appointment_time >= '{current_date}' AND appointment_time <= '{week_end}'
+            FROM appointments a
+            LEFT JOIN sales_agent sa ON sa.id = a.mentor_id
+            WHERE a.appointment_time >= %s AND a.appointment_time <= %s
             '''
-            
-            cursor.execute(query)
+            if user_id is not None:
+                query += 'AND sa.user_id = %s'
+                cursor.execute(query, (current_date, week_end, user_id))
+            else:
+                cursor.execute(query, (current_date, week_end))
+
             result = cursor.fetchone()
 
             weeks.append({
@@ -978,7 +984,7 @@ def get_weekly_summary(start_date, end_date, page=1, per_page=10):
         if connection:
             connection.close()
 
-def get_hot_list(page=1, per_page=10):
+def get_hot_list(user_id, page=1, per_page=10):
     try:
         connection = create_connection()
         cursor = connection.cursor()
@@ -987,23 +993,38 @@ def get_hot_list(page=1, per_page=10):
         DISTINCT o.id as opportunity_id, o.name, s.sale_date
         FROM sale s
         LEFT JOIN opportunity o ON o.id = s.opportunity_id
-        WHERE s.is_final = 0 AND s.cancelled = 0
-        ORDER BY s.sale_date ASC
-        LIMIT {per_page} OFFSET {(page - 1) * per_page}
-        '''
+        LEFT JOIN sales_agent sa ON sa.id = s.sales_agent '''
+        if user_id is not None:
+            query += f'''WHERE sa.user_id = %s
+            AND s.is_final = 0 AND s.cancelled = 0
+            ORDER BY s.sale_date ASC
+            LIMIT {per_page} OFFSET {(page - 1) * per_page}
+            '''
+            cursor.execute(query, (user_id,))
+        else:
+            query += f'''WHERE s.is_final = 0 AND s.cancelled = 0
+            ORDER BY s.sale_date ASC
+            LIMIT {per_page} OFFSET {(page - 1) * per_page}'''
+            cursor.execute(query)
 
-        cursor.execute(query)
         opportunities = cursor.fetchall()
 
-        count_query = f'''SELECt
-        count(DISTINCT o.id) as opportunity_id
-        FROM sale s
-        LEFT JOIN opportunity o ON o.id = s.opportunity_id
-        WHERE s.is_final = 0 AND s.cancelled = 0
+        count_query = f'''SELECT
+            count(DISTINCT o.id) as opportunity_id
+            FROM sale s
+            LEFT JOIN opportunity o ON o.id = s.opportunity_id
+            LEFT JOIN sales_agent sa ON sa.id = s.sales_agent
         '''
-        cursor.execute(count_query)
+        if user_id is not None:
+            count_query += f'''WHERE s.is_final = 0 AND s.cancelled = 0 AND sa.user_id = %s'''
+            cursor.execute(count_query, (user_id,))
+        else:
+            count_query += f'''WHERE s.is_final = 0 AND s.cancelled = 0'''
+            cursor.execute(count_query)
+
         total_count = cursor.fetchone()[0]
         total_pages = math.ceil(total_count / per_page)
+
         return [
             {
                 'opportunity_id': opp[0],
@@ -1017,7 +1038,7 @@ def get_hot_list(page=1, per_page=10):
         if connection:
             connection.close()
 
-def get_pipeline(page=1, per_page=10):
+def get_pipeline(user_id, page=1, per_page=10):
     try:
         connection = create_connection()
         cursor = connection.cursor()
@@ -1029,10 +1050,11 @@ def get_pipeline(page=1, per_page=10):
             WHERE status = 4
         ),
         LatestAppointment AS (
-            SELECT a.opportunity_id, MAX(a.appointment_time) as latest_appointment_time
+            SELECT a.opportunity_id, MAX(a.appointment_time) as latest_appointment_time,
+                a.mentor_id as mentor_id
             FROM appointments a
             INNER JOIN FollowUps f ON f.opportunity_id = a.opportunity_id
-            GROUP BY a.opportunity_id
+            GROUP BY a.opportunity_id, a.mentor_id
         )
         SELECT DISTINCT o.id AS opportunity_id, o.name,
                la.latest_appointment_time as follow_up_date
@@ -1041,11 +1063,22 @@ def get_pipeline(page=1, per_page=10):
         INNER JOIN appointments a ON o.id = a.opportunity_id 
             AND a.appointment_time = la.latest_appointment_time
             AND (a.status = 4 or a.status is NULL)
-        ORDER BY la.latest_appointment_time DESC
-        LIMIT {per_page} OFFSET {(page - 1) * per_page}
+        LEFT JOIN sales_agent sa ON sa.id = la.mentor_id
         '''
+        if user_id is not None:
+            query += f'''
+                WHERE sa.user_id = %s
+                ORDER BY la.latest_appointment_time DESC
+                LIMIT {per_page} OFFSET {(page - 1) * per_page}
+            '''
+            cursor.execute(query, (user_id,))
+        else:
+            query += f'''   
+                ORDER BY la.latest_appointment_time DESC
+                LIMIT {per_page} OFFSET {(page - 1) * per_page}
+            '''
+            cursor.execute(query)
 
-        cursor.execute(query)
         pipeline = cursor.fetchall()
 
         count_query = f'''
@@ -1055,10 +1088,11 @@ def get_pipeline(page=1, per_page=10):
             WHERE status = 4
         ),
         LatestAppointment AS (
-            SELECT a.opportunity_id, MAX(a.appointment_time) as latest_appointment_time
+            SELECT a.opportunity_id, MAX(a.appointment_time) as latest_appointment_time,
+                a.mentor_id as mentor_id
             FROM appointments a
             INNER JOIN FollowUps f ON f.opportunity_id = a.opportunity_id
-            GROUP BY a.opportunity_id
+            GROUP BY a.opportunity_id, a.mentor_id
         )
         SELECT COUNT(DISTINCT o.id) AS opportunity_id
         FROM opportunity o
@@ -1066,9 +1100,14 @@ def get_pipeline(page=1, per_page=10):
         INNER JOIN appointments a ON o.id = a.opportunity_id 
             AND a.appointment_time = la.latest_appointment_time
             AND (a.status = 4 or a.status is NULL)
-        ORDER BY la.latest_appointment_time DESC
+        LEFT JOIN sales_agent sa ON sa.id = la.mentor_id
         '''
-        cursor.execute(count_query)
+        if user_id is not None:
+            count_query += f'''WHERE sa.user_id = %s'''
+            cursor.execute(count_query, (user_id,))
+        else:
+            cursor.execute(count_query)
+
         total_count = cursor.fetchone()[0]
         total_pages = math.ceil(total_count / per_page)
         print(f'total_pages: {total_pages}')

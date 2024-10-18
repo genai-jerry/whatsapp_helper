@@ -1,56 +1,48 @@
-
-<div class="container mt-4">
-    <h1 class="mb-4">Wins Board</h1>
-    
-    <!-- Add Win Button -->
-    <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addWinModal">
+<!-- Add Win Button -->
+<div class="row">
+    <button type="button" class="btn btn-primary mb-4 col-md-2" data-bs-toggle="modal" data-bs-target="#addWinModal">
         Add New Win
     </button>
+</div>
 
-    <!-- Wins Display -->
-    <div class="wins-container d-flex flex-wrap">
-        {% for win in wins %}
-        <div class="win-note m-2 p-3 bg-warning" style="width: 200px; min-height: 150px; border-radius: 5px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">    
-            <h5>{{ win.win_type_name }}</h5>
-            <p>{{ win.description }} </p>
-            <p>{{ win.name }} </p>
-        </div>
-        {% endfor %}
+
+<!-- Wins Display -->
+<div class="wins-container d-flex flex-wrap">
+    {% for win in wins %}
+    <div class="win-note m-2 p-3 bg-warning position-relative" style="width: 200px; min-height: 150px; border-radius: 5px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
+        <h5>{{ win.win_type_name }}</h5>
+        <p>{{ win.description }}</p>
+        <small class="position-absolute bottom-0 end-0 m-2 text-white">{{ win.name }}</small>
     </div>
+    {% endfor %}
+</div>
 
-    <!-- Add Win Modal -->
-    <div class="modal fade" id="addWinModal" tabindex="-1" aria-labelledby="addWinModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addWinModalLabel">Add New Win</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addWinForm" method="POST" action="/win">
-                        <div class="mb-3">
-                            <label for="winType" class="form-label">Win Type</label>
-                            <select class="form-select" id="winType" name="win_type" required>
-                                <option value="">Select a type</option>
-                                <option value="1">Personal</option>
-                                <option value="2">Professional</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="winDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="winDescription" name="description" rows="3" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Save Win</button>
-                    </form>
-                </div>
+<!-- Add Win Modal -->
+<div class="modal fade" id="addWinModal" tabindex="-1" aria-labelledby="addWinModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addWinModalLabel">Add New Win</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addWinForm" method="POST" action="/win">
+                    <div class="mb-3">
+                        <label for="winType" class="form-label">Win Type</label>
+                        <select class="form-select" id="winType" name="win_type" required>
+                            <option value="">Select a type</option>
+                            <option value="1">Personal</option>
+                            <option value="2">Professional</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="winDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="winDescription" name="description" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Win</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
-
-{% block scripts %}
-<script>
-    // You can add any additional JavaScript here if needed
-</script>
-{% endblock %}
 

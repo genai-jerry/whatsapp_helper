@@ -107,6 +107,7 @@ class SalesAgent(db.Model):
     name = db.Column(db.String(255), nullable=False, unique=True)
     color_code = db.Column(db.String(25))
     text_color = db.Column(db.String(25))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 class Templates(db.Model):
     __tablename__ = 'templates'
@@ -256,6 +257,7 @@ class Task(db.Model):
     due_date = db.Column(db.DateTime, nullable=False)
     completed = db.Column(db.Boolean, nullable=False, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    last_updated = db.Column(db.DateTime, nullable=True)
     opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'), nullable=True)
 
 class Comment(db.Model):
@@ -287,4 +289,21 @@ class WinType(db.Model):
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(255), nullable=True)
     
+class Employee(db.Model):
+    __tablename__ = 'employees'
     
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    email = db.Column(db.String(255), nullable=True)
+    phone = db.Column(db.String(255), nullable=True)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+
+class Department(db.Model):
+    __tablename__ = 'departments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    department_key = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    active = db.Column(db.Boolean, nullable=False, default=True)
+

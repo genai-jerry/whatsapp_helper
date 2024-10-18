@@ -7,8 +7,12 @@ task_blueprint = Blueprint('task', __name__)
 @task_blueprint.route('/')
 @login_required
 def get_tasks_api():
-    tasks = get_tasks_due(current_user.id); # get_tasks()
-    return jsonify({"tasks": tasks})
+    opportunity_id = request.args.get("opportunity_id")
+    if opportunity_id:
+        tasks = get_all_tasks_for_opportunity(opportunity_id)
+    else:
+        tasks = get_tasks_due(current_user.id); # get_tasks()
+    return tasks
 
 @task_blueprint.route('<string:task_id>')
 @login_required

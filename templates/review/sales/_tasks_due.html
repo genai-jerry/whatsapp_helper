@@ -18,10 +18,10 @@
             <tbody>
                 {% for task in tasks_due %}
                 <tr>
-                    <td>{{ task.opportunity_name }}</td>
+                    <td><a href="/opportunity/{{ task.opportunity_id }}">{{ task.opportunity_name }}</a></td>
                     <td>{{ task.due_date | format_date }}</td>
                     <td>{{ task.description }}</td>
-                    <td>Pending</td>
+                    <td><a href="#" onclick="listTasks('{{ task.opportunity_id }}')">Pending</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
