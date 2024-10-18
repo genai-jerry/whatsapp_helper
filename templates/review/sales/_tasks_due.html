@@ -21,7 +21,16 @@
                     <td><a href="/opportunity/{{ task.opportunity_id }}">{{ task.opportunity_name }}</a></td>
                     <td>{{ task.due_date | format_date }}</td>
                     <td>{{ task.description }}</td>
-                    <td><a href="#" onclick="listTasks('{{ task.opportunity_id }}')">Pending</a></td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="taskStatus{{ task.id }}" 
+                                   {% if task.status == 1 %}checked{% endif %}
+                                   onchange="updateTaskStatus('{{ task.id }}', this.checked)">
+                            <label class="form-check-label" for="taskStatus{{ task.id }}">
+                                {{ task.status|title }}
+                            </label>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

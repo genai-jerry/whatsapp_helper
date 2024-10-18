@@ -42,6 +42,15 @@ def create_task_api():
                            task_data["due_date"], task_data["opportunity_id"])
     return jsonify({"message": "Task created successfully", "task_id": new_task["id"]}), 201
 
+@task_blueprint.route('<string:task_id>/status', methods=['PUT'])
+@login_required
+def update_task_status_api(task_id):
+    status = request.json.get("status")
+    updated_task = update_task_status(task_id, status)
+    if not updated_task:
+        abort(404, description="Task not found")
+    return jsonify({"message": "Task updated successfully", "task": updated_task})
+
 @task_blueprint.route('<string:task_id>', methods=['PUT'])
 @login_required
 def update_task_api(task_id):

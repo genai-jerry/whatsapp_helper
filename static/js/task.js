@@ -27,7 +27,13 @@ function listTasks(opportunity_id) {
                     <td>${task.description}</td>
                     <td>${task.creator_name}</td>
                     <td>${formattedDueDate}</td>
-                    <td>${task.status == 1 ? 'Completed' : 'Pending'}</td>
+                     <td>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="taskStatus${task.id}" 
+                                ${task.status == 1 ? 'checked' : ''}
+                                onchange="updateTaskStatus(${task.id}, this.checked)">
+                        </div>
+                    </td>
                     <td>${task.last_updated != null ? task.last_updated : 'N/A'}</td>
                 `;
                 tableBody.appendChild(row);
@@ -81,6 +87,23 @@ function createTask() {
         taskFeedback.classList.add('alert-danger');
         taskFeedback.textContent = 'Error creating task. Please try again.';
         taskFeedback.style.display = 'block';
+    });
+}
+
+function updateTaskStatus(taskId, isComplete) {
+    const status = isComplete ? 1 : 0;
+    fetch(`/task/${taskId}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(response => response.json())
+    .catch(error => {
+        console.error('Error:', error);
+        // Revert the switch if there was an error
+        document.getElementById(`taskStatus${taskId}`).checked = !isComplete;
     });
 }
 

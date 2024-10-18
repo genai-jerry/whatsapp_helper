@@ -9,7 +9,7 @@ def get_tasks_due(user_id, page=1, per_page=10):
                      FROM tasks t
                      LEFT JOIN opportunity o ON t.opportunity_id = o.id
                      WHERE t.completed = 0 AND t.user_id = %s
-                     ORDER BY t.due_date ASC
+                     ORDER BY t.due_date, o.name ASC
                      LIMIT %s OFFSET %s'''
             cursor.execute(sql, (user_id, per_page, (page-1)*per_page))
         else:
@@ -17,7 +17,7 @@ def get_tasks_due(user_id, page=1, per_page=10):
                      FROM tasks t
                      LEFT JOIN opportunity o ON t.opportunity_id = o.id
                      WHERE t.completed = 0
-                     ORDER BY t.due_date ASC
+                     ORDER BY t.due_date, o.name ASC
                      LIMIT %s OFFSET %s'''
             cursor.execute(sql, (per_page, (page-1)*per_page))
         tasks = cursor.fetchall()
@@ -55,10 +55,20 @@ def create_task(user_id, name, description, due_date, opportunity_id):
             # Get the last inserted ID
             cursor.execute("SELECT LAST_INSERT_ID()")
             task_id = cursor.fetchone()[0]
-            connection.commit()
-            
+            cursor.close()
+            connection.close()
     return {"id": task_id}
 
+def update_task_status(task_id, status):
+    with create_connection() as connection:
+        with connection.cursor() as cursor:
+            sql = '''UPDATE tasks SET completed = %s WHERE id = %s'''
+            cursor.execute(sql, (status, task_id))
+            connection.commit()
+            cursor.close()
+            connection.close()
+            return True
+            
 def update_task(task_id, user_id, name, description, due_date, opportunity_id=None):    
     try:
         connection = create_connection()
