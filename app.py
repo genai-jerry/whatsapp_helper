@@ -16,6 +16,7 @@ from routers.sales import sales_blueprint
 from routers.review import review_blueprint
 from routers.task import task_blueprint
 from routers.win import win_blueprint
+from routers.comment import comment_blueprint
 from flask_migrate import Migrate
 import configparser
 from flask_login import LoginManager, login_user, logout_user, login_required
@@ -53,6 +54,8 @@ app.register_blueprint(sales_blueprint, url_prefix='/sales')
 app.register_blueprint(review_blueprint, url_prefix='/review')
 app.register_blueprint(task_blueprint, url_prefix='/task')
 app.register_blueprint(win_blueprint, url_prefix='/win')
+app.register_blueprint(comment_blueprint, url_prefix='/comment')
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'

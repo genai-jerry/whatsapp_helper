@@ -20,6 +20,12 @@ function listTasks(opportunity_id) {
                     month: 'short',
                     year: 'numeric'
                 });
+                const formattedLastUpdated = new Date(task?.last_updated).toLocaleDateString('en-GB', {
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -34,7 +40,7 @@ function listTasks(opportunity_id) {
                                 onchange="updateTaskStatus(${task.id}, this.checked)">
                         </div>
                     </td>
-                    <td>${task.last_updated != null ? task.last_updated : 'N/A'}</td>
+                    <td>${task.last_updated != null ? formattedLastUpdated : 'N/A'}</td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -69,16 +75,18 @@ function createTask() {
         taskFeedback.classList.remove('alert-danger');
         taskFeedback.classList.add('alert-success');
         taskFeedback.textContent = data.message;
-        form.reset();
+        
         setTimeout(() => {
             const createTaskModal = bootstrap.Modal.getInstance(document.getElementById('createTaskModal'));
             createTaskModal.hide();
             listTasks(document.getElementById('taskOpportunityId').value);
+            form.reset();
         }, 1500);
         
         taskFeedback.style.display = 'block';
         setTimeout(() => {
             taskFeedback.style.display = 'none';
+            form.reset();
         }, 3000);
     })
     .catch(error => {

@@ -43,10 +43,10 @@
                 </th>
                 <th>Phone</th>
                 <th>Ad Details</th>
-                <th id="call_status_heading">
-                </th>
+                <th id="call_status_heading"></th>
                 <th id="opportunity_status_heading"></th>
                 <th id="agent_heading">Call Setter</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -63,4 +63,8 @@
 </div>
 <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
 <script src="{{ url_for('static', filename='js/opportunity.js') }}"></script>
+
+{% include 'comment/comment_modals.html' %}
+{% include 'task/create_modal.html' %}
+{% include 'task/list_modal.html' %}
 {% endblock %}

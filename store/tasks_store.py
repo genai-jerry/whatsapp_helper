@@ -55,6 +55,7 @@ def create_task(user_id, name, description, due_date, opportunity_id):
             # Get the last inserted ID
             cursor.execute("SELECT LAST_INSERT_ID()")
             task_id = cursor.fetchone()[0]
+            connection.commit()
             cursor.close()
             connection.close()
     return {"id": task_id}
@@ -62,7 +63,7 @@ def create_task(user_id, name, description, due_date, opportunity_id):
 def update_task_status(task_id, status):
     with create_connection() as connection:
         with connection.cursor() as cursor:
-            sql = '''UPDATE tasks SET completed = %s WHERE id = %s'''
+            sql = '''UPDATE tasks SET completed = %s, last_updated = NOW() WHERE id = %s'''
             cursor.execute(sql, (status, task_id))
             connection.commit()
             cursor.close()
@@ -74,7 +75,8 @@ def update_task(task_id, user_id, name, description, due_date, opportunity_id=No
         connection = create_connection()
         cursor = connection.cursor()
 
-        sql = '''UPDATE tasks SET user_id = %s, name = %s, description = %s, due_date = %s, opportunity_id = %s WHERE id = %s'''
+        sql = '''UPDATE tasks SET user_id = %s, name = %s, description = %s, due_date = %s, 
+                opportunity_id = %s, last_updated = NOW() WHERE id = %s'''
         cursor.execute(sql, (user_id, name, description, due_date, opportunity_id, task_id))
         connection.commit()
         print("Task updated successfully.")
@@ -119,7 +121,7 @@ def complete_task(task_id):
         connection = create_connection()
         cursor = connection.cursor()
 
-        sql = '''UPDATE tasks SET completed = 1 WHERE id = %s'''
+        sql = '''UPDATE tasks SET completed = 1, last_updated = NOW() WHERE id = %s'''
         cursor.execute(sql, (task_id))
         connection.commit()
         print("Task completed successfully.")
