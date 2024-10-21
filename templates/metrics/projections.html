@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="col-md-12">
+        <h2>Sales Projections for {{ selected_date }}</h2>
+    </div>
+    <div class="col-md-12">
+        <!-- Monthly Dropdown -->
+        <div class="col-md-4">
+            {% set link_url = '/metrics' %}
+            {% include 'calendar/monthly_dropdown.html' %}
+        </div>
+    </div>
+    <div class="col-md-12">
+        {% include 'metrics/projections/_consolidated_numbers.html' %}
+    </div>
+    <div class="col-md-12">
+        <h3>Configure Projections</h3>
+        {% include 'metrics/projections/_configuration.html' %}
+    </div>
+</div>
+
+<!-- Modify the employee dropdown to include an onchange event -->
+<select id="employee-dropdown" name="employee" class="form-control" onchange="loadSalesProjection()">
+    <!-- ... existing options ... -->
+</select>
+
+<!-- Add this feedback modal at the end of the file, before the closing body tag -->
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="loadingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-2">Fetching sales projection data...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

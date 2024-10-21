@@ -307,3 +307,37 @@ class Department(db.Model):
     description = db.Column(db.String(255), nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
 
+
+class SalesProjections(db.Model):
+    __tablename__ = 'sales_projections'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    month = db.Column(db.String(50), nullable=False)
+    year = db.Column(db.String(50), nullable=False)
+    sale_price = db.Column(db.Integer, nullable=False)
+    total_call_slots = db.Column(db.Integer, nullable=False)
+    closure_percentage_goal = db.Column(db.Integer, nullable=False)
+    closure_percentage_projected = db.Column(db.Integer, nullable=False)
+    sales_value_projected = db.Column(db.Integer, nullable=False)
+    sales_value_goal = db.Column(db.Integer, nullable=False)
+    actual_sales_value = db.Column(db.Integer, nullable=False)
+    total_calls_made = db.Column(db.Integer, nullable=False)
+    total_calls_scheduled = db.Column(db.Integer, nullable=False)
+    total_sales_closed = db.Column(db.Integer, nullable=False)
+    total_deposits_collected = db.Column(db.Integer, nullable=False)
+    sales_agent_id = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
+
+class SalesProjectionConfig(db.Model):
+    __tablename__ = 'sales_projection_config'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    cost_per_lead = db.Column(db.Integer, nullable=False)
+    sale_price = db.Column(db.Integer, nullable=False)
+    show_up_rate_goal = db.Column(db.Integer, nullable=False)
+    show_up_rate_projection = db.Column(db.Integer, nullable=False)
+    appointment_booked_goal = db.Column(db.Integer, nullable=False)
+    appointment_booked_projection = db.Column(db.Integer, nullable=False)
+    month = db.Column(db.String(50), nullable=False)
+    year = db.Column(db.String(50), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
+    

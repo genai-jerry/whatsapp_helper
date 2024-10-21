@@ -1,0 +1,106 @@
+<div class="col-md-4">
+    <label for="employee">Select Employee:</label>
+    <select class="form-control" id="employee" name="employee" required>
+        <option selected disabled>Select an employee</option>
+        {% for employee in employees %}
+            <option value="{{ employee.id }}">{{ employee.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="col-md-12">
+    <!-- Feedback message div -->
+    <div id="feedbackMessage" class="alert" style="display: none;"></div>
+    <!-- Sales Projection Form -->
+    <form id="salesProjectionForm" class="mb-5">
+        <div class="row">
+            <div class="col-md-6">
+                
+                <div class="form-group">
+                    <label for="totalCallsPossible">Total Calls Possible:</label>
+                    <input type="number" class="form-control" id="totalCallsPossible" name="totalCallsPossible" required>
+                </div>
+                <div class="form-group">
+                    <label for="salePrice">Sale Price:</label>
+                    <input type="number" class="form-control" id="salePrice" name="salePrice" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="closureGoal">Closure % Goal:</label>
+                    <input type="number" class="form-control" id="closureGoal" name="closureGoal" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="closureProjection">Closure % Projection:</label>
+                    <input type="number" class="form-control" id="closureProjection" name="closureProjection" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="showUpRateGoal">Show Up Rate Goal:</label>
+                    <input type="number" class="form-control" id="showUpRateGoal" name="showUpRateGoal" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="showUpRateProjection">Show Up Rate Projection:</label>
+                    <input type="number" class="form-control" id="showUpRateProjection" name="showUpRateProjection" step="0.01" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                
+                <div class="form-group">
+                    <label for="salesClosedGoal">Sales Closed (Goal):</label>
+                    <input type="number" class="form-control" id="salesClosedGoal" name="salesClosedGoal" step="0.01" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="salesClosedProjection">Sales Closed (Projection):</label>
+                    <input type="number" class="form-control" id="salesClosedProjection" name="salesClosedProjection" step="0.01" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="totalSalesGoal">Total Sales Goal:</label>
+                    <input type="number" class="form-control" id="totalSalesGoal" name="totalSalesGoal" step="0.01" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="totalSalesProjection">Total Sales Projection:</label>
+                    <input type="number" class="form-control" id="totalSalesProjection" name="totalSalesProjection" step="0.01" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<!-- Add this near the top of the file, after other includes -->
+<script src="{{ url_for('static', filename='js/sales_projection_config.js') }}"></script>
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    function calculateProjections() {
+        var totalCalls = parseFloat($('#totalCallsPossible').val()) || 0;
+        var salePrice = parseFloat($('#salePrice').val()) || 0;
+        var closureGoal = parseFloat($('#closureGoal').val()) || 0;
+        var closureProjection = parseFloat($('#closureProjection').val()) || 0;
+        var showUpRateGoal = parseFloat($('#showUpRateGoal').val()) || 0;
+        var showUpRateProjection = parseFloat($('#showUpRateProjection').val()) || 0;
+
+
+        // Calculate Sales Closed (Goal and Projection)
+        var salesClosedGoal = (closureGoal / 100) * (showUpRateGoal / 100) * totalCalls;
+        var salesClosedProjection = (closureProjection / 100) * (showUpRateProjection / 100) * totalCalls;
+        $('#salesClosedGoal').val(salesClosedGoal.toFixed(2));
+        $('#salesClosedProjection').val(salesClosedProjection.toFixed(2));
+
+        // Calculate Total Sales (Goal and Projection)
+        var totalSalesGoal = salesClosedGoal * salePrice;
+        var totalSalesProjection = salesClosedProjection * salePrice;
+        $('#totalSalesGoal').val(totalSalesGoal.toFixed(2));
+        $('#totalSalesProjection').val(totalSalesProjection.toFixed(2));
+    }
+
+    // Recalculate on input change
+    $('#salesProjectionForm input').on('input', calculateProjections);
+
+});
+
+</script>
+
+{% endblock %}

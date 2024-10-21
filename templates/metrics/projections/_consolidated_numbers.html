@@ -1,0 +1,153 @@
+<!-- A table showing the revenue goal, revenue projection and actual revenue -->
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-10">
+                <h4>Revenue Metrics</h4>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <h5>Total Projected Revenue: Rs <span id="totalProjectedRevenue">0</span></h5>
+                <h5>Total Projected Cost: Rs <span id="totalProjectedCost">0</span></h5>
+                <h5>Net Projected Profit: Rs <span id="totalProjectedProfit">0</span></h5>
+                <h5>Projected ROI: <span id="totalProjectedROI">0</span>x</h5>
+            </div>
+            <div class="col-md-6">
+                <h5>Total Actual Revenue: Rs <span id="totalActualRevenue">0</span></h5>
+                <h5>Total Actual Cost: Rs <span id="totalActualCost">0</span></h5>
+                <h5>Net Actual Profit: Rs <span id="totalActualProfit">0</span></h5>
+                <h5>Actual ROI: <span id="totalActualROI">0</span>x</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-10">
+                <h4>Sales Funnel Metrics</h4>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Projected Rate</th>
+                    <th>Projected Value</th>
+                    <th>Projected Cost</th>
+                    <th>Actual Value</th>
+                    <th>Actual Rate</th>
+                    <th>Actual Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Leads</td>
+                    <td>As per sales slots</td>
+                    <td><input type="number" id="leadCount" class="form-control" value="100"></td>
+                    <td>Rs <span id="leadCost">0</span></td>
+                    <td><span id="actual_leadCount">0</span></td>
+                </tr>
+                <tr>
+                    <td>Appointments Booked</td>
+                    <td><input type="number" id="bookingRate" class="form-control" value="30"> %</td>
+                    <td><span id="appointmentCount">0</span></td>
+                    <td>Rs <span id="appointmentCost">0</span></td>
+                    <td><span id="actual_appointmentCount">0</span></td>
+                    <td><input type="number" id="actual_bookingRate" class="form-control" value="30" readonly> %</td>
+                    <td>Rs <span id="actual_appointmentCost">0</span></td>
+                </tr>
+                <tr>
+                    <td>Appointments Attended</td>
+                    <td><input type="number" id="showUpRate" class="form-control" value="80"> %</td>
+                    <td>Rs <span id="attendedCost">0</span></td>
+                    <td><span id="attendedCount">0</span></td>
+                    <td><span id="actual_attendedCount">0</span></td>
+                    <td><input type="number" id="actual_showUpRate" class="form-control" value="80" readonly> %</td>
+                    <td>Rs <span id="actual_attendedCost">0</span></td>
+                </tr>
+                <tr>
+                    <td>Sales Closed</td>
+                    <td><input type="number" id="closeRate" class="form-control" value="20"> %</td>
+                    <td><span id="salesCount">0</span></td>
+                    <td>Rs <span id="saleCost">0</span></td>
+                    <td><span id="actual_salesCount">0</span></td>
+                    <td><input type="number" id="actual_closeRate" class="form-control" value="20" readonly> %</td>
+                    <td>Rs <span id="actual_saleCost">0</span></td>
+                </tr>
+               
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        <form id="salesProjectionForm" class="mt-3" action="/metrics/projections/config" method="post">
+            <div class="form-group">
+                <label for="costPerLead">Cost per Lead (Rs):</label>
+                <input type="number" id="costPerLead" class="form-control input-number" name="cost_per_lead" 
+                    value="{{ projection_config.cost_per_lead }}">
+            </div>
+            <div class="form-group">
+                <label for="averageSaleValue">Sale Price (Rs):</label>
+                <input type="number" id="averageSaleValue" class="form-control input-number" name="sale_price" 
+                    value="{{ projection_config.sale_price}}">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary mt-2">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function formatIndianRupee(number) {
+        return new Intl.NumberFormat('en-IN').format(number);
+    }
+
+    function calculateMetrics() {
+        const leadCount = parseInt($('#leadCount').val());
+        const bookingRate = parseFloat($('#bookingRate').val()) / 100;
+        const showUpRate = parseFloat($('#showUpRate').val()) / 100;
+        const closeRate = parseFloat($('#closeRate').val()) / 100;
+        const costPerLead = parseFloat($('#costPerLead').val());
+        const averageSaleValue = parseFloat($('#averageSaleValue').val());
+
+        const appointmentCount = Math.round(leadCount * bookingRate);
+        const attendedCount = Math.round(appointmentCount * showUpRate);
+        const salesCount = Math.round(attendedCount * closeRate);
+
+        $('#appointmentCount').text(appointmentCount);
+        $('#attendedCount').text(attendedCount);
+        $('#salesCount').text(salesCount);
+
+        const leadCost = leadCount * costPerLead;
+        const appointmentCost = leadCost / appointmentCount;
+        const attendedCost = leadCost / attendedCount;
+        const saleCost = leadCost / salesCount;
+
+        $('#leadCost').text(formatIndianRupee(leadCost.toFixed(2)));
+        $('#appointmentCost').text(formatIndianRupee(appointmentCost.toFixed(2)));
+        $('#attendedCost').text(formatIndianRupee(attendedCost.toFixed(2)));
+        $('#saleCost').text(formatIndianRupee(saleCost.toFixed(2)));
+
+        const totalRevenue = salesCount * averageSaleValue;
+        const totalCost = leadCost;
+        const netProfit = totalRevenue - totalCost;
+        const roi = totalRevenue / totalCost;
+
+        $('#totalProjectedRevenue').text(formatIndianRupee(totalRevenue.toFixed(2)));
+        $('#totalProjectedCost').text(formatIndianRupee(totalCost.toFixed(2)));
+        $('#totalProjectedProfit').text(formatIndianRupee(netProfit.toFixed(2)));
+        $('#totalProjectedROI').text(roi.toFixed(2));
+    }
+
+    $(document).ready(function() {
+        calculateMetrics();
+        $('input').on('input', calculateMetrics);
+    });
+</script>

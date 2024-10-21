@@ -65,3 +65,33 @@ function resetListItem() {
         $('#li-'+i).addClass('normal-date');
     }
 }
+
+let selectedMonth = null;
+let selectedYear = null;
+
+// Add this new function to parse URL parameters
+function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+}
+
+// Add this function to initialize the calendar based on URL parameters
+function initializeCalendarFromUrl() {
+    var monthParam = getUrlParameter('month');
+
+    if (monthParam) {
+        var [month, year] = monthParam.split(' ');
+        selectedMonth = month;
+        selectedYear = year;
+    }else{
+        selectedMonth = new Date().toLocaleString('default', { month: 'long' });
+        selectedYear = new Date().getFullYear();
+    }
+}
+
+// Call this function when the page loads
+$(document).ready(function() {
+    initializeCalendarFromUrl();
+});

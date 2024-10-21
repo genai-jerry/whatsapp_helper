@@ -23,7 +23,7 @@ def review(user_id=None):
         "wins": wins,
         "departments": departments
     }
-    return render_template('review/dashboard.html', **context)
+    return render_template('metrics/review.html', **context)
 
 @review_blueprint.route('sales-metrics', methods=['GET'])
 @review_blueprint.route('sales-metrics/<int:user_id>', methods=['GET'])
@@ -31,13 +31,13 @@ def review(user_id=None):
 @login_required
 def get_sales_review_dashboard(user_id=None):
     context = get_sales_review_data(user_id)  
-    return render_template('review/sales.html', **context)
+    return render_template('metrics/sales.html', **context)
 
 @review_blueprint.route('sales-metrics/all', methods=['GET'])
 @login_required
 def get_all_sales_review_dashboard():
     context = get_sales_review_data(None)  
-    return render_template('review/sales.html', **context)
+    return render_template('metrics/sales.html', **context)
 
 def get_sales_review_data(user_id):
     selected_date = request.args.get('selected_date', 0, type=int)
