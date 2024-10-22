@@ -2,6 +2,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from store.metrics_store import *
 from store.employee_store import get_all_employees
+from utils import get_month_year
 from store.opportunity_store import get_total_opportunity_count_for_month
 
 metrics_blueprint = Blueprint('metrics', __name__)
@@ -9,8 +10,10 @@ metrics_blueprint = Blueprint('metrics', __name__)
 @metrics_blueprint.route('projections', methods=['GET'])
 def projections():
     # Handle GET request
-    month = request.args.get('month', datetime.now().strftime('%B'))
-    year = request.args.get('year', datetime.now().year)
+    selected_date = request.args.get('selected_date', 0, type=int)
+    month = request.args.get('month', datetime.now().strftime('%B %Y'))
+    print('Getting monthly report')
+    month, year = get_month_year(month)
     employees = get_all_employees()
     print(f'month: {month}, year: {year}')
     projection_config = get_projection_config(month, year)
@@ -22,7 +25,11 @@ def projections():
     return render_template('metrics/projections.html', 
                            projection_config=projection_config, employees=employees, 
                            sales_metrics=sales_metrics, performance_metrics=performance_metrics,
-                           opportunity_count=opportunity_count)
+                           opportunity_count=opportunity_count,
+                           selected_date=int(selected_date),
+                           month=month,
+                           year=year)
+
 @metrics_blueprint.route('projections/<int:projection_id>', methods=['GET', 'PUT'])
 def edit_projection(projection_id):
     projection = get_projection_by_id(projection_id)

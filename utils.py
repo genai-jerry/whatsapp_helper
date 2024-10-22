@@ -70,3 +70,13 @@ def get_month_dates(month):
         last_day = datetime.now().replace(day=calendar.monthrange(datetime.now().year, datetime.now().month)[1]) + timedelta(days=1)
     
     return first_day, last_day
+
+def get_month_year(month_year):
+    if month_year:
+        date = datetime.strptime(month_year, '%B %Y')
+        month = date.strftime('%B')
+        year = date.year
+    else:
+        month = datetime.now().strftime('%B')
+        year = datetime.now().year
+    return month, year

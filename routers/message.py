@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, g
+from flask import Blueprint, request, render_template
 from flask_login import login_required
 from smsidea.qr_code_generator import *
 from smsidea.whatsapp_automation import *

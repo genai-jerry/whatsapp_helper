@@ -67,34 +67,32 @@
 <script src="{{ url_for('static', filename='js/sales_projection_config.js') }}"></script>
 {% block scripts %}
 <script>
-$(document).ready(function() {
-    function calculateProjections() {
-        var totalCalls = parseFloat($('#totalCallsPossible').val()) || 0;
-        var salePrice = parseFloat($('#salePrice').val()) || 0;
-        var closureGoal = parseFloat($('#closureGoal').val()) || 0;
-        var closureProjection = parseFloat($('#closureProjection').val()) || 0;
-        var showUpRateGoal = parseFloat($('#show_up_rate_goal').val()) || 0;
-        var showUpRateProjection = parseFloat($('#show_up_rate_projection').val()) || 0;
+    $(document).ready(function() {
+        function calculateProjections() {
+            var totalCalls = parseFloat($('#totalCallsPossible').val()) || 0;
+            var salePrice = parseFloat($('#salePrice').val()) || 0;
+            var closureGoal = parseFloat($('#closureGoal').val()) || 0;
+            var closureProjection = parseFloat($('#closureProjection').val()) || 0;
+            var showUpRateGoal = parseFloat($('#show_up_rate_goal').val()) || 0;
+            var showUpRateProjection = parseFloat($('#show_up_rate_projection').val()) || 0;
 
 
-        // Calculate Sales Closed (Goal and Projection)
-        var salesClosedGoal = (closureGoal / 100) * (showUpRateGoal / 100) * totalCalls;
-        var salesClosedProjection = (closureProjection / 100) * (showUpRateProjection / 100) * totalCalls;
-        $('#salesClosedGoal').val(salesClosedGoal.toFixed(2));
-        $('#salesClosedProjection').val(salesClosedProjection.toFixed(2));
+            // Calculate Sales Closed (Goal and Projection)
+            var salesClosedGoal = (closureGoal / 100) * (showUpRateGoal / 100) * totalCalls;
+            var salesClosedProjection = (closureProjection / 100) * (showUpRateProjection / 100) * totalCalls;
+            $('#salesClosedGoal').val(salesClosedGoal.toFixed(2));
+            $('#salesClosedProjection').val(salesClosedProjection.toFixed(2));
 
-        // Calculate Total Sales (Goal and Projection)
-        var totalSalesGoal = salesClosedGoal * salePrice;
-        var totalSalesProjection = salesClosedProjection * salePrice;
-        $('#totalSalesGoal').val(totalSalesGoal.toFixed(2));
-        $('#totalSalesProjection').val(totalSalesProjection.toFixed(2));
-    }
+            // Calculate Total Sales (Goal and Projection)
+            var totalSalesGoal = salesClosedGoal * salePrice;
+            var totalSalesProjection = salesClosedProjection * salePrice;
+            $('#totalSalesGoal').val(totalSalesGoal.toFixed(2));
+            $('#totalSalesProjection').val(totalSalesProjection.toFixed(2));
+        }
 
-    // Recalculate on input change
-    $('#salesProjectionForm input').on('input', calculateProjections);
-
-});
-
+        // Recalculate on input change
+        $('#salesProjectionForm input').on('input', calculateProjections);
+    });
 </script>
 
 {% endblock %}

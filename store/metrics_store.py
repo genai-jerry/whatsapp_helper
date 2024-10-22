@@ -1,5 +1,6 @@
 from db.connection_manager import *
 from datetime import datetime
+import calendar
 
 def get_projection_by_id(projection_id):
     try:
@@ -186,6 +187,31 @@ def get_all_projections_for_month(month, year):
         if connection:
             connection.close()
 
+def update_marketing_spend(month, year, marketing_spend):
+    try:
+        if isinstance(month, str):
+            month = datetime.strptime(month, '%B').month
+        elif isinstance(month, int):
+            if month < 1 or month > 12:
+                raise ValueError("Month must be between 1 and 12")
+        else:
+            raise TypeError("Month must be a string or an integer")
+
+        month_name = calendar.month_name[month]
+        print(f'Updating marketing spend for month {month_name} and year {year} to {marketing_spend}')
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = '''UPDATE sales_projection_config SET marketing_spend=%s, marketing_spend_updated_at=%s 
+            WHERE month=%s AND year=%s'''
+        cursor.execute(sql, (marketing_spend, datetime.now(), month_name, year))
+        connection.commit()
+        print("Marketing spend updated successfully.")
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
 def update_projection(projection_id, data):
     try:
         connection = create_connection()
@@ -273,7 +299,8 @@ def get_projection_config(month, year):
         cursor = connection.cursor()
 
         sql = '''SELECT cost_per_lead, sale_price, show_up_rate_projection, 
-            show_up_rate_goal, appointment_booked_projection, appointment_booked_goal 
+            show_up_rate_goal, appointment_booked_projection, appointment_booked_goal,
+            marketing_spend, marketing_spend_updated_at
             FROM sales_projection_config 
             WHERE month=%s AND year=%s'''
 
@@ -283,7 +310,8 @@ def get_projection_config(month, year):
         if config:
             return { 'cost_per_lead': config[0], 'sale_price': config[1],   
                 'show_up_rate_projection': config[2], 'show_up_rate_goal': config[3], 
-                'appointment_booked_projection': config[4], 'appointment_booked_goal': config[5] }
+                'appointment_booked_projection': config[4], 'appointment_booked_goal': config[5],
+                'marketing_spend': config[6], 'marketing_spend_updated_at': config[7] }
         else:
             return None
     finally:

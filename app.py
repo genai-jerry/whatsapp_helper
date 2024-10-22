@@ -18,6 +18,7 @@ from routers.task import task_blueprint
 from routers.win import win_blueprint
 from routers.comment import comment_blueprint
 from routers.metrics import metrics_blueprint
+from routers.facebook import facebook_blueprint
 from flask_migrate import Migrate
 import configparser
 from flask_login import LoginManager, login_user, logout_user, login_required
@@ -57,6 +58,7 @@ app.register_blueprint(task_blueprint, url_prefix='/task')
 app.register_blueprint(win_blueprint, url_prefix='/win')
 app.register_blueprint(comment_blueprint, url_prefix='/comment')
 app.register_blueprint(metrics_blueprint, url_prefix='/metrics')
+app.register_blueprint(facebook_blueprint, url_prefix='/facebook')
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'

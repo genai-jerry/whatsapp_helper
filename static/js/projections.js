@@ -145,6 +145,17 @@ function calculateMetrics() {
         }
     }
 
+    // Calculate and update actual metrics
+    const totalActualRevenue = actualSalesClosure * averageSaleValue;
+    const totalActualCost = actualLeadCost;
+    const totalActualProfit = totalActualRevenue - totalActualCost;
+    const totalActualROI = totalActualCost > 0 ? totalActualProfit / totalActualCost : 0;
+
+    document.getElementById('totalActualRevenue').textContent = formatIndianRupee(totalActualRevenue.toFixed(2));
+    document.getElementById('totalActualCost').textContent = formatIndianRupee(totalActualCost.toFixed(2));
+    document.getElementById('totalActualProfit').textContent = formatIndianRupee(totalActualProfit.toFixed(2));
+    document.getElementById('totalActualROI').textContent = totalActualROI.toFixed(2);
+
     // Apply color-coding for leads
     setColorBasedOnComparison(actualLeads, leadGenerationProjection, leadGenerationGoal, '#actual_lead_value');
     setColorBasedOnComparison(totalLeadCost, actualLeadCost, actualLeadCost, '#actual_lead_cost');
@@ -160,6 +171,11 @@ function calculateMetrics() {
     // Apply color-coding for sales closure
     setColorBasedOnComparison(actualSalesClosure, salesCountProjection, salesCountGoal, '#actual_sales_closure_rate_value');
     setColorBasedOnComparison(saleCost, actualSalesClosureCost, actualSalesClosureCost, '#actual_sales_closure_cost');
+
+    setColorBasedOnComparison(totalActualRevenue, totalRevenue, totalRevenue, '#totalActualRevenue');
+    setColorBasedOnComparison(totalActualCost, totalCost, totalCost, '#totalActualCost');
+    setColorBasedOnComparison(totalActualProfit, netProfit, netProfit, '#totalActualProfit');
+    setColorBasedOnComparison(totalActualROI, roi, roi, '#totalActualROI');
 }
 
 $(document).ready(function() {

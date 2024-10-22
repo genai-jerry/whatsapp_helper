@@ -60,7 +60,13 @@
                     <td><input type="number" id="lead_generation_projection" class="form-control" value="" readonly>
                         </td>
                     <td>Rs <span id="projected_lead_cost">0</span></td>
-                    <td><span id="actual_lead_cost"></span></td>
+                    <td>
+                        Rs <span id="actual_lead_cost"></span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise refresh-ad-spend" viewBox="0 0 16 16" style="cursor: pointer; margin-left: 5px;">
+                          <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                          <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                        </svg>
+                    </td>
                     <td><span id="actual_lead_value">{{opportunity_count}}</span></td>
                     <td><span id="actual_lead_rate"></span></td>
                 </tr>
@@ -120,3 +126,26 @@
     </form>
 </div>
 <script src="{{ url_for('static', filename='js/projections.js') }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const refreshIcon = document.querySelector('.refresh-ad-spend');
+    const actualLeadCostSpan = document.getElementById('actual_lead_cost');
+
+    refreshIcon.addEventListener('click', function() {
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+
+        fetch(`/facebook/ad_spend/${year}/${month}`)
+            .then(response => response.json())
+            .then(data => {
+                actualLeadCostSpan.textContent = data.ad_spend.toFixed(2);
+            })
+            .catch(error => {
+                console.error('Error fetching ad spend:', error);
+                alert('Failed to fetch ad spend data. Please try again.');
+            });
+    });
+});
+</script>

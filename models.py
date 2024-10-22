@@ -339,5 +339,18 @@ class SalesProjectionConfig(db.Model):
     appointment_booked_projection = db.Column(db.Integer, nullable=False)
     month = db.Column(db.String(50), nullable=False)
     year = db.Column(db.String(50), nullable=False)
+    marketing_spend = db.Column(db.Integer, nullable=True, default=0)
+    marketing_spend_updated_at = db.Column(db.DateTime, nullable=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
+
+class FacebookAdAccount(db.Model):
+    __tablename__ = 'facebook_ad_accounts'
     
+    id = db.Column(db.Integer, primary_key=True)
+    ad_account_id = db.Column(db.String(255), nullable=False)
+    ad_account_name = db.Column(db.String(255), nullable=False)
+    ad_account_access_token = db.Column(db.String(255), nullable=False)
+    ad_account_currency = db.Column(db.String(255), nullable=False)
+    app_id = db.Column(db.String(255), nullable=False)
+    app_secret = db.Column(db.String(255), nullable=False)
+    last_updated = db.Column(db.DateTime, nullable=True)
