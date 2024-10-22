@@ -1,5 +1,5 @@
 <!-- A table showing the revenue goal, revenue projection and actual revenue -->
-<div class="card mb-4">
+<div class="card mt-2">
     <div class="card-header">
         <div class="row">
             <div class="col-md-10">
@@ -33,121 +33,90 @@
             </div>
         </div>
     </div>
+    <form id="salesProjectionForm" class="mt-3" action="/metrics/projections/config" method="post">
     <div class="card-body">
         <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>Metric</th>
+                    <th>Goal</th>
+                    <th>Goal Value</th>
                     <th>Projected Rate</th>
                     <th>Projected Value</th>
                     <th>Projected Cost</th>
+                    <th>Actual Cost</th>
                     <th>Actual Value</th>
                     <th>Actual Rate</th>
-                    <th>Actual Cost</th>
                 </tr>
             </thead>
+            <input type="hidden" id="sales_slots_possible" value="{{sales_metrics.total_call_slots}}">
             <tbody>
                 <tr>
                     <td>Leads</td>
-                    <td>As per sales slots</td>
-                    <td><input type="number" id="leadCount" class="form-control" value="100"></td>
-                    <td>Rs <span id="leadCost">0</span></td>
-                    <td><span id="actual_leadCount">0</span></td>
+                    <td>For <b>{{sales_metrics.total_call_slots}}</b> Sales Slots</td>
+                    <td><input type="number" id="lead_generation_goal" class="form-control" value="" readonly>
+                    </td>
+                    <td>For <b>{{sales_metrics.total_call_slots}}</b> Sales Slots</td>
+                    <td><input type="number" id="lead_generation_projection" class="form-control" value="" readonly>
+                        </td>
+                    <td>Rs <span id="projected_lead_cost">0</span></td>
+                    <td><span id="actual_lead_cost"></span></td>
+                    <td><span id="actual_lead_value">{{opportunity_count}}</span></td>
+                    <td><span id="actual_lead_rate"></span></td>
                 </tr>
                 <tr>
-                    <td>Appointments Booked</td>
-                    <td><input type="number" id="bookingRate" class="form-control" value="30"> %</td>
-                    <td><span id="appointmentCount">0</span></td>
-                    <td>Rs <span id="appointmentCost">0</span></td>
-                    <td><span id="actual_appointmentCount">0</span></td>
-                    <td><input type="number" id="actual_bookingRate" class="form-control" value="30" readonly> %</td>
-                    <td>Rs <span id="actual_appointmentCost">0</span></td>
+                    <td>Appointments</td>
+                    <td><input type="number" id="appointment_booked_goal" name="appointment_booked_goal" class="form-control" value="{{projection_config.appointment_booked_goal}}" required> %</td>
+                    <td><span id="appointment_booked_goal_value">0</span></td>
+                    <td><input type="number" id="appointment_booked_projection" name="appointment_booked_projection" class="form-control" value="{{projection_config.appointment_booked_projection}}" required> %</td>
+                    <td><span id="appointment_booked_projection_value">0</span></td>
+                    <td>Rs <span id="appointment_booked_cost">0</span></td>
+                    <td>Rs <span id="actual_appointment_booked_cost">0</span></td>
+                    <td><span id="appointment_booked_count">{{performance_metrics.total_appointments_booked}}</span></td>
+                    <td><span id="actual_appointment_booked_rate"></span></td>
                 </tr>
                 <tr>
-                    <td>Appointments Attended</td>
-                    <td><input type="number" id="showUpRate" class="form-control" value="80"> %</td>
-                    <td>Rs <span id="attendedCost">0</span></td>
-                    <td><span id="attendedCount">0</span></td>
-                    <td><span id="actual_attendedCount">0</span></td>
-                    <td><input type="number" id="actual_showUpRate" class="form-control" value="80" readonly> %</td>
-                    <td>Rs <span id="actual_attendedCost">0</span></td>
+                    <td>Show Ups</td>
+                    <td><input type="number" id="show_up_rate_goal" name="show_up_rate_goal" class="form-control" value="{{projection_config.show_up_rate_goal}}" required> %</td>
+                    <td><span id="show_up_rate_goal_value">0</span></td>
+                    <td><input type="number" id="show_up_rate_projection" name="show_up_rate_projection" class="form-control" value="{{projection_config.show_up_rate_projection}}" required> %</td>
+                    <td><span id="show_up_rate_projection_value">0</span></td>
+                    <td>Rs <span id="show_up_rate_cost">0</span></td>
+                    <td>Rs <span id="actual_show_up_rate_cost">0</span></td>
+                    <td><span id="actual_show_up_rate_value">{{performance_metrics.total_appointments_attended}}</span></td>
+                    
+                    <td><span id="actual_show_up_rate"></span></td>
                 </tr>
                 <tr>
-                    <td>Sales Closed</td>
-                    <td><input type="number" id="closeRate" class="form-control" value="20"> %</td>
-                    <td><span id="salesCount">0</span></td>
-                    <td>Rs <span id="saleCost">0</span></td>
-                    <td><span id="actual_salesCount">0</span></td>
-                    <td><input type="number" id="actual_closeRate" class="form-control" value="20" readonly> %</td>
-                    <td>Rs <span id="actual_saleCost">0</span></td>
+                    <td>Sales Closure</td>
+                    <td><input type="number" id="close_rate_goal" class="form-control" value="{{sales_metrics.goal_closure_rate}}" readonly> %</td>
+                    <td><span id="sales_goal_closure_rate_value">0</span></td>
+                    <td><input type="number" id="close_rate_projection" class="form-control" value="{{sales_metrics.projected_closure_rate}}" readonly> %</td>
+                    <td><span id="sales_projected_closure_rate_value">0</span></td>
+                    <td>Rs <span id="sales_projected_closure_cost">0</span></td>
+                    <td>Rs <span id="actual_sales_closure_cost">0</span></td>
+                    <td><span id="actual_sales_closure_rate_value">{{performance_metrics.total_sales_final}}</span></td>
+                    <td><span id="actual_sales_closure_rate"></span></td>
                 </tr>
                
             </tbody>
         </table>
     </div>
     <div class="card-footer">
-        <form id="salesProjectionForm" class="mt-3" action="/metrics/projections/config" method="post">
-            <div class="form-group">
-                <label for="costPerLead">Cost per Lead (Rs):</label>
-                <input type="number" id="costPerLead" class="form-control input-number" name="cost_per_lead" 
-                    value="{{ projection_config.cost_per_lead }}">
-            </div>
-            <div class="form-group">
-                <label for="averageSaleValue">Sale Price (Rs):</label>
-                <input type="number" id="averageSaleValue" class="form-control input-number" name="sale_price" 
-                    value="{{ projection_config.sale_price}}">
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary mt-2">Update</button>
-            </div>
-        </form>
+        <div class="form-group">
+            <label for="costPerLead">Cost per Lead (Rs):</label>
+            <input type="number" id="costPerLead" class="form-control input-number" name="cost_per_lead" 
+                value="{{ projection_config.cost_per_lead }}">
+        </div>
+        <div class="form-group">
+            <label for="averageSaleValue">Sale Price (Rs):</label>
+            <input type="number" id="averageSaleValue" class="form-control input-number" name="sale_price" 
+                value="{{ projection_config.sale_price}}">
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary mt-2">Update</button>
+        </div>
     </div>
+    </form>
 </div>
-
-<script>
-    function formatIndianRupee(number) {
-        return new Intl.NumberFormat('en-IN').format(number);
-    }
-
-    function calculateMetrics() {
-        const leadCount = parseInt($('#leadCount').val());
-        const bookingRate = parseFloat($('#bookingRate').val()) / 100;
-        const showUpRate = parseFloat($('#showUpRate').val()) / 100;
-        const closeRate = parseFloat($('#closeRate').val()) / 100;
-        const costPerLead = parseFloat($('#costPerLead').val());
-        const averageSaleValue = parseFloat($('#averageSaleValue').val());
-
-        const appointmentCount = Math.round(leadCount * bookingRate);
-        const attendedCount = Math.round(appointmentCount * showUpRate);
-        const salesCount = Math.round(attendedCount * closeRate);
-
-        $('#appointmentCount').text(appointmentCount);
-        $('#attendedCount').text(attendedCount);
-        $('#salesCount').text(salesCount);
-
-        const leadCost = leadCount * costPerLead;
-        const appointmentCost = leadCost / appointmentCount;
-        const attendedCost = leadCost / attendedCount;
-        const saleCost = leadCost / salesCount;
-
-        $('#leadCost').text(formatIndianRupee(leadCost.toFixed(2)));
-        $('#appointmentCost').text(formatIndianRupee(appointmentCost.toFixed(2)));
-        $('#attendedCost').text(formatIndianRupee(attendedCost.toFixed(2)));
-        $('#saleCost').text(formatIndianRupee(saleCost.toFixed(2)));
-
-        const totalRevenue = salesCount * averageSaleValue;
-        const totalCost = leadCost;
-        const netProfit = totalRevenue - totalCost;
-        const roi = totalRevenue / totalCost;
-
-        $('#totalProjectedRevenue').text(formatIndianRupee(totalRevenue.toFixed(2)));
-        $('#totalProjectedCost').text(formatIndianRupee(totalCost.toFixed(2)));
-        $('#totalProjectedProfit').text(formatIndianRupee(netProfit.toFixed(2)));
-        $('#totalProjectedROI').text(roi.toFixed(2));
-    }
-
-    $(document).ready(function() {
-        calculateMetrics();
-        $('input').on('input', calculateMetrics);
-    });
-</script>
+<script src="{{ url_for('static', filename='js/projections.js') }}"></script>

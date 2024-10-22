@@ -765,4 +765,16 @@ def search_opportunities(search_term, search_type):
         if connection:
             connection.close()
         
+def get_total_opportunity_count_for_month(month, year):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
 
+        sql = '''SELECT COUNT(*) FROM opportunity 
+        WHERE MONTHNAME(register_time) = %s AND EXTRACT(YEAR FROM register_time) = %s'''
+        cursor.execute(sql, (month, year))
+        count = cursor.fetchone()[0]
+        return count
+    finally:
+        if cursor:
+            cursor.close()

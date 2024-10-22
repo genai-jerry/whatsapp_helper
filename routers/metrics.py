@@ -2,6 +2,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from store.metrics_store import *
 from store.employee_store import get_all_employees
+from store.opportunity_store import get_total_opportunity_count_for_month
 
 metrics_blueprint = Blueprint('metrics', __name__)
 
@@ -13,9 +14,15 @@ def projections():
     employees = get_all_employees()
     print(f'month: {month}, year: {year}')
     projection_config = get_projection_config(month, year)
+    sales_metrics = get_sales_kpi_for_month(month, year)
+    performance_metrics = get_performance_metrics_for_sales_agent_for_month(month, year)
+    opportunity_count = get_total_opportunity_count_for_month(month, year)
+    print(f'performance_metrics: {performance_metrics}')
     print(f'projection_config: {projection_config}')
-    return render_template('metrics/projections.html', projection_config=projection_config, employees=employees
-                               )
+    return render_template('metrics/projections.html', 
+                           projection_config=projection_config, employees=employees, 
+                           sales_metrics=sales_metrics, performance_metrics=performance_metrics,
+                           opportunity_count=opportunity_count)
 @metrics_blueprint.route('projections/<int:projection_id>', methods=['GET', 'PUT'])
 def edit_projection(projection_id):
     projection = get_projection_by_id(projection_id)
@@ -36,27 +43,28 @@ def edit_projection_config():
             "month": month,
             "year": year,
             "cost_per_lead": request.form['cost_per_lead'],
-            "sale_price": request.form['sale_price']
+            "sale_price": request.form['sale_price'],
+            "show_up_rate_goal": request.form['show_up_rate_goal'],
+            "show_up_rate_projection": request.form['show_up_rate_projection'],
+            "appointment_booked_goal": request.form['appointment_booked_goal'],
+            "appointment_booked_projection": request.form['appointment_booked_projection']
         }
     update_projection_config(projection_config_data)
     return projections()
     
-@metrics_blueprint.route('projections/<int:employee_id>/config', methods=['POST'])
-def edit_employee_projection_config(employee_id):
+@metrics_blueprint.route('projections/employee/config', methods=['POST'])
+def edit_employee_projection_config():
     month = request.args.get('month', datetime.now().strftime('%B'))
     year = request.args.get('year', datetime.now().year)
     
     projection_config_data = {
             "month": month,
             "year": year,
-            "sales_agent_id": employee_id,
-            "show_up_rate_goal": request.form['show_up_rate_goal'],
-            "show_up_rate_projection": request.form['show_up_rate_projection'],
+            "sales_agent_id": request.form['employee'],
             "sales_closed_goal": request.form['sales_closed_goal'],
             "sales_closed_projection": request.form['sales_closed_projection'],
-            "total_sales_goal": request.form['total_sales_goal'],
-            "total_sales_projection": request.form['total_sales_projection'],
-            "total_calls_goal": request.form['total_calls_goal']
+            "total_calls_slots": request.form['total_calls_slots'],
+            "sale_price": request.form['sale_price']
         }
     update_sales_agent_projections(projection_config_data)
     return projections()

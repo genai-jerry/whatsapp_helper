@@ -31,22 +31,18 @@ def update_sales_agent_projections(projection_config_data):
         projection_exists = get_projection_for_sales_agent_for_month(projection_config_data['sales_agent_id'], projection_config_data['month'], projection_config_data['year'])
         if projection_exists:
             sql = '''UPDATE sales_projections SET month=%s, year=%s, sale_price=%s, total_call_slots=%s, 
-                closure_percentage_goal=%s, closure_percentage_projected=%s, sales_value_projected=%s, 
-                sales_value_goal=%s, actual_sales_value=%s, total_calls_made=%s, total_calls_scheduled=%s, 
-                total_sales_closed=%s, total_deposits_collected=%s
+                closure_percentage_goal=%s, closure_percentage_projected=%s
                 WHERE id=%s''' 
         else:
             sql = '''INSERT INTO sales_projections (month, year, sale_price, total_call_slots, 
-                closure_percentage_goal, closure_percentage_projected, sales_value_projected, 
-                sales_value_goal, actual_sales_value, total_calls_made, total_calls_scheduled, 
-                total_sales_closed, total_deposits_collected, sales_agent_id) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''  
+                closure_percentage_goal, closure_percentage_projected, sales_agent_id) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s)'''  
 
-        cursor.execute(sql, (projection_config_data['month'], projection_config_data['year'], projection_config_data['sale_price'], projection_config_data['total_call_slots'], 
-                             projection_config_data['closure_percentage_goal'], projection_config_data['closure_percentage_projected'],  
-                             projection_config_data['sales_value_projected'], projection_config_data['sales_value_goal'], projection_config_data['actual_sales_value'], 
-                             projection_config_data['total_calls_made'], projection_config_data['total_calls_scheduled'], projection_config_data['total_sales_closed'], 
-                             projection_config_data['total_deposits_collected'], projection_config_data['sales_agent_id']))
+        cursor.execute(sql, (projection_config_data['month'], projection_config_data['year'], projection_config_data['sale_price'], 
+                             projection_config_data['total_calls_slots'], 
+                             projection_config_data['sales_closed_goal'], 
+                             projection_config_data['sales_closed_projection'],  
+                             projection_config_data['sales_agent_id']))
         
         connection.commit()
         print("Data Inserted successfully.")
@@ -58,20 +54,28 @@ def update_sales_agent_projections(projection_config_data):
 
 def get_performance_metrics_for_sales_agent_for_month(month, year, sales_agent_id = None):
     try:
+        print(f'Getting performance metrics for sales agent {sales_agent_id} for month {month} and year {year}')
         connection = create_connection()
         cursor = connection.cursor()
 
         # Get projection data
-        projection_sql = '''
-            SELECT total_call_slots, closure_percentage_goal, closure_percentage_projected, 
-                   sales_value_projected, sales_value_goal
-            FROM sales_projections 
-            WHERE month = %s AND year = %s
-        '''
+        
         if sales_agent_id:
+            projection_sql = '''
+                SELECT total_call_slots, closure_percentage_goal, closure_percentage_projected, 
+                    sales_value_projected, sales_value_goal
+                FROM sales_projections 
+                WHERE month = %s AND year = %s
+            '''
             projection_sql += ' AND sales_agent_id = %s'
             cursor.execute(projection_sql, (month, year, sales_agent_id))
         else:
+            projection_sql = '''
+                SELECT SUM(total_call_slots), AVG(closure_percentage_goal), AVG(closure_percentage_projected), 
+                    AVG(sales_value_projected), AVG(sales_value_goal)
+                FROM sales_projections 
+            WHERE month = %s AND year = %s
+        '''
             cursor.execute(projection_sql, (month, year))
         projection_data = cursor.fetchone()
 
@@ -81,7 +85,7 @@ def get_performance_metrics_for_sales_agent_for_month(month, year, sales_agent_i
                 COUNT(a.id) as total_appointments_booked,
                 COUNT(CASE WHEN a.status NOT IN (3,5,6) THEN 1 END) as total_appointments_attended
             FROM appointments a
-            WHERE EXTRACT(MONTH FROM a.appointment_date) = %s AND EXTRACT(YEAR FROM a.appointment_date) = %s
+            WHERE MONTHNAME(a.appointment_time) = %s AND EXTRACT(YEAR FROM a.appointment_time) = %s
         '''
         if sales_agent_id:
             appointment_sql += ' AND a.mentor_id = %s'
@@ -95,8 +99,8 @@ def get_performance_metrics_for_sales_agent_for_month(month, year, sales_agent_i
             SELECT 
                 COUNT(CASE WHEN is_final = 1 THEN 1 END) as total_sales_final,
                 COUNT(CASE WHEN is_final = 0 THEN 1 END) as total_sales_deposit
-            FROM sales
-            WHERE EXTRACT(MONTH FROM sale_date) = %s AND EXTRACT(YEAR FROM sale_date) = %s
+            FROM sale
+            WHERE MONTHNAME(sale_date) = %s AND EXTRACT(YEAR FROM sale_date) = %s
         '''
         if sales_agent_id:
             sales_sql += ' AND sales_agent_id = %s'
@@ -216,16 +220,47 @@ def update_projection_config(data):
         cursor = connection.cursor()
 
         if projection_config:
-            sql = '''UPDATE sales_projection_config SET cost_per_lead=%s, sale_price=%s 
+            sql = '''UPDATE sales_projection_config SET cost_per_lead=%s, sale_price=%s, 
+                show_up_rate_goal=%s,  appointment_booked_goal=%s, 
+                show_up_rate_projection=%s, appointment_booked_projection=%s 
                 WHERE month=%s AND year=%s'''
-            cursor.execute(sql, (data['cost_per_lead'], data['sale_price'], data['month'], data['year']))
+            cursor.execute(sql, (data['cost_per_lead'], data['sale_price'], data['show_up_rate_goal'], 
+                                 data['appointment_booked_goal'], data['show_up_rate_projection'], 
+                                 data['appointment_booked_projection'], data['month'], data['year']))
         else:
-            sql = '''INSERT INTO sales_projection_config (cost_per_lead, sale_price, month, year) 
-                VALUES (%s, %s, %s, %s)'''
-            cursor.execute(sql, (data['cost_per_lead'], data['sale_price'], data['month'], data['year']))
+            sql = '''INSERT INTO sales_projection_config (cost_per_lead, sale_price,
+                show_up_rate_goal, appointment_booked_goal, show_up_rate_projection, 
+                appointment_booked_projection, month, year) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
+            cursor.execute(sql, (data['cost_per_lead'], data['sale_price'], data['show_up_rate_goal'], 
+                                 data['appointment_booked_goal'], data['show_up_rate_projection'], 
+                                 data['appointment_booked_projection'], data['month'], data['year']))
 
         connection.commit()
         print("Data Updated successfully.")
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_sales_kpi_for_month(month, year):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        sql = '''SELECT SUM(total_call_slots), AVG(closure_percentage_projected) AS projected_closure_rate,
+            AVG(closure_percentage_goal) AS goal_closure_rate, AVG(sales_value_projected) AS projected_sales_value
+            FROM sales_projections 
+            WHERE month=%s AND year=%s'''
+        cursor.execute(sql, (month, year))
+        total_call_slots = cursor.fetchone()
+        return {
+            'total_call_slots': total_call_slots[0] if total_call_slots[0] else 0,
+            'projected_closure_rate': total_call_slots[1] if total_call_slots[1] else 0,
+            'goal_closure_rate': total_call_slots[2] if total_call_slots[2] else 0,
+            'projected_sales_value': total_call_slots[3] if total_call_slots[3] else 0
+        }
     finally:
         if cursor:
             cursor.close()
@@ -237,14 +272,20 @@ def get_projection_config(month, year):
         connection = create_connection()
         cursor = connection.cursor()
 
-        sql = '''SELECT cost_per_lead, sale_price FROM sales_projection_config 
+        sql = '''SELECT cost_per_lead, sale_price, show_up_rate_projection, 
+            show_up_rate_goal, appointment_booked_projection, appointment_booked_goal 
+            FROM sales_projection_config 
             WHERE month=%s AND year=%s'''
 
         cursor.execute(sql, (month, year))
 
         config = cursor.fetchone()
-
-        return { 'cost_per_lead': config[0], 'sale_price': config[1] }
+        if config:
+            return { 'cost_per_lead': config[0], 'sale_price': config[1],   
+                'show_up_rate_projection': config[2], 'show_up_rate_goal': config[3], 
+                'appointment_booked_projection': config[4], 'appointment_booked_goal': config[5] }
+        else:
+            return None
     finally:
         if cursor:
             cursor.close()
