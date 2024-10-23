@@ -83,8 +83,8 @@ def get_performance_metrics_for_sales_agent_for_month(month, year, sales_agent_i
         # Get appointment data
         appointment_sql = '''
             SELECT 
-                COUNT(a.id) as total_appointments_booked,
-                COUNT(CASE WHEN a.status NOT IN (3,5,6) THEN 1 END) as total_appointments_attended
+                COUNT(DISTINCT(a.opportunity_id)) as total_appointments_booked,
+                COUNT(DISTINCT CASE WHEN a.status NOT IN (1, 5, 6) THEN a.opportunity_id END) as total_appointments_attended
             FROM appointments a
             WHERE MONTHNAME(a.appointment_time) = %s AND EXTRACT(YEAR FROM a.appointment_time) = %s
         '''
@@ -331,3 +331,4 @@ def get_funnel_metrics_for_month_sales_agent(month, year, sales_agent_id = None)
             cursor.close()
         if connection:
             connection.close()
+

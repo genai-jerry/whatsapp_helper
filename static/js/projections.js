@@ -123,27 +123,17 @@ function calculateMetrics() {
     const actualAppointmentsBooked = $('#appointment_booked_count').text();
     const actualShowUps = $('#actual_show_up_rate_value').text();
     const actualSalesClosure = $('#actual_sales_closure_rate_value').text();
-    const actualLeadCost = costPerLead * actualLeads;
+    const actualLeadCost = $('#actual_lead_cost').text();
     const actualAppointmentBookedCost = actualLeadCost / actualAppointmentsBooked;
     const actualShowUpRateCost = actualLeadCost / actualShowUps;
     const actualSalesClosureCost = actualLeadCost / actualSalesClosure;
 
-    $('#actual_lead_cost').text(formatIndianRupee(actualLeadCost.toFixed(2)));
+    $('#actual_lead_cost').text(formatIndianRupee(actualLeadCost));
     $('#actual_appointment_booked_cost').text(formatIndianRupee(actualAppointmentBookedCost.toFixed(2)));
     $('#actual_show_up_rate_cost').text(formatIndianRupee(actualShowUpRateCost.toFixed(2)));
     $('#actual_sales_closure_cost').text(formatIndianRupee(actualSalesClosureCost.toFixed(2)));
 
-    // Color-coding logic for actual vs projected vs goal values
-    function setColorBasedOnComparison(actualValue, projectedValue, goalValue, elementId) {
-        const $element = $(elementId);
-        if (actualValue >= goalValue) {
-            $element.css('color', 'darkgreen');
-        } else if (actualValue >= projectedValue) {
-            $element.css('color', 'green');
-        } else {
-            $element.css('color', 'red');
-        }
-    }
+    
 
     // Calculate and update actual metrics
     const totalActualRevenue = actualSalesClosure * averageSaleValue;
@@ -151,10 +141,18 @@ function calculateMetrics() {
     const totalActualProfit = totalActualRevenue - totalActualCost;
     const totalActualROI = totalActualCost > 0 ? totalActualProfit / totalActualCost : 0;
 
+    // Calcuate the actual rates and set it in the html
+    const actualAppointmentBookedRate = (actualAppointmentsBooked / actualLeads) * 100;
+    const actualShowUpRate = (actualShowUps / actualAppointmentsBooked) * 100;
+    const actualSalesClosureRate = (actualSalesClosure / actualShowUps) * 100;
+
     document.getElementById('totalActualRevenue').textContent = formatIndianRupee(totalActualRevenue.toFixed(2));
-    document.getElementById('totalActualCost').textContent = formatIndianRupee(totalActualCost.toFixed(2));
+    document.getElementById('totalActualCost').textContent = formatIndianRupee(totalActualCost);
     document.getElementById('totalActualProfit').textContent = formatIndianRupee(totalActualProfit.toFixed(2));
     document.getElementById('totalActualROI').textContent = totalActualROI.toFixed(2);
+    document.getElementById('actual_appointment_booked_rate').textContent = actualAppointmentBookedRate.toFixed(2);
+    document.getElementById('actual_show_up_rate').textContent = actualShowUpRate.toFixed(2);
+    document.getElementById('actual_sales_closure_rate').textContent = actualSalesClosureRate.toFixed(2);
 
     // Apply color-coding for leads
     setColorBasedOnComparison(actualLeads, leadGenerationProjection, leadGenerationGoal, '#actual_lead_value');
@@ -173,10 +171,26 @@ function calculateMetrics() {
     setColorBasedOnComparison(saleCost, actualSalesClosureCost, actualSalesClosureCost, '#actual_sales_closure_cost');
 
     setColorBasedOnComparison(totalActualRevenue, totalRevenue, totalRevenue, '#totalActualRevenue');
-    setColorBasedOnComparison(totalActualCost, totalCost, totalCost, '#totalActualCost');
+    setColorBasedOnComparison(totalCost, totalActualCost, totalActualCost, '#totalActualCost');
     setColorBasedOnComparison(totalActualProfit, netProfit, netProfit, '#totalActualProfit');
     setColorBasedOnComparison(totalActualROI, roi, roi, '#totalActualROI');
+    setColorBasedOnComparison(actualAppointmentBookedRate, bookingRateProjection, bookingRateGoal, '#actual_appointment_booked_rate');
+    setColorBasedOnComparison(showUpRateProjection, showUpRateGoal,actualShowUpRate, '#actual_show_up_rate');
+    setColorBasedOnComparison(actualSalesClosureRate, closeRateProjection, closeRateGoal, '#actual_sales_closure_rate');
 }
+
+// Color-coding logic for actual vs projected vs goal values
+function setColorBasedOnComparison(actualValue, projectedValue, goalValue, elementId) {
+    const $element = $(elementId);
+    if (actualValue >= goalValue) {
+        $element.css('color', 'darkgreen');
+    } else if (actualValue >= projectedValue) {
+        $element.css('color', 'green');
+    } else {
+        $element.css('color', 'red');
+    }
+}
+
 
 $(document).ready(function() {
     calculateMetrics();
