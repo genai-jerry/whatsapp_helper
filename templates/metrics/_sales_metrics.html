@@ -11,22 +11,13 @@
 </div>
 
 <div class="row">
-    <div class="col-md-6">
-        {% include "metrics/sales/_weekly_summary.html" %}
-    </div>
-    <div class="col-md-6">
-        {% include "metrics/sales/_tasks_due.html" %}
+    <div class="col-md-12">
+        {% include "metrics/sales/_kpi.html" %}
     </div>
 </div>
 <div class="row">
-    <div class="col-md-6">
-        {% include "metrics/sales/_pipeline.html" %}
-    </div>
-    <div class="col-md-6">
-            {% include "metrics/sales/_hot_list.html" %}
+    <div class="col-md-12">
+        {% include "metrics/sales/_weekly_summary.html" %}
     </div>
 </div>
-{% include "task/list_modal.html" %}
-{% include "task/create_modal.html" %}
-{% include "comment/comment_modals.html" %}
 

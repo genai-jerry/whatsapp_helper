@@ -31,7 +31,7 @@ def get_ad_spend_for_account(ad_account, start_date, end_date):
     except FacebookRequestError as e:
         error_message = f"Facebook API error: {e.api_error_message()}"
         print(error_message)  # Log the error
-        return None
+        raise Exception(error_message)
     
 def get_ad_spend_for_month(month, year):
     # Initialize the Facebook Ads API

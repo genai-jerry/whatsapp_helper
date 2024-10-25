@@ -7,9 +7,16 @@ function listTasks(opportunity_id) {
     }
     
     tableBody.innerHTML = ''; // Clear existing rows
-
+    let url = '/task?';
+    if (opportunity_id != null) {
+        url += `opportunity_id=${opportunity_id}`;
+    }
+    const employee_id = document.getElementById('employeeSelect').value;
+    if (employee_id && employee_id != '') {
+        url += `&employee_id=${employee_id}`;
+    }
     // Fetch task data from the server
-    fetch(`/task?opportunity_id=${opportunity_id}`)
+    fetch(url)
         .then(response => response.json())
         .then(tasks => {
             tasks.forEach(task => {
@@ -56,7 +63,7 @@ function listTasks(opportunity_id) {
 function showCreateTaskModal(opportunity_id, opportunity_name) {
     const createTaskModal = new bootstrap.Modal(document.getElementById('createTaskModal'));
     document.getElementById('taskOpportunityId').value = opportunity_id;
-    document.getElementById('opportunityName').value = opportunity_name;
+    document.getElementById('opportunityName').value = opportunity_name !== undefined ? opportunity_name : '';
     createTaskModal.show();
 }
 

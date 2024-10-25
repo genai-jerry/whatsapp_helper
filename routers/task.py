@@ -8,10 +8,13 @@ task_blueprint = Blueprint('task', __name__)
 @login_required
 def get_tasks_api():
     opportunity_id = request.args.get("opportunity_id")
+    employee_id = request.args.get("employee_id")
+    
     if opportunity_id:
-        tasks = get_all_tasks_for_opportunity(opportunity_id)
+        tasks = get_all_tasks_for_opportunity(opportunity_id, employee_id)
     else:
-        tasks = get_tasks_due(current_user.id); # get_tasks()
+        tasks = get_tasks_due(employee_id); # get_tasks()
+    
     return tasks
 
 @task_blueprint.route('<string:task_id>')

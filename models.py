@@ -325,6 +325,7 @@ class SalesProjections(db.Model):
     total_calls_scheduled = db.Column(db.Integer, nullable=False, default=0)
     total_sales_closed = db.Column(db.Integer, nullable=False, default=0)
     total_deposits_collected = db.Column(db.Integer, nullable=False, default=0)
+    commission_percentage = db.Column(db.Integer, nullable=False, default=0)
     sales_agent_id = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
 
 class SalesProjectionConfig(db.Model):

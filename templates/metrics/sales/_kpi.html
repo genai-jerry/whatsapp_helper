@@ -1,0 +1,94 @@
+<!-- New table for monthly and weekly metrics -->
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Monthly and Weekly Performance Metrics</h5>
+        </div>
+        <div class="d-flex float-end">
+            <button type="button" class="btn btn-primary btn-sm task-comment-btn border border-white" onclick="listTasks()" title="List Tasks">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16" data-bs-toggle="tooltip" data-bs-placement="top">
+                    <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5H2zM3 3H2v1h1V3z"/>
+                    <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9z"/>
+                    <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5V7zM2 7h1v1H2V7zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5H2zm1 .5H2v1h1v-1z"/>
+                </svg>
+            </button>
+            <button type="button" class="btn btn-primary btn-sm task-comment-btn border border-white" onclick="showCreateTaskModal()" title="Create Task">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16" data-bs-toggle="tooltip" data-bs-placement="top">
+                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        
+        <!-- Weekly Metrics Section -->
+        <table class="table table-bordered table-hover">
+            <thead class="thead-light">
+                <tr>
+                    <th>Month</th>
+                    <th>January</th>
+                    <th>W1 (Proj)</th>
+                    <th>W1 (Actual)</th>
+                    <th>W2 (Proj)</th>
+                    <th>W2 (Actual)</th>
+                    <th>W3 (Proj)</th>
+                    <th>W3 (Actual)</th>
+                    <th>W4 (Proj)</th>
+                    <th>W4 (Actual)</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Sales Goal</td>
+                    <td>25</td>
+                    <td>6.25</td>
+                    <td>7</td>
+                    <td>5</td>
+                    <td>7</td>
+                    <td>6.25</td>
+                    <td>3</td>
+                    <td>6.25</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Sales Projection</td>
+                    <td>20</td>
+                    <td>5</td>
+                    <td>7</td>
+                    <td>3</td>
+                    <td>7</td>
+                    <td>5</td>
+                    <td>3</td>
+                    <td>5</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Calls Booked</td>
+                    <td>100</td>
+                    <td>25</td>
+                    <td>28</td>
+                    <td>25</td>
+                    <td>22</td>
+                    <td>25</td>
+                    <td>23</td>
+                    <td>25</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Calls Completed</td>
+                    <td>300</td>
+                    <td>75</td>
+                    <td>95</td>
+                    <td>75</td>
+                    <td>80</td>
+                    <td>75</td>
+                    <td>50</td>
+                    <td>75</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

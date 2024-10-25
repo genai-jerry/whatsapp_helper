@@ -1,73 +1,112 @@
 <form id="salesProjectionForm" class="mb-5" action="/metrics/projections/employee/config" method="POST">
-<div class="col-md-4">
-    <label for="employee">Select Employee:</label>
-    <select class="form-control" id="employee" name="employee" required>
-        <option selected disabled>Select an employee</option>
-        {% for employee in employees %}
-            <option value="{{ employee.id }}">{{ employee.name }}</option>
-        {% endfor %}
-    </select>
-</div>
-<div class="col-md-12">
-    <!-- Feedback message div -->
-    <div id="feedbackMessage" class="alert" style="display: none;"></div>
-    <!-- Sales Projection Form -->
-        <div class="row">
-            <div class="col-md-6">
-                
-                <div class="form-group">
-                    <label for="totalCallsPossible">Total Calls Possible:</label>
-                    <input type="number" class="form-control" id="totalCallsPossible" name="total_calls_slots" required>
+    <div class="col-md-4">
+        <label for="employee">Select Employee:</label>
+        <select class="form-control" id="employee" name="employee" required>
+            <option selected disabled>Select an employee</option>
+            {% for employee in employees %}
+                <option value="{{ employee.id }}">{{ employee.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div id="configurationDetails" style="display: none;">
+        <div class="col-md-12">
+            <!-- Feedback message div -->
+            <div id="feedbackMessage" class="alert" style="display: none;"></div>
+            <!-- Sales Projection Form -->
+            <div class="row">
+                <div class="col-md-6">
+                    
+                    <div class="form-group">
+                        <label for="totalCallsPossible">Total Calls Possible:</label>
+                        <input type="number" class="form-control" id="totalCallsPossible" name="total_calls_slots" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="salePrice">Sale Price:</label>
+                        <input type="number" class="form-control" id="salePrice" name="sale_price" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="closureGoal">Closure % Goal:</label>
+                        <input type="number" class="form-control" id="closureGoal" name="sales_closed_goal" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="closureProjection">Closure % Projection:</label>
+                        <input type="number" class="form-control" id="closureProjection" name="sales_closed_projection" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="commissionPercentage">Commission %:</label>
+                        <input type="number" class="form-control" id="commissionPercentage" name="commission_percentage" step="0.01" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="salePrice">Sale Price:</label>
-                    <input type="number" class="form-control" id="salePrice" name="sale_price" step="0.01" required>
+                <div class="col-md-6">
+                    
+                    <div class="form-group">
+                        <label for="salesClosedGoal">Sales Closed (Goal):</label>
+                        <input type="number" class="form-control" id="salesClosedGoal" name="salesClosedGoal" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="salesClosedProjection">Sales Closed (Projection):</label>
+                        <input type="number" class="form-control" id="salesClosedProjection" name="salesClosedProjection" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="totalSalesGoal">Total Sales Goal:</label>
+                        <input type="number" class="form-control" id="totalSalesGoal" name="totalSalesGoal" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="totalSalesProjection">Total Sales Projection:</label>
+                        <input type="number" class="form-control" id="totalSalesProjection" name="totalSalesProjection" step="0.01" readonly>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="closureGoal">Closure % Goal:</label>
-                    <input type="number" class="form-control" id="closureGoal" name="sales_closed_goal" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label for="closureProjection">Closure % Projection:</label>
-                    <input type="number" class="form-control" id="closureProjection" name="sales_closed_projection" step="0.01" required>
-                </div>
-                
             </div>
-            <div class="col-md-6">
-                
-                <div class="form-group">
-                    <label for="salesClosedGoal">Sales Closed (Goal):</label>
-                    <input type="number" class="form-control" id="salesClosedGoal" name="salesClosedGoal" step="0.01" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="salesClosedProjection">Sales Closed (Projection):</label>
-                    <input type="number" class="form-control" id="salesClosedProjection" name="salesClosedProjection" step="0.01" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="totalSalesGoal">Total Sales Goal:</label>
-                    <input type="number" class="form-control" id="totalSalesGoal" name="totalSalesGoal" step="0.01" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="totalSalesProjection">Total Sales Projection:</label>
-                    <input type="number" class="form-control" id="totalSalesProjection" name="totalSalesProjection" step="0.01" readonly>
-                </div>
-            </div>
-        </div>
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary">Submit</button>
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 </form>
+
 <!-- Add this near the top of the file, after other includes -->
 <script src="{{ url_for('static', filename='js/sales_projection_config.js') }}"></script>
+
 {% block scripts %}
 <script>
     $(document).ready(function() {
+        $('#employee').change(function() {
+            var employeeId = $(this).val();
+            if (employeeId) {
+                // Load employee configuration
+                $.ajax({
+                    url: `/metrics/projections/${employeeId}/config?month=${selectedMonth}&year=${selectedYear}`,
+                    type: 'GET',
+                    success: function(data) {
+                        let projectionData = data.projection || {};
+                        // Populate form fields with the received data
+                        $('#totalCallsPossible').val(projectionData.total_call_slots || 0);
+                        $('#salePrice').val(projectionData.sale_price || 0);
+                        $('#closureGoal').val(projectionData.closure_percentage_goal || 0);
+                        $('#closureProjection').val(projectionData.closure_percentage_projected || 0);
+                        $('#commissionPercentage').val(projectionData.commission_percentage || 0);
+                        
+                        // Show the configuration details
+                        $('#configurationDetails').show();
+                        
+                        // Calculate projections
+                        calculateProjections();
+                    },
+                    error: function() {
+                        alert('Error loading employee configuration');
+                    }
+                });
+            } else {
+                // Hide the configuration details if no employee is selected
+                $('#configurationDetails').hide();
+            }
+        });
+
         function calculateProjections() {
             var totalCalls = parseFloat($('#totalCallsPossible').val()) || 0;
             var salePrice = parseFloat($('#salePrice').val()) || 0;
@@ -94,5 +133,4 @@
         $('#salesProjectionForm input').on('input', calculateProjections);
     });
 </script>
-
 {% endblock %}

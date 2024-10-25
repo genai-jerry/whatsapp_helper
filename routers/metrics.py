@@ -20,8 +20,6 @@ def projections():
     sales_metrics = get_sales_kpi_for_month(month, year)
     performance_metrics = get_performance_metrics_for_sales_agent_for_month(month, year)
     opportunity_count = get_total_opportunity_count_for_month(month, year)
-    print(f'performance_metrics: {performance_metrics}')
-    print(f'projection_config: {projection_config}')
     return render_template('metrics/projections.html', 
                            projection_config=projection_config, employees=employees, 
                            sales_metrics=sales_metrics, performance_metrics=performance_metrics,
@@ -45,7 +43,7 @@ def edit_projection(projection_id):
 def edit_projection_config():
     month = request.args.get('month', datetime.now().strftime('%B'))
     year = request.args.get('year', datetime.now().year)
-    
+    print(f'Prjection Config: {month}, year: {year}')
     projection_config_data = {
             "month": month,
             "year": year,
@@ -71,8 +69,10 @@ def edit_employee_projection_config():
             "sales_closed_goal": request.form['sales_closed_goal'],
             "sales_closed_projection": request.form['sales_closed_projection'],
             "total_calls_slots": request.form['total_calls_slots'],
-            "sale_price": request.form['sale_price']
+            "sale_price": request.form['sale_price'],
+            "commission_percentage": request.form['commission_percentage']
         }
+    print(f'projection_config_data: {projection_config_data}')
     update_sales_agent_projections(projection_config_data)
     return projections()
 

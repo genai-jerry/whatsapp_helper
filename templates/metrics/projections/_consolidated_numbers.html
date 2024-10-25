@@ -53,10 +53,10 @@
             <tbody>
                 <tr>
                     <td>Leads</td>
-                    <td>For <b>{{sales_metrics.total_call_slots}}</b> Sales Slots</td>
+                    <td><b>{{sales_metrics.total_call_slots}}</b> Calls</td>
                     <td><input type="number" id="lead_generation_goal" class="form-control" value="" readonly>
                     </td>
-                    <td>For <b>{{sales_metrics.total_call_slots}}</b> Sales Slots</td>
+                    <td><b>{{sales_metrics.total_call_slots}}</b> Calls</td>
                     <td><input type="number" id="lead_generation_projection" class="form-control" value="" readonly>
                         </td>
                     <td>Rs <span id="projected_lead_cost">0</span></td>
@@ -131,11 +131,15 @@
 document.addEventListener('DOMContentLoaded', function() {
     const refreshIcon = document.querySelector('.refresh-ad-spend');
     const actualLeadCostSpan = document.getElementById('actual_lead_cost');
-
+    // Convert month name to number
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+                            "July", "August", "September", "October", "November", "December"];
+     
     refreshIcon.addEventListener('click', function() {
-        const currentDate = new Date();
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+        const year = selectedYear;
+        const monthName = selectedMonth;
+        
+        const month = (monthNames.indexOf(monthName) + 1).toString().padStart(2, '0');
 
         fetch(`/facebook/ad_spend/${year}/${month}`)
             .then(response => response.json())
