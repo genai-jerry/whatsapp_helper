@@ -46,11 +46,13 @@ def get_sales_review_data(user_id):
     pipeline_page = request.args.get('pipeline_page', 1, type=int)
     tasks_due_page = request.args.get('tasks_due_page', 1, type=int)
     start_date, end_date = get_month_dates(month)
+    year = start_date.year
     weekly_summary, _ = get_weekly_summary(user_id, start_date, end_date)
     opportunities, hot_list_count = get_hot_list(user_id, hot_list_page, 10)
     pipeline, pipeline_count = get_pipeline(user_id, pipeline_page, 10)
     tasks_due, tasks_due_count = get_tasks_due(user_id, tasks_due_page, 10)
     employees = get_all_employees()
+    monthly_performance = get_performance_metrics_for_sales_agent_for_month(user_id, month, year)
     context = {
         "weekly_summary": weekly_summary,
         "opportunities": opportunities,
