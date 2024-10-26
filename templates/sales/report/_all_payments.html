@@ -13,8 +13,8 @@
         <tr>
             <td>{{ item.payment_category }}</td>
             <td>{{ item.payment_count }}</td>
-            <td>{{ item.total_payment }}</td>
-            <td>{{ item.pending_amount }}</td>
+            <td>{{ item.total_payment | number_format }}</td>
+            <td>{{ item.pending_amount | number_format }}</td>
         </tr>
         {% set ns.total_payment = ns.total_payment + item.total_payment %}
         {% set ns.pending_amount = ns.pending_amount + item.pending_amount %}
@@ -23,10 +23,10 @@
             <td><b>Total</b></td>
             <td></td>
             <td>
-                <b>{{ ns.total_payment }}</b>
+                <b>{{ ns.total_payment | number_format }}</b>
             </td>
             <td>
-                <b>{{ ns.pending_amount }}</b>
+                <b>{{ ns.pending_amount | number_format }}</b>
             </td>
         </tr>
     </tbody>

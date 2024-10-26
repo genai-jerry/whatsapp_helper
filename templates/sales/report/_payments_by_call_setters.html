@@ -12,9 +12,9 @@
         {% for item in formatted_payments_report_by_call_setters %}
         <tr>
             <td>{{ item.call_setter_name }}</td>
-            <td>{{ item.total_sale_value }}</td>
-            <td>{{ item.total_payment }}</td>
-            <td>{{ item.pending_amount }}</td>
+            <td>{{ item.total_sale_value | number_format }}</td>
+            <td>{{ item.total_payment | number_format }}</td>
+            <td>{{ item.pending_amount | number_format }}</td>
         </tr>
         {% set ns.total_payment = ns.total_payment + item.total_payment %}
         {% set ns.sale_value = ns.sale_value + item.total_sale_value %}
@@ -23,12 +23,12 @@
         <tr>
             <td><b>Total</b></td>
             <td>
-                <b>{{ ns.sale_value }}</b>
+                <b>{{ ns.sale_value | number_format }}</b>
             <td>
-                <b>{{ ns.total_payment }}</b>
+                <b>{{ ns.total_payment | number_format }}</b>
             </td>
             <td>
-                <b>{{ ns.pending_amount }}</b>
+                <b>{{ ns.pending_amount | number_format }}</b>
             </td>
         </tr>
     </tbody>

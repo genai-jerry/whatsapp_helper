@@ -80,26 +80,26 @@
             </tr>
             <tr class="details">
                 <td>Installment for 6 month GenAI Leap program</td>
-                <td>{{ (data.amount / 1.18) | round_up }}</td>
+                <td>{{ (data.amount / 1.18) | round_up | number_format }}</td>
             </tr>
             {% if data.is_same_state %}
             <tr>
                 <td>CGST @9%</td>
-                <td>{{ ((data.amount / 1.18) * 0.9) | round_up }}</td>
+                <td>{{ ((data.amount / 1.18) * 0.9) | round_up | number_format }}</td>
             </tr>
             <tr>
                 <td>SGST @9%</td>
-                <td>{{ ((data.amount / 1.18) * 0.9) | round_up }}</td>
+                <td>{{ ((data.amount / 1.18) * 0.9) | round_up | number_format }}</td>
             </tr>
             {% else %}
             <tr>
                 <td>IGST @18%</td>
-                <td>{{ ((data.amount / 1.18) * 0.18) | round_up}}</td>
+                <td>{{ ((data.amount / 1.18) * 0.18) | round_up | number_format }}</td>
             </tr>
             {% endif %}
             <tr class="totals">
                 <td><b>Total</b></td>
-                <td><b>{{ data.amount }}</b></td>
+                <td><b>{{ data.amount | number_format }}</b></td>
             </tr>
             <tr>
                 <td colspan="2">

@@ -16,6 +16,7 @@
                 <h5>Projected ROI: <span id="totalProjectedROI">0</span>x</h5>
             </div>
             <div class="col-md-6">
+                <input type="hidden" id="total_actual_revenue" value="{{performance_metrics.total_final_sale_value}}">
                 <h5>Total Actual Revenue: Rs <span id="totalActualRevenue">0</span></h5>
                 <h5>Total Actual Cost: Rs <span id="totalActualCost">0</span></h5>
                 <h5>Net Actual Profit: Rs <span id="totalActualProfit">0</span></h5>
@@ -34,6 +35,9 @@
         </div>
     </div>
     <form id="salesProjectionForm" class="mt-3" action="/metrics/projections/config" method="post">
+    <input type="hidden" id="selected_month" name="selected_month" value="{{month}}">
+    <input type="hidden" id="selected_year" name="selected_year" value="{{year}}">
+    <input type="hidden" id="selected_date" name="selected_date" value="{{selected_date}}">
     <div class="card-body">
         <table class="table table-bordered">
             <thead>

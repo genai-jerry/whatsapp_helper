@@ -16,3 +16,4 @@ dateutil
 pdfkit
 wkhtmltopdf
 facebook-business
+Babel

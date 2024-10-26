@@ -20,10 +20,10 @@
                     {{ sale.phone }}<br>
 
                 </td>
-                <td>{{ sale.sale_value }}</td>
-                <td>{{ sale.amount_paid }}</td>
-                <td>{{ sale.sale_value - sale.amount_paid }}</td>
-                <td>{{ sale.next_due_amount }}</td>
+                <td>{{ sale.sale_value | number_format }}</td>
+                <td>{{ sale.amount_paid | number_format }}</td>
+                <td>{{ (sale.sale_value - sale.amount_paid) | number_format }}</td>
+                <td>{{ sale.next_due_amount | number_format }}</td>
                 <td>{% if sale.due_date %}
                     {{ sale.due_date | format_date }}
                     {% endif %}

@@ -6,6 +6,7 @@ from store.sales_store import *
 from routers.opportunity import get_opportunity_detail, get_opportunities
 from utils import get_month_dates
 from datetime import datetime, timedelta
+# from store.metrics_store import get_sales_agent_performance
 
 sales_blueprint = Blueprint('sales', __name__)
 
@@ -180,4 +181,16 @@ def generate_invoice(payment_id):
 
     return response
 
-
+@sales_blueprint.route("/sales", methods=['GET'])
+def get_sales_metrics():
+    agent_id = request.args.get('agent_id', 1, type=int)  # Default to agent_id 1 if not provided
+    start_date = request.args.get('start_date', (datetime.now() - timedelta(days=28)).strftime('%Y-%m-%d'))
+    end_date = request.args.get('end_date', datetime.now().strftime('%Y-%m-%d'))
+    
+    performance_data = [] # get_sales_agent_performance(agent_id, start_date, end_date)
+    
+    return render_template("metrics/sales.html", 
+                           performance_data=performance_data,
+                           agent_id=agent_id,
+                           start_date=start_date,
+                           end_date=end_date)

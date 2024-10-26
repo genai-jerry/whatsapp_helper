@@ -1,9 +1,9 @@
-from flask import Blueprint, request, render_template, jsonify
+from flask import Blueprint, jsonify
 from flask_login import login_required
 from facebook_business.api import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 from datetime import datetime
-import os
+from utils import get_month_name
 from facebook_business.exceptions import FacebookRequestError
 from store.fb_ads_store import get_all_ad_accounts
 from store.metrics_store import update_marketing_spend
@@ -53,11 +53,14 @@ def get_ad_spend_for_month(month, year):
 @login_required
 def display_ad_spend(year, month):
     month_number = month
+    month_name = month
     if isinstance(month, str):
         # convert October to 10
         month_number = datetime.strptime(month, '%B').month
+    else:
+        month_name = get_month_name(month)
     ad_spend = get_ad_spend_for_month(month_number, year)
     if ad_spend is None:
         return jsonify({'error': 'Failed to retrieve ad spend data. Please check your permissions and try again.'}), 400
-    update_marketing_spend(month, year, ad_spend)
+    update_marketing_spend(month_name, year, ad_spend)
     return jsonify({'ad_spend': ad_spend})

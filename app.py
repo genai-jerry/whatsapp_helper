@@ -26,6 +26,7 @@ from flask_login import current_user
 from store.user_store import create_new_user, load_user_by_username
 from utils import require_api_key
 from dateutil.relativedelta import *
+from babel.numbers import format_currency
 
 # Read the config.ini file
 config = configparser.ConfigParser()
@@ -107,7 +108,6 @@ def login():
             login_user(user)
             return jsonify({'status': 'success'}), 200
         except Exception as e:
-            print(str(e))
             return jsonify({'status': 'Invalid user name or password'}), 400
     else:
         return jsonify({'status': 'Invalid user name or password'}), 400
@@ -121,8 +121,19 @@ def logout():
     
 @app.template_filter()
 def number_format(value):
-    converted_value = format(int(value), ',d')
-    return converted_value
+    # Convert the value to a float to ensure it's a number
+    try:
+        numeric_value = float(value)
+    except ValueError:
+        return value  # Return the original value if it can't be converted
+
+    # Format the number as currency (USD in this example, you can change as needed)
+    formatted_value = format_currency(numeric_value, '', locale='en_IN')
+    
+    # Remove the currency symbol if you only want the formatted number
+    formatted_number = formatted_value.replace('$', '')
+    
+    return formatted_number.strip()
 
 @app.template_filter()
 def excl_tax(value):
@@ -155,7 +166,6 @@ def format_date_time(value):
 
 @app.template_filter()
 def convert_to_date(value):
-    print(f'value: {value}')
     return value.strftime('%d %b %Y')
 
 @app.template_filter()
@@ -195,7 +205,7 @@ def month_add(value):
     if not value:
         value = 0
     today = datetime.now().date()
-    new_date = today - relativedelta(months=value)
+    new_date = today - relativedelta(months=int(value))
     return new_date.strftime('%B %Y')
 
 @app.template_filter()

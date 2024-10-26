@@ -5,6 +5,7 @@ from store.employee_store import get_all_departments, get_all_employees
 from store.sales_store import get_hot_list
 from store.tasks_store import get_tasks_due
 from store.win_store import get_all_wins_for_date
+from store.metrics_store import get_performance_metrics_for_date_range
 from utils import get_month_dates
 from flask_login import current_user, login_required
 
@@ -52,7 +53,7 @@ def get_sales_review_data(user_id):
     pipeline, pipeline_count = get_pipeline(user_id, pipeline_page, 10)
     tasks_due, tasks_due_count = get_tasks_due(user_id, tasks_due_page, 10)
     employees = get_all_employees()
-    monthly_performance = get_performance_metrics_for_sales_agent_for_month(user_id, month, year)
+    monthly_performance = get_performance_metrics_for_date_range(start_date, end_date, user_id)
     context = {
         "weekly_summary": weekly_summary,
         "opportunities": opportunities,
@@ -67,6 +68,7 @@ def get_sales_review_data(user_id):
         "selected_date": selected_date,
         "month": month,
         "employees": employees,
-        "selected_employee_id": user_id
+        "selected_employee_id": user_id,
+        "monthly_performance": monthly_performance
     }
     return context

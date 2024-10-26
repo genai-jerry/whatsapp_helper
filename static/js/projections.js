@@ -136,7 +136,7 @@ function calculateMetrics() {
     
 
     // Calculate and update actual metrics
-    const totalActualRevenue = actualSalesClosure * averageSaleValue;
+    const totalActualRevenue = parseFloat($('#total_actual_revenue').val());
     const totalActualCost = actualLeadCost;
     const totalActualProfit = totalActualRevenue - totalActualCost;
     const totalActualROI = totalActualCost > 0 ? totalActualProfit / totalActualCost : 0;

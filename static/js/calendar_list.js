@@ -80,7 +80,12 @@ function getUrlParameter(name) {
 // Add this function to initialize the calendar based on URL parameters
 function initializeCalendarFromUrl() {
     var monthParam = getUrlParameter('month');
-
+    selectedDate = getUrlParameter('selected_date');
+    if(selectedDate == null){
+        selectedDate = 0;
+    }
+    selectedMonth = null;
+    selectedYear = null;
     if (monthParam) {
         var [month, year] = monthParam.split(' ');
         selectedMonth = month;
@@ -89,6 +94,9 @@ function initializeCalendarFromUrl() {
         selectedMonth = new Date().toLocaleString('default', { month: 'long' });
         selectedYear = new Date().getFullYear();
     }
+    $('#selected_month').val(selectedMonth);
+    $('#selected_year').val(selectedYear);
+    $('#selected_date').val(selectedDate);
 }
 
 // Call this function when the page loads

@@ -80,3 +80,12 @@ def get_month_year(month_year):
         month = datetime.now().strftime('%B')
         year = datetime.now().year
     return month, year
+
+def get_month_number(month_name):
+    print(f'Month Name for : {month_name}')
+    month_number = datetime.strptime(month_name, '%B').month
+    print(f'Month Number for : {month_number}')
+    return month_number
+
+def get_month_name(month_number):
+    return calendar.month_name[month_number]
