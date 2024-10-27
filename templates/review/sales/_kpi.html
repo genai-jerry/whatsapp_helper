@@ -25,24 +25,29 @@
             <thead class="thead-light">
                 <tr>
                     <th>Metric</th>
-                    {% if monthly_performance %}
-                        {% for week in monthly_performance.weeks %}
-                            <th>{{ week.start_date }} to {{ week.end_date }} (Proj)</th>
-                            <th>{{ week.start_date }} to {{ week.end_date }} (Actual)</th>
+                    <th>Month</th>
+                    {% if performance_data %}
+                        {% for week in performance_data.weeks %}
+                            <th title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Proj)</th>
+                            <th title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Actual)</th>
                         {% endfor %}
                     {% endif %}
                 </tr>
             </thead>
             <tbody>
-                {% for metric in ['goal', 'projection', 'offers', 'calls', 'apps'] %}
+                {% for metric in ['goal', 'projection', 'calls', 'apps'] %}
                     <tr>
                         <td>{{ metric|title }}</td>
                         {% if performance_data %}
-                        <td>{{ performance_data[metric] }}</td>
+                        <td>{{ performance_data.projection[metric] | int if performance_data.projection is not none else 0 }}</td>
                         {% for week in performance_data.weeks %}
-                            <td>{{ week.projected[metric] }}</td>
-                            <td>{{ week.actual[metric] if week.actual[metric] is not none else '' }}</td>
-                            {% endfor %}
+                            {% with projection_value = (((performance_data.projection[metric] if performance_data.projection is not none else 0) / performance_data.weeks|length) | round_up ) %}
+                            {% with actual_value = (week[metric + '_actual'] if week[metric + '_actual'] is not none else '') %}
+                                <td>{{ projection_value }}</td>
+                                <td class="{{ 'above-projection' if actual_value > projection_value else 'below-projection' }}">{{ actual_value}}</td>
+                            {% endwith %}
+                            {% endwith %}
+                        {% endfor %}
                         {% endif %}
                     </tr>
                 {% endfor %}
@@ -50,3 +55,8 @@
         </table>
     </div>
 </div>
+
+<style>
+    .above-projection { color: green; }
+    .below-projection { color: red; }
+</style>

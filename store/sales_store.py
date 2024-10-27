@@ -923,7 +923,6 @@ def get_invoice_data(payment_id):
 
 def get_weekly_summary(user_id, start_date, end_date, page=1, per_page=10):
     try:
-        print(f'user_id: {user_id}')
         connection = create_connection()
         cursor = connection.cursor()
 
@@ -933,20 +932,22 @@ def get_weekly_summary(user_id, start_date, end_date, page=1, per_page=10):
 
         while current_date <= end_date:
             week_end = current_date + timedelta(days=6)  # Sunday of the same week
-            
             query = f'''SELECT 
-                COUNT(*) as calls_scheduled,
+                COUNT(DISTINCT(a.opportunity_id)) as calls_scheduled,
                 SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as no_shows,
                 SUM(CASE WHEN status = 6 THEN 1 ELSE 0 END) as cancelled,
                 SUM(CASE WHEN status = 4 THEN 1 ELSE 0 END) as follow_up,
                 SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as sale,
                 SUM(CASE WHEN status = 5 THEN 1 ELSE 0 END) as rescheduled,
                 SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as no_sale,
-                SUM(CASE WHEN status = 7 THEN 1 ELSE 0 END) as completed
+                SUM(CASE WHEN status = 7 THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as pending
             FROM appointments a
             LEFT JOIN sales_agent sa ON sa.id = a.mentor_id
             WHERE a.appointment_time >= %s AND a.appointment_time <= %s
             '''
+            current_date = datetime.datetime.strptime(current_date.strftime('%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%M:%S')        
+            week_end = datetime.datetime.strptime(week_end.strftime('%Y-%m-%d 23:59:59'), '%Y-%m-%d %H:%M:%S')
             if user_id is not None:
                 query += 'AND sa.user_id = %s'
                 cursor.execute(query, (current_date, week_end, user_id))
@@ -966,7 +967,8 @@ def get_weekly_summary(user_id, start_date, end_date, page=1, per_page=10):
                 'sale': result[4] or 0,
                 'rescheduled': result[5] or 0,
                 'no_sale': result[6] or 0,
-                'completed': result[7] or 0
+                'completed': result[7] or 0,
+                'pending': result[8] or 0
             })
 
             current_date = week_end + timedelta(days=1)  # Move to next Monday
@@ -1118,6 +1120,24 @@ def get_pipeline(user_id, page=1, per_page=10):
                 'follow_up_date': item[2]
             } for item in pipeline
         ], total_pages
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_sales_agent_id_for_user(user_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        query = '''SELECT id FROM sales_agent WHERE user_id = %s'''
+        cursor.execute(query, (user_id,))
+        sales_agent = cursor.fetchone()
+        if sales_agent:
+            return sales_agent[0]
+        else:
+            return None
     finally:
         if cursor:
             cursor.close()

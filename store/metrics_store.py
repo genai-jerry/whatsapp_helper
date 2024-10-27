@@ -1,6 +1,7 @@
 import calendar
 from db.connection_manager import *
 from datetime import datetime, timedelta
+from store.sales_store import get_sales_agent_id_for_user
 
 def get_projection_by_id(projection_id):
     try:
@@ -32,19 +33,24 @@ def update_sales_agent_projections(projection_config_data):
         projection_exists = get_projection_for_sales_agent_for_month(projection_config_data['sales_agent_id'], projection_config_data['month'], projection_config_data['year'])
         if projection_exists:
             sql = '''UPDATE sales_projections SET sale_price=%s, total_call_slots=%s, 
-                closure_percentage_goal=%s, closure_percentage_projected=%s, commission_percentage=%s
+                closure_percentage_goal=%s, closure_percentage_projected=%s, commission_percentage=%s,
+                sales_value_goal=%s, sales_value_projected=%s
                 WHERE sales_agent_id=%s AND month=%s AND year=%s''' 
         else:
             sql = '''INSERT INTO sales_projections (sale_price, total_call_slots, 
-                closure_percentage_goal, closure_percentage_projected, commission_percentage, sales_agent_id,
+                closure_percentage_goal, closure_percentage_projected, commission_percentage, 
+                sales_value_goal, sales_value_projected,
+                sales_agent_id,
                 month, year) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''  
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''  
 
         cursor.execute(sql, (projection_config_data['sale_price'], 
                              projection_config_data['total_calls_slots'], 
                              projection_config_data['sales_closed_goal'], 
                              projection_config_data['sales_closed_projection'],  
                              projection_config_data['commission_percentage'],
+                             projection_config_data['sales_value_goal'],
+                             projection_config_data['sales_value_projection'],
                              projection_config_data['sales_agent_id'],
                              projection_config_data['month'],
                              projection_config_data['year']))
@@ -59,6 +65,9 @@ def update_sales_agent_projections(projection_config_data):
 
 def get_performance_metrics_for_date_range(start_date, end_date, sales_agent_id=None):
     try:
+        start_date = start_date.strftime('%Y-%m-%d 00:00:00')
+        end_date = end_date.strftime('%Y-%m-%d 23:59:59')
+
         connection = create_connection()
         cursor = connection.cursor()
 
@@ -139,27 +148,37 @@ def get_projection_for_sales_agent_for_month(sales_agent_id, month, year):
     try:
         connection = create_connection()
         cursor = connection.cursor()
+        config = get_projection_config(month, year)
 
         # Define the SQL query with placeholders
-        sql = '''SELECT id, total_call_slots, closure_percentage_goal, closure_percentage_projected, 
-            sales_value_projected, sales_value_goal, sale_price, commission_percentage
-            FROM sales_projections 
-            WHERE sales_agent_id=%s AND month=%s AND year=%s'''
+        if sales_agent_id:
+            sql = '''SELECT total_call_slots, closure_percentage_goal, closure_percentage_projected, 
+                sales_value_projected, sales_value_goal, sale_price, commission_percentage
+                FROM sales_projections 
+                WHERE sales_agent_id=%s AND month=%s AND year=%s'''
+            # Prepare the query and execute it with the provided values
+            cursor.execute(sql, (sales_agent_id, month, year))
+        else:
+            sql = '''SELECT SUM(total_call_slots), AVG(closure_percentage_goal), AVG(closure_percentage_projected), 
+                AVG(sales_value_projected), AVG(sales_value_goal), AVG(sale_price), AVG(commission_percentage)
+                FROM sales_projections 
+                WHERE month=%s AND year=%s'''
+            # Prepare the query and execute it with the provided values
+            cursor.execute(sql, (month, year))
         
-        # Prepare the query and execute it with the provided values
-        cursor.execute(sql, (sales_agent_id, month, year))
-
         # Fetch the result
         projection = cursor.fetchone()
-        
+        show_up_rate_goal = config['show_up_rate_goal'] if config else 0
         if projection:
             projection_data = {
-                'id': projection[0],
-                'total_call_slots': projection[1],
-                'closure_percentage_goal': projection[2],
-                'closure_percentage_projected': projection[3],
-                'sale_price': projection[6],
-                'commission_percentage': projection[7]
+                'apps': projection[0],
+                'closure_percentage_goal': projection[1],
+                'calls': projection[0],
+                'closure_percentage_projected': projection[2],
+                'sale_price': projection[5],
+                'commission_percentage': projection[6],
+                'projection': projection[3],
+                'goal': projection[4]
             }
             return projection_data
         else:
@@ -330,7 +349,7 @@ def get_projection_config(month, year):
         if connection:
             connection.close()
 
-def get_monthly_performance_for_agent(agent_id, month, year):
+def get_monthly_performance_for_agent(month, year, user_id):
     start_date_of_month = datetime(year, month, 1)
     end_date_of_month = datetime(year, month, calendar.monthrange(year, month)[1])
 
@@ -342,7 +361,13 @@ def get_monthly_performance_for_agent(agent_id, month, year):
     # Calculate the number of weeks
     num_weeks = (last_sunday - first_monday).days // 7 + 1
     start_date = first_monday
-    monthly_data = {}
+
+    if user_id:
+        agent_id = get_sales_agent_id_for_user(user_id)
+    else:
+        agent_id = None
+
+    monthly_data = {"weeks": []}
     for week in range(num_weeks):
         week_start = start_date + timedelta(days=7*week)
         week_end = min(week_start + timedelta(days=6), last_sunday)
@@ -359,10 +384,10 @@ def get_monthly_performance_for_agent(agent_id, month, year):
             'closure_percentage_projected': data['closure_percentage_projected'],
             'sales_value_projected': data['sales_value_projected'],
             'sales_value_goal': data['sales_value_goal'],
-            'total_appointments_booked': data['total_appointments_booked'],
-            'total_appointments_attended': data['total_appointments_attended'],
-            'total_sales_final': data['total_sales_final'],
-            'total_sales_deposit': data['total_sales_deposit']
+            'apps_actual': data['total_appointments_booked'],
+            'calls_actual': data['total_appointments_attended'],
+            'goal_actual': data['total_sales_final'],
+            'projection_actual': data['total_sales_final']
         }
         monthly_data['weeks'].append(week_data)
 

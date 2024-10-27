@@ -1,7 +1,7 @@
 from db.connection_manager import *
 from werkzeug.security import generate_password_hash
 
-def create_new_user(username, password):
+def create_new_user(username, password, name):
     password_hash = generate_password_hash(password)
     # Insert data into 'users' table using a prepared statement
     try:
@@ -10,10 +10,10 @@ def create_new_user(username, password):
         cursor = connection.cursor()
 
         # Define the SQL query with placeholders
-        sql = "INSERT INTO users (username, password, active) VALUES (%s, %s, 0)"
+        sql = "INSERT INTO users (username, password, active, name) VALUES (%s, %s, 0, %s)"
 
         # Prepare the query and execute it with the provided values
-        cursor.execute(sql, (username, password_hash))
+        cursor.execute(sql, (username, password_hash, name))
 
         connection.commit()
         print("User created successfully.")

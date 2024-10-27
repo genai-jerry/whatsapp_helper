@@ -27,6 +27,7 @@ from store.user_store import create_new_user, load_user_by_username
 from utils import require_api_key
 from dateutil.relativedelta import *
 from babel.numbers import format_currency
+from decimal import Decimal
 
 # Read the config.ini file
 config = configparser.ConfigParser()
@@ -81,7 +82,8 @@ def index():
 def create_user():
     username = request.form['username']
     password = request.form['password']
-    create_new_user(username, password)
+    name = request.form['name']
+    create_new_user(username, password, name)
     return 'User created successfully', 201
 
 @login_manager.user_loader
@@ -121,9 +123,12 @@ def logout():
     
 @app.template_filter()
 def number_format(value):
-    # Convert the value to a float to ensure it's a number
+    # Convert the value to a float or Decimal to ensure it's a number
     try:
-        numeric_value = float(value)
+        if isinstance(value, (float, Decimal)):
+            numeric_value = value
+        else:
+            numeric_value = float(value)
     except ValueError:
         return value  # Return the original value if it can't be converted
 

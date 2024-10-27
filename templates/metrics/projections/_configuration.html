@@ -42,11 +42,11 @@
                     
                     <div class="form-group">
                         <label for="salesClosedGoal">Sales Closed (Goal):</label>
-                        <input type="number" class="form-control" id="salesClosedGoal" name="salesClosedGoal" step="0.01" readonly>
+                        <input type="number" class="form-control" id="salesClosedGoal" name="sales_value_goal" step="0" value="{{sales_value_goal}}" readonly>
                     </div>
                     <div class="form-group">
                         <label for="salesClosedProjection">Sales Closed (Projection):</label>
-                        <input type="number" class="form-control" id="salesClosedProjection" name="salesClosedProjection" step="0.01" readonly>
+                        <input type="number" class="form-control" id="salesClosedProjection" name="sales_value_projection" step="0" value="{{sales_value_projection}}" readonly>
                     </div>
                     <div class="form-group">
                         <label for="totalSalesGoal">Total Sales Goal:</label>
@@ -117,10 +117,10 @@
 
 
             // Calculate Sales Closed (Goal and Projection)
-            var salesClosedGoal = (closureGoal / 100) * (showUpRateGoal / 100) * totalCalls;
-            var salesClosedProjection = (closureProjection / 100) * (showUpRateProjection / 100) * totalCalls;
-            $('#salesClosedGoal').val(salesClosedGoal.toFixed(2));
-            $('#salesClosedProjection').val(salesClosedProjection.toFixed(2));
+            var salesClosedGoal = Math.round((closureGoal / 100) * (showUpRateGoal / 100) * totalCalls);
+            var salesClosedProjection = Math.round((closureProjection / 100) * (showUpRateProjection / 100) * totalCalls);
+            $('#salesClosedGoal').val(salesClosedGoal);
+            $('#salesClosedProjection').val(salesClosedProjection);
 
             // Calculate Total Sales (Goal and Projection)
             var totalSalesGoal = salesClosedGoal * salePrice;

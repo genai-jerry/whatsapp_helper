@@ -12,7 +12,7 @@ win_blueprint = Blueprint('win', __name__)
 def get_wins():
     current_date = datetime.now().strftime('%Y-%m-%d')
     wins = get_all_wins_for_date(current_date)
-    return render_template('review/_wins.html', wins=wins)
+    return render_template('review/review.html', wins=wins)
 
 @win_blueprint.route('/', methods=['POST'])
 @login_required

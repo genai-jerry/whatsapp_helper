@@ -5,8 +5,9 @@ from store.employee_store import get_all_departments, get_all_employees
 from store.sales_store import get_hot_list
 from store.tasks_store import get_tasks_due
 from store.win_store import get_all_wins_for_date
-from store.metrics_store import get_performance_metrics_for_date_range
-from utils import get_month_dates
+from store.metrics_store import get_monthly_performance_for_agent
+from store.metrics_store import get_projection_for_sales_agent_for_month
+from utils import get_month_dates, get_month_number, get_month_year
 from flask_login import current_user, login_required
 
 review_blueprint = Blueprint('review', __name__)
@@ -43,19 +44,28 @@ def get_all_sales_review_dashboard():
 def get_sales_review_data(user_id):
     selected_date = request.args.get('selected_date', 0, type=int)
     month = request.args.get('month', datetime.now().strftime('%B %Y'))
+    month_name, year = get_month_year(month)
+    month_number = get_month_number(month_name)
     hot_list_page = request.args.get('hot_list_page', 1, type=int)
     pipeline_page = request.args.get('pipeline_page', 1, type=int)
     tasks_due_page = request.args.get('tasks_due_page', 1, type=int)
     start_date, end_date = get_month_dates(month)
-    year = start_date.year
+    
     weekly_summary, _ = get_weekly_summary(user_id, start_date, end_date)
     opportunities, hot_list_count = get_hot_list(user_id, hot_list_page, 10)
     pipeline, pipeline_count = get_pipeline(user_id, pipeline_page, 10)
     tasks_due, tasks_due_count = get_tasks_due(user_id, tasks_due_page, 10)
     employees = get_all_employees()
-    monthly_performance = get_performance_metrics_for_date_range(start_date, end_date, user_id)
+    print(f'Month: {month_number}, Year: {year}, User ID: {user_id}')
+    projection = get_projection_for_sales_agent_for_month(user_id,month_name, year)
+    monthly_performance = get_monthly_performance_for_agent(month_number, year, user_id)
+    performance_data = {
+        'projection': projection,
+        'weeks': monthly_performance['weeks']
+    }
+    print(f'Performance Metrics: {performance_data}')
     context = {
-        "weekly_summary": weekly_summary,
+        "weekly_summary": weekly_summary, 
         "opportunities": opportunities,
         "hot_list_count": hot_list_count,
         "pipeline": pipeline,
@@ -69,6 +79,6 @@ def get_sales_review_data(user_id):
         "month": month,
         "employees": employees,
         "selected_employee_id": user_id,
-        "monthly_performance": monthly_performance
+        "performance_data": performance_data
     }
     return context

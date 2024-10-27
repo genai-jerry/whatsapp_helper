@@ -36,4 +36,14 @@
     </div>
 </div>
 
+<!-- Add this to the head section of your HTML file -->
+<style>
+    .above-projection { color: green; }
+    .below-projection { color: red; }
+</style>
+
+
+<!-- Add this script tag at the end of your HTML file, just before the closing </body> tag -->
+<script src="{{ url_for('static', filename='js/projections.js') }}"></script>
+
 {% endblock %}

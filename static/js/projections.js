@@ -128,7 +128,6 @@ function calculateMetrics() {
     const actualShowUpRateCost = actualLeadCost / actualShowUps;
     const actualSalesClosureCost = actualLeadCost / actualSalesClosure;
 
-    $('#actual_lead_cost').text(formatIndianRupee(actualLeadCost));
     $('#actual_appointment_booked_cost').text(formatIndianRupee(actualAppointmentBookedCost.toFixed(2)));
     $('#actual_show_up_rate_cost').text(formatIndianRupee(actualShowUpRateCost.toFixed(2)));
     $('#actual_sales_closure_cost').text(formatIndianRupee(actualSalesClosureCost.toFixed(2)));
@@ -190,7 +189,6 @@ function setColorBasedOnComparison(actualValue, projectedValue, goalValue, eleme
         $element.css('color', 'red');
     }
 }
-
 
 $(document).ready(function() {
     calculateMetrics();

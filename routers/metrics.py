@@ -17,7 +17,7 @@ def show_projections(selected_date, month_name, year):
     end_date_of_month = datetime(year, month_number, calendar.monthrange(year, month_number)[1])
 
     performance_metrics = get_performance_metrics_for_date_range(start_date_of_month, end_date_of_month)
-    print(f'Performance Metrics: {performance_metrics}')
+    print(f'Projection Config: {projection_config}')
     return render_template('metrics/projections.html', 
                            projection_config=projection_config, employees=employees, 
                            sales_metrics=sales_metrics, 
@@ -70,6 +70,8 @@ def edit_employee_projection_config():
             "sales_closed_projection": request.form['sales_closed_projection'],
             "total_calls_slots": request.form['total_calls_slots'],
             "sale_price": request.form['sale_price'],
+            "sales_value_goal": request.form['sales_value_goal'],
+            "sales_value_projection": request.form['sales_value_projection'],
             "commission_percentage": request.form['commission_percentage']
         }
     print(f'projection_config_data: {projection_config_data}')
