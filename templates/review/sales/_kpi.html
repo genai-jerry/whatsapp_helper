@@ -26,28 +26,36 @@
                 <tr>
                     <th>Metric</th>
                     <th>Month</th>
+                    
                     {% if performance_data %}
                         {% for week in performance_data.weeks %}
                             <th title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Proj)</th>
                             <th title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Actual)</th>
                         {% endfor %}
+                        <th>Actual</th>
                     {% endif %}
                 </tr>
             </thead>
             <tbody>
+                {% set actual_values = {'goal': 0, 'projection': 0, 'calls': 0, 'apps': 0} %}
                 {% for metric in ['goal', 'projection', 'calls', 'apps'] %}
                     <tr>
                         <td>{{ metric|title }}</td>
                         {% if performance_data %}
-                        <td>{{ performance_data.projection[metric] | int if performance_data.projection is not none else 0 }}</td>
+                        {% with monthly_value = performance_data.projection[metric] | int if performance_data.projection is not none else 0 %}
+                        <td>{{ monthly_value }}</td>
+                        
                         {% for week in performance_data.weeks %}
                             {% with projection_value = (((performance_data.projection[metric] if performance_data.projection is not none else 0) / performance_data.weeks|length) | round_up ) %}
                             {% with actual_value = (week[metric + '_actual'] if week[metric + '_actual'] is not none else '') %}
                                 <td>{{ projection_value }}</td>
                                 <td class="{{ 'above-projection' if actual_value > projection_value else 'below-projection' }}">{{ actual_value}}</td>
+                                {% set actual_values = actual_values.update({metric: actual_values[metric] + actual_value}) %}
                             {% endwith %}
                             {% endwith %}
                         {% endfor %}
+                        <td class="{{ 'above-projection' if actual_values[metric] > monthly_value else 'below-projection' }}">{{ actual_values[metric] }}</td>
+                        {% endwith %}
                         {% endif %}
                     </tr>
                 {% endfor %}

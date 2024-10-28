@@ -90,7 +90,7 @@ def create_user():
 def load_user(user_id):
     user = load_user_by_username(user_id)
     if user:
-        return SystemUser(user['id'], user['username'], user['password'])
+        return SystemUser(user['id'], user['username'], user['password'], user['role'])
     else:
         return None
 

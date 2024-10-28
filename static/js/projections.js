@@ -1,7 +1,7 @@
 function loadSalesProjection() {
-    const employeeId = document.getElementById('employee-dropdown').value;
-    const month = document.getElementById('month').value;
-    const year = document.getElementById('year').value;
+    const employeeId = $('#employee-dropdown').val();
+    const month = $('#month').val();
+    const year = $('#year').val();
 
     if (!employeeId) {
         return;
@@ -24,29 +24,29 @@ function loadSalesProjection() {
 
             // Populate form fields with the received data
             if (response.projection) {
-                document.getElementById('leadCount').value = response.projection.total_call_slots;
-                document.getElementById('closeRate').value = response.projection.closure_percentage_projected;
-                document.getElementById('appointment_booked_projection').value = response.projection.appointment_booked_projection;
-                document.getElementById('show_up_rate_projection').value = response.projection.show_up_rate_projection;
-                document.getElementById('costPerLead').value = response.projection.cost_per_lead;
-                document.getElementById('averageSaleValue').value = response.projection.sale_price;
+                $('#leadCount').val(response.projection.total_call_slots);
+                $('#closeRate').val(response.projection.closure_percentage_projected);
+                $('#appointment_booked_projection').val(response.projection.appointment_booked_projection);
+                $('#show_up_rate_projection').val(response.projection.show_up_rate_projection);
+                $('#costPerLead').val(response.projection.cost_per_lead);
+                $('#averageSaleValue').val(response.projection.sale_price);
                 
                 // Update goal fields
-                document.getElementById('appointment_booked_goal').value = response.projection.appointment_booked_goal;
-                document.getElementById('show_up_rate_goal').value = response.projection.show_up_rate_goal;
+                $('#appointment_booked_goal').val(response.projection.appointment_booked_goal);
+                $('#show_up_rate_goal').val(response.projection.show_up_rate_goal);
                 
                 // Trigger calculation
                 calculateMetrics();
             } else {
                 // Clear form fields if no projection data is found
-                document.getElementById('leadCount').value = '';
-                document.getElementById('closeRate').value = '';
-                document.getElementById('appointment_booked_projection').value = '';
-                document.getElementById('show_up_rate_projection').value = '';
-                document.getElementById('costPerLead').value = '';
-                document.getElementById('averageSaleValue').value = '';
-                document.getElementById('appointment_booked_goal').value = '';
-                document.getElementById('show_up_rate_goal').value = '';
+                $('#leadCount').val('');
+                $('#closeRate').val('');
+                $('#appointment_booked_projection').val('');
+                $('#show_up_rate_projection').val('');
+                $('#costPerLead').val('');
+                $('#averageSaleValue').val('');
+                $('#appointment_booked_goal').val('');
+                $('#show_up_rate_goal').val('');
             }
         },
         error: function(xhr, status, error) {
@@ -144,15 +144,16 @@ function calculateMetrics() {
     const actualAppointmentBookedRate = (actualAppointmentsBooked / actualLeads) * 100;
     const actualShowUpRate = (actualShowUps / actualAppointmentsBooked) * 100;
     const actualSalesClosureRate = (actualSalesClosure / actualShowUps) * 100;
+    const actualCostPerLead = actualLeadCost / actualLeads;
 
-    document.getElementById('totalActualRevenue').textContent = formatIndianRupee(totalActualRevenue.toFixed(2));
-    document.getElementById('totalActualCost').textContent = formatIndianRupee(totalActualCost);
-    document.getElementById('totalActualProfit').textContent = formatIndianRupee(totalActualProfit.toFixed(2));
-    document.getElementById('totalActualROI').textContent = totalActualROI.toFixed(2);
-    document.getElementById('actual_appointment_booked_rate').textContent = actualAppointmentBookedRate.toFixed(2);
-    document.getElementById('actual_show_up_rate').textContent = actualShowUpRate.toFixed(2);
-    document.getElementById('actual_sales_closure_rate').textContent = actualSalesClosureRate.toFixed(2);
-
+    $('#totalActualRevenue').text(formatIndianRupee(totalActualRevenue.toFixed(2)));
+    $('#totalActualCost').text(formatIndianRupee(totalActualCost));
+    $('#totalActualProfit').text(formatIndianRupee(totalActualProfit.toFixed(2)));
+    $('#totalActualROI').text(totalActualROI.toFixed(2));
+    $('#actual_appointment_booked_rate').text(actualAppointmentBookedRate.toFixed(2));
+    $('#actual_show_up_rate').text(actualShowUpRate.toFixed(2));
+    $('#actual_sales_closure_rate').text(actualSalesClosureRate.toFixed(2));
+    $('#actual_cost_per_lead').val(formatIndianRupee(actualCostPerLead.toFixed(2)));
     // Apply color-coding for leads
     setColorBasedOnComparison(actualLeads, leadGenerationProjection, leadGenerationGoal, '#actual_lead_value');
     setColorBasedOnComparison(totalLeadCost, actualLeadCost, actualLeadCost, '#actual_lead_cost');

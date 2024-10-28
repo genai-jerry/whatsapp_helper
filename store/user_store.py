@@ -27,7 +27,11 @@ def load_user_by_username(username):
         connection = create_connection()
         cursor = connection.cursor()
         # Define the SQL query with placeholders
-        sql = "SELECT * FROM users WHERE username = %s AND active = True"
+        sql = '''SELECT u.id, u.username, u.password, u.active, r.name 
+            FROM users u
+            LEFT JOIN user_role ur on ur.user_id = u.id
+            LEFT JOIN roles r on ur.role_id = r.id
+            WHERE username = %s AND active = True'''
         # Execute the query with the provided value
         cursor.execute(sql, (username,))
         result = cursor.fetchone()
@@ -36,7 +40,8 @@ def load_user_by_username(username):
                 'id': result[0],
                 'username': result[1],
                 'password': result[2],
-                'active': result[3]
+                'active': result[3],
+                'role': result[4]
             }
             print(f'Returning {user}')
             return user

@@ -169,16 +169,21 @@ def get_projection_for_sales_agent_for_month(sales_agent_id, month, year):
         # Fetch the result
         projection = cursor.fetchone()
         show_up_rate_goal = config['show_up_rate_goal'] if config else 0
+        show_up_rate_projection = config['show_up_rate_projection'] if config else 0
         if projection:
+            total_calls = projection[0] if projection[0] else 0
+            print(f"total_calls: {total_calls}, show_up_rate_projection: {show_up_rate_projection}")
             projection_data = {
-                'apps': projection[0],
+                'apps': total_calls,
                 'closure_percentage_goal': projection[1],
-                'calls': projection[0],
+                'calls': int(total_calls) * (int(show_up_rate_projection) / 100),
                 'closure_percentage_projected': projection[2],
                 'sale_price': projection[5],
                 'commission_percentage': projection[6],
                 'projection': projection[3],
-                'goal': projection[4]
+                'goal': projection[4],
+                'show_up_rate_goal': show_up_rate_goal,
+                'show_up_rate_projection': show_up_rate_projection
             }
             return projection_data
         else:

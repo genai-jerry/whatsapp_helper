@@ -62,11 +62,13 @@
                             Review
                         </a>
                     </li>
+                    {% if current_user.role == "Admin" %}
                     <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="/metrics/projections">
                             Projections
                         </a>
                     </li>
+                    {% endif %}
                 </ul>
             </li>
             <li class="nav-item">
