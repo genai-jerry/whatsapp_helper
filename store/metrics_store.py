@@ -174,7 +174,8 @@ def get_projection_for_sales_agent_for_month(sales_agent_id, month, year):
             total_calls = projection[0] if projection[0] else 0
             print(f"total_calls: {total_calls}, show_up_rate_projection: {show_up_rate_projection}")
             projection_data = {
-                'apps': total_calls,
+                'apps': total_calls, 
+                'total_call_slots': total_calls,
                 'closure_percentage_goal': projection[1],
                 'calls': int(total_calls) * (int(show_up_rate_projection) / 100),
                 'closure_percentage_projected': projection[2],
@@ -372,7 +373,11 @@ def get_monthly_performance_for_agent(month, year, user_id):
     else:
         agent_id = None
 
-    monthly_data = {"weeks": []}
+    monthly_data = {"weeks": [], "goal_month": 0, "projection_month": 0, "calls_month": 0, "apps_month": 0}
+    goal_month = 0
+    projection_month = 0
+    calls_month = 0
+    apps_month = 0
     for week in range(num_weeks):
         week_start = start_date + timedelta(days=7*week)
         week_end = min(week_start + timedelta(days=6), last_sunday)
@@ -395,6 +400,13 @@ def get_monthly_performance_for_agent(month, year, user_id):
             'projection_actual': data['total_sales_final']
         }
         monthly_data['weeks'].append(week_data)
-
+        goal_month += data['total_sales_final']
+        projection_month += data['total_sales_final']
+        calls_month += data['total_appointments_attended']
+        apps_month += data['total_appointments_booked']
+    monthly_data['goal_month'] = goal_month
+    monthly_data['projection_month'] = projection_month
+    monthly_data['calls_month'] = calls_month
+    monthly_data['apps_month'] = apps_month
     return monthly_data
 

@@ -1,0 +1,280 @@
+<div class="card-header">
+    <h5>Assigned Leads</h5>
+</div>
+<div class="card-body">
+    <div class="row">
+        <!-- New Leads Column -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">New Leads ({{ assigned_leads_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="leads-list" id="newLeadsList">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in assigned_leads %}
+                                <tr class="lead-item">
+                                    <td class="opportunity-name">{{ lead.name }}</td>
+                                    <td class="phone-number">{{ lead.phone }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->    
+
+                        <!-- Add pagination controls -->
+                        {% if (assigned_leads_count/page_size) > 1 %}
+                        <nav aria-label="Assigned leads pagination">
+                            <ul class="pagination justify-content-center">
+                                <!-- Previous button -->
+                                <li class="page-item {% if assigned_leads_page == 1 %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', assigned_leads_page=assigned_leads_page-1) }}"
+                                    {% if assigned_leads_page == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Previous
+                                    </a>
+                                </li>
+
+                                <!-- Page numbers -->
+                                {% set total_pages = ((assigned_leads_count + page_size - 1) // page_size) %}
+                                
+                                <!-- First page -->
+                                <li class="page-item {% if assigned_leads_page == 1 %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('review.get_call_setting_data', assigned_leads_page=1) }}">1</a>
+                                </li>
+
+                                <!-- Show ellipsis if current page is far from start -->
+                                {% if assigned_leads_page > 3 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Current page (if not 1 or last) -->
+                                {% if assigned_leads_page != 1 and assigned_leads_page != total_pages %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', assigned_leads_page=assigned_leads_page) }}">
+                                            {{ assigned_leads_page }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Show ellipsis if current page is far from end -->
+                                {% if assigned_leads_page < total_pages - 2 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Last page -->
+                                {% if total_pages > 1 %}
+                                    <li class="page-item {% if assigned_leads_page == total_pages %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', assigned_leads_page=total_pages) }}">
+                                            {{ total_pages }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Next button -->
+                                <li class="page-item {% if assigned_leads_page == total_pages %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', assigned_leads_page=assigned_leads_page+1) }}"
+                                    {% if assigned_leads_page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Next
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Follow Up Column -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h6 class="mb-0">Follow Up ({{ assigned_follow_up_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="leads-list" id="followUpList">
+                        <!-- Template for each follow-up -->
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in assigned_follow_up %}
+                                <tr class="lead-item">
+                                    <td class="opportunity-name">{{ lead.name }}</td>
+                                    <td class="phone-number">{{ lead.phone }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->
+                        {% if (assigned_follow_up_count/page_size) > 1 %}
+                        <nav aria-label="Assigned follow up leads pagination">
+                            <ul class="pagination justify-content-center">
+                                <!-- Previous button -->
+                                <li class="page-item {% if assigned_follow_up_page == 1 %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', assigned_follow_up_page=assigned_follow_up_page-1) }}"
+                                    {% if assigned_follow_up_page == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Previous
+                                    </a>
+                                </li>
+
+                                <!-- Page numbers -->
+                                {% set total_pages = ((assigned_follow_up_count + page_size - 1) // page_size) %}
+                                
+                                <!-- First page -->
+                                <li class="page-item {% if assigned_follow_up_page == 1 %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('review.get_call_setting_data', assigned_follow_up_page=1) }}">1</a>
+                                </li>
+
+                                <!-- Show ellipsis if current page is far from start -->
+                                {% if assigned_follow_up_page > 3 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Current page (if not 1 or last) -->
+                                {% if assigned_follow_up_page != 1 and assigned_follow_up_page != total_pages %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', assigned_follow_up_page=assigned_follow_up_page) }}">
+                                            {{ assigned_follow_up_page }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Show ellipsis if current page is far from end -->
+                                {% if assigned_follow_up_page < total_pages - 2 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Last page -->
+                                {% if total_pages > 1 %}
+                                    <li class="page-item {% if assigned_follow_up_page == total_pages %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', assigned_follow_up_page=total_pages) }}">
+                                            {{ total_pages }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Next button -->
+                                <li class="page-item {% if assigned_follow_up_page == total_pages %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', assigned_follow_up_page=assigned_follow_up_page+1) }}"
+                                    {% if assigned_follow_up_page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Next
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Shows Column -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">No Shows ({{ assigned_no_show_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="leads-list" id="noShowsList">
+                        <!-- Template for each no-show -->
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in assigned_no_show %}
+                                <tr class="lead-item">
+                                    <td class="opportunity-name">{{ lead.name }}</td>
+                                    <td class="phone-number">{{ lead.phone }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->
+                        {% if (assigned_no_show_count/page_size) > 1 %}
+                        <nav aria-label="Assigned no show leads pagination">
+                            <ul class="pagination justify-content-center">
+                                <!-- Previous button -->
+                                <li class="page-item {% if assigned_no_show_page == 1 %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', assigned_no_show_page=assigned_no_show_page-1) }}"
+                                    {% if assigned_no_show_page == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Previous
+                                    </a>
+                                </li>
+
+                                <!-- Page numbers -->
+                                {% set total_pages = ((assigned_no_show_count + page_size - 1) // page_size) %}
+                                
+                                <!-- First page -->
+                                <li class="page-item {% if assigned_no_show_page == 1 %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('review.get_call_setting_data', assigned_no_show_page=1) }}">1</a>
+                                </li>
+
+                                <!-- Show ellipsis if current page is far from start -->
+                                {% if assigned_no_show_page > 3 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Current page (if not 1 or last) -->
+                                {% if assigned_no_show_page != 1 and assigned_no_show_page != total_pages %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', assigned_no_show_page=assigned_no_show_page) }}">
+                                            {{ assigned_no_show_page }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Show ellipsis if current page is far from end -->
+                                {% if assigned_no_show_page < total_pages - 2 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Last page -->
+                                {% if total_pages > 1 %}
+                                    <li class="page-item {% if assigned_no_show_page == total_pages %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', assigned_no_show_page=total_pages) }}">
+                                            {{ total_pages }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Next button -->
+                                <li class="page-item {% if assigned_no_show_page == total_pages %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', assigned_no_show_page=assigned_no_show_page+1) }}"
+                                    {% if assigned_no_show_page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Next
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

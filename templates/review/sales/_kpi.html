@@ -26,13 +26,12 @@
                 <tr>
                     <th>Metric</th>
                     <th>Month</th>
-                    
+                    <th>Actual</th>
                     {% if performance_data %}
                         {% for week in performance_data.weeks %}
                             <th title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Proj)</th>
                             <th title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Actual)</th>
                         {% endfor %}
-                        <th>Actual</th>
                     {% endif %}
                 </tr>
             </thead>
@@ -44,7 +43,7 @@
                         {% if performance_data %}
                         {% with monthly_value = performance_data.projection[metric] | int if performance_data.projection is not none else 0 %}
                         <td>{{ monthly_value }}</td>
-                        
+                        <td class="{{ 'above-projection' if performance_data[metric + '_month'] > monthly_value else 'below-projection' }}">{{ performance_data[metric + '_month'] }}</td>
                         {% for week in performance_data.weeks %}
                             {% with projection_value = (((performance_data.projection[metric] if performance_data.projection is not none else 0) / performance_data.weeks|length) | round_up ) %}
                             {% with actual_value = (week[metric + '_actual'] if week[metric + '_actual'] is not none else '') %}
@@ -54,7 +53,7 @@
                             {% endwith %}
                             {% endwith %}
                         {% endfor %}
-                        <td class="{{ 'above-projection' if actual_values[metric] > monthly_value else 'below-projection' }}">{{ actual_values[metric] }}</td>
+                        
                         {% endwith %}
                         {% endif %}
                     </tr>

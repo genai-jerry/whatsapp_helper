@@ -11,7 +11,8 @@ function listTasks(opportunity_id) {
     if (opportunity_id != null) {
         url += `opportunity_id=${opportunity_id}`;
     }
-    const employee_id = document.getElementById('employeeSelect').value;
+
+    const employee_id = $('#employeeSelect')?.val();
     if (employee_id && employee_id != '') {
         url += `&employee_id=${employee_id}`;
     }

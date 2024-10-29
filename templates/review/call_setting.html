@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Call Setting Review{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Agent Selection -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="form-group">
+                <h3>Select for Review</h3>
+                <select class="form-control" id="employeeSelect">
+                    <option value="">All Employees</option>
+                    {% for employee in employees %}
+                        <option value="{{ employee.user_id }}" {% if employee.user_id == selected_employee_id %}selected{% endif %}>{{ employee.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Calls Section     -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Daily Calls Overview</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            {% for update_count in update_counts %}
+                            <th class="date-header {% if update_count.is_today %}bg-primary text-white{% else %}bg-light{% endif %}">
+                                {{ update_count.date | format_date }}
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Calls Made</td>
+                            {% for update_count in update_counts %}
+                            <td class="calls-data">{{ update_count.count }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Appointments Booked</td>
+                            {% for update_count in update_counts %}
+                            <td class="calls-data">{{ update_count.book_count }}</td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assigned Leads Section -->
+    <div class="card mb-4">
+        {% include "review/call-setting/_assigned.html" %}
+    </div>
+
+    <!-- Pipeline Section -->
+    <div class="card mb-4">
+        {% include "review/call-setting/_pipeline.html" %}
+    </div>
+</div>
+
+<style>
+.lead-item, .pipeline-item {
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.card-header {
+    padding: 0.5rem 1rem;
+}
+
+.leads-list, .pipeline-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.pagination-container {
+    margin-top: 1rem;
+}
+
+.pagination {
+    margin-bottom: 0;
+}
+
+.page-link {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+.card .card-body p {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.text-muted {
+    opacity: 0.6;
+}
+</style>
+
+<script>
+    const destination = 'call-setting';
+</script>
+<script src="{{ url_for('static', filename='js/setting_pipeline.js') }}"></script>
+
+{% endblock %}

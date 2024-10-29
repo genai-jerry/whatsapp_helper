@@ -81,6 +81,9 @@ class Opportunity(db.Model):
     optin_caller = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
     company_type = db.Column(db.Integer, db.ForeignKey('company_type.id'))
     challenge_type = db.Column(db.Integer, db.ForeignKey('challenge_type.id'))
+    assigned_to = db.Column(db.Integer, db.ForeignKey('sales_agent.id'), nullable=True)
+    last_updated = db.Column(db.DateTime, nullable=True)
+    last_updated_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
 class CompanyType(db.Model):
     __tablename__ = 'company_type'

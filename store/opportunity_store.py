@@ -1,7 +1,8 @@
 from db.connection_manager import *
 from utils import format_phone_number
-from datetime import datetime
+from datetime import datetime, timedelta
 from facebook.fb_ads_manager import handle_opportunity_update
+from typing import Optional
 
 opportunities = {}
 
@@ -778,3 +779,222 @@ def get_total_opportunity_count_for_month(month, year):
     finally:
         if cursor:
             cursor.close()
+
+def list_all_new_leads(assigned = False, agent_id=None, page=1, page_size=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = '''SELECT id, name, email, phone, register_time FROM opportunity 
+                WHERE call_status IS NULL'''
+        if agent_id:
+            sql += f" AND assigned_to = %s ORDER BY register_time DESC LIMIT %s OFFSET %s"
+            offset = (page - 1) * page_size
+            cursor.execute(sql, (agent_id, page_size, offset))
+        else:
+            if assigned:
+                sql += " AND assigned_to IS NOT NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
+            else:
+                sql += " AND assigned_to IS NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
+            offset = (page - 1) * page_size
+            cursor.execute(sql, (page_size, offset))
+        results = cursor.fetchall()
+
+        # Get the total count of opportunities
+        count_sql = "SELECT COUNT(*) FROM opportunity WHERE call_status IS NULL"
+        if agent_id:
+            count_sql += " AND assigned_to = %s"
+            cursor.execute(count_sql, (agent_id,))
+        else:
+            if assigned:
+                count_sql += " AND assigned_to IS NOT NULL"
+            else:
+                count_sql += " AND assigned_to IS NULL"
+            cursor.execute(count_sql)
+        total_count = cursor.fetchone()[0]
+
+        opportunities = []
+        for row in results:
+            opportunities.append({
+                'id': row[0],
+                'name': row[1],
+                'email': row[2],
+                'phone': row[3],
+                'register_time': row[4],
+            })
+        return opportunities, total_count
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def list_all_leads_for_follow_up(assigned = False, agent_id=None, page=1, page_size=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        # Return all leads that have a call_status of 12, 13, 14
+        sql = '''SELECT id, name, email, phone, register_time FROM opportunity 
+                WHERE call_status IN (12, 13)'''
+        if agent_id:
+            sql += f" AND assigned_to = %s ORDER BY register_time DESC LIMIT %s OFFSET %s"
+            offset = (page - 1) * page_size
+            cursor.execute(sql, (agent_id, page_size, offset))
+        else:
+            if assigned:
+                sql += " AND assigned_to IS NOT NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
+            else:
+                sql += " AND assigned_to IS NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
+            offset = (page - 1) * page_size
+            cursor.execute(sql, (page_size, offset))
+        results = cursor.fetchall()
+        opportunities = []
+        for row in results:
+            opportunities.append({
+                'id': row[0],
+                'name': row[1],
+                'email': row[2],
+                'phone': row[3],
+                'register_time': row[4],
+            })
+        
+        count_sql = "SELECT COUNT(*) FROM opportunity WHERE call_status IN (12, 13)"
+        if agent_id:
+            count_sql += " AND assigned_to = %s"
+            cursor.execute(count_sql, (agent_id,))
+        else:
+            if assigned:
+                count_sql += " AND assigned_to IS NOT NULL"
+            else:
+                count_sql += " AND assigned_to IS NULL"
+            cursor.execute(count_sql)
+        total_count = cursor.fetchone()[0]
+        return opportunities, total_count
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def list_all_leads_for_no_show(assigned = False, agent_id=None, page=1, page_size=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = '''SELECT o.id, o.name, o.email, o.phone, o.register_time FROM opportunity o
+                LEFT JOIN appointments a on a.opportunity_id = o.id
+                WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
+                AND a.status = 1'''
+        if agent_id:
+            sql += f" AND o.assigned_to = %s ORDER BY o.register_time DESC LIMIT %s OFFSET %s"
+            offset = (page - 1) * page_size
+            cursor.execute(sql, (agent_id, page_size, offset))
+        else:
+            if assigned:
+                sql += " AND assigned_to IS NOT NULL ORDER BY o.register_time DESC LIMIT %s OFFSET %s"
+            else:
+                sql += " AND assigned_to IS NULL ORDER BY o.register_time DESC LIMIT %s OFFSET %s"
+            offset = (page - 1) * page_size
+            cursor.execute(sql, (page_size, offset))
+        results = cursor.fetchall()
+        opportunities = []
+        for row in results:
+            opportunities.append({
+                'id': row[0],
+                'name': row[1],
+                'email': row[2],
+                'phone': row[3],
+                'register_time': row[4],
+            })
+        count_sql = '''SELECT COUNT(*) FROM opportunity o
+                    LEFT JOIN appointments a on a.opportunity_id = o.id 
+                    WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
+                    AND a.status = 1'''
+        if agent_id:
+            count_sql += " AND o.assigned_to = %s"
+            cursor.execute(count_sql, (agent_id,))
+        else:
+            if assigned:
+                count_sql += " AND o.assigned_to IS NOT NULL"
+            else:
+                count_sql += " AND o.assigned_to IS NULL"
+            cursor.execute(count_sql)
+        total_count = cursor.fetchone()[0]
+        return opportunities, total_count
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def assign_opportunity_to_agent(opportunity_id, agent_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "UPDATE opportunity SET assigned_to = %s WHERE id = %s"
+        cursor.execute(sql, (agent_id, opportunity_id))
+        connection.commit()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_all_opportunities_updated(since_days=7, agent_id=None):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        
+        # Create a list of the last 7 days
+        days = []
+        for i in range(since_days):
+            day = datetime.now() - timedelta(days=i)
+            days.append(day.date())
+
+        # Get the data from database
+        start_date = datetime.now() - timedelta(days=since_days)
+        sql = '''SELECT COUNT(id), DATE(last_updated) as update_date 
+                FROM opportunity 
+                WHERE DATE(last_updated) >= %s'''
+        if agent_id:
+            sql += " AND assigned_to = %s GROUP BY DATE(last_updated)"
+            cursor.execute(sql, (start_date, agent_id))
+        else:
+            sql += " GROUP BY DATE(last_updated)"
+            cursor.execute(sql, (start_date,))
+            
+        # Convert results to dictionary for easier lookup
+        results = cursor.fetchall()
+        updates_dict = {row[1]: row[0] for row in results}
+
+        cursor.execute(sql, (start_date,))
+        results = cursor.fetchall()
+        updates_dict = {row[1]: row[0] for row in results}
+
+        sql = '''SELECT COUNT(a.id), DATE(a.created_at) as book_date 
+                FROM appointments a
+                JOIN opportunity o on o.id = a.opportunity_id
+                WHERE DATE(a.created_at) >= %s'''
+        if agent_id:
+            sql += " AND o.call_setter = %s GROUP BY DATE(a.created_at)"
+            cursor.execute(sql, (start_date, agent_id))
+        else:
+            sql += " AND o.call_setter IS NOT NULL GROUP BY DATE(a.created_at)"
+            cursor.execute(sql, (start_date,))
+        results = cursor.fetchall()
+        book_dict = {row[1]: row[0] for row in results}
+        
+        # Create final list with all days, using 0 for days with no updates
+        opportunities = []
+        for day in days:
+            opportunities.append({
+                'date': day,
+                'count': updates_dict.get(day, 0),
+                'book_count': book_dict.get(day, 0),
+                'is_today': day == datetime.now().date()
+            })
+            
+        return opportunities
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()

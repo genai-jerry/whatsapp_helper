@@ -1,0 +1,278 @@
+<div class="card-header">
+    <h5>Pipeline</h5>
+</div>
+<div class="card-body">
+    <div class="row">
+        <!-- New Leads Pipeline -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">New Leads ({{ pipeline_leads_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="pipeline-list" id="newLeadsPipeline">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in pipeline_leads %}
+                                <tr class="pipeline-item">
+                                    <td class="opportunity-name"><a href="/opportunity/{{ lead.id }}">{{ lead.name }}</a><br>{{ lead.phone }}</td>
+                                    <td class="phone-number"><button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('{{ lead.phone }}')">Assign</button></td>
+                                    <td class="register-date">{{ lead.register_time | format_date }}</td>
+                                </tr>   
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% if (pipeline_leads_count/page_size) > 1 %}
+                        <nav aria-label="New leads pagination">
+                            <ul class="pagination justify-content-center">
+                                <!-- Previous button -->
+                                <li class="page-item {% if pipeline_leads_page == 1 %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', pipeline_leads_page=pipeline_leads_page-1) }}"
+                                    {% if pipeline_leads_page == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Previous
+                                    </a>
+                                </li>
+
+                                <!-- Page numbers -->
+                                {% set total_pages = ((pipeline_leads_count + page_size - 1) // page_size) %}
+                                
+                                <!-- First page -->
+                                <li class="page-item {% if pipeline_leads_page == 1 %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('review.get_call_setting_data', pipeline_leads_page=1) }}">1</a>
+                                </li>
+
+                                <!-- Show ellipsis if current page is far from start -->
+                                {% if pipeline_leads_page > 3 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Current page (if not 1 or last) -->
+                                {% if pipeline_leads_page != 1 and pipeline_leads_page != total_pages %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', pipeline_leads_page=pipeline_leads_page) }}">
+                                            {{ pipeline_leads_page }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Show ellipsis if current page is far from end -->
+                                {% if pipeline_leads_page < total_pages - 2 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Last page -->
+                                {% if total_pages > 1 %}
+                                    <li class="page-item {% if pipeline_leads_page == total_pages %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', pipeline_leads_page=total_pages) }}">
+                                            {{ total_pages }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Next button -->
+                                <li class="page-item {% if pipeline_leads_page == total_pages %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', pipeline_leads_page=pipeline_leads_page+1) }}"
+                                    {% if pipeline_leads_page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Next
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Follow Up Pipeline -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h6 class="mb-0">Follow Up ({{ pipeline_follow_up_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="pipeline-list" id="followUpPipeline">
+                        <!-- Template for pipeline items -->
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in pipeline_follow_up %}
+                                <tr class="pipeline-item">
+                                    <td class="opportunity-name"><a href="/opportunity/{{ lead.id }}">{{ lead.name }}</a><br>{{ lead.phone }}</td>
+                                    <td class="phone-number"><button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('{{ lead.phone }}')">Assign</button></td>
+                                    <td class="register-date">{{ lead.register_time | format_date }}</td>
+                                </tr>   
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% if (pipeline_follow_up_count/page_size) > 1 %}
+                        <nav aria-label="Follow up leads pagination">
+                            <ul class="pagination justify-content-center">
+                                <!-- Previous button -->
+                                <li class="page-item {% if pipeline_follow_up_page == 1 %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', pipeline_follow_up_page=pipeline_follow_up_page-1) }}"
+                                    {% if pipeline_follow_up_page == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Previous
+                                    </a>
+                                </li>
+
+                                <!-- Page numbers -->
+                                {% set total_pages = ((pipeline_follow_up_count + page_size - 1) // page_size) %}
+                                
+                                <!-- First page -->
+                                <li class="page-item {% if pipeline_follow_up_page == 1 %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('review.get_call_setting_data', pipeline_follow_up_page=1) }}">1</a>
+                                </li>
+
+                                <!-- Show ellipsis if current page is far from start -->
+                                {% if pipeline_follow_up_page > 3 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Current page (if not 1 or last) -->
+                                {% if pipeline_follow_up_page != 1 and pipeline_follow_up_page != total_pages %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', pipeline_follow_up_page=pipeline_follow_up_page) }}">
+                                            {{ pipeline_follow_up_page }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Show ellipsis if current page is far from end -->
+                                {% if pipeline_follow_up_page < total_pages - 2 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Last page -->
+                                {% if total_pages > 1 %}
+                                    <li class="page-item {% if pipeline_follow_up_page == total_pages %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', pipeline_follow_up_page=total_pages) }}">
+                                            {{ total_pages }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Next button -->
+                                <li class="page-item {% if pipeline_follow_up_page == total_pages %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', pipeline_follow_up_page=pipeline_follow_up_page+1) }}"
+                                    {% if pipeline_follow_up_page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Next
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Shows Pipeline -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">No Shows ({{ pipeline_no_show_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="pipeline-list" id="noShowsPipeline">
+                        <!-- Template for pipeline items -->
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in pipeline_no_show %}
+                                <tr class="pipeline-item">
+                                    <td class="opportunity-name"><a href="/opportunity/{{ lead.id }}">{{ lead.name }}</a><br>{{ lead.phone }}</td>
+                                    <td class="phone-number"><button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('{{ lead.phone }}')">Assign</button></td>
+                                    <td class="register-date">{{ lead.register_time | format_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% if (pipeline_no_show_count/page_size) > 1 %}
+                        <nav aria-label="No show leads pagination">
+                            <ul class="pagination justify-content-center">
+                                <!-- Previous button -->
+                                <li class="page-item {% if pipeline_no_show_page == 1 %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', pipeline_no_show_page=pipeline_no_show_page-1) }}"
+                                    {% if pipeline_no_show_page == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Previous
+                                    </a>
+                                </li>
+
+                                <!-- Page numbers -->
+                                {% set total_pages = ((pipeline_no_show_count + page_size - 1) // page_size) %}
+                                
+                                <!-- First page -->
+                                <li class="page-item {% if pipeline_no_show_page == 1 %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('review.get_call_setting_data', pipeline_no_show_page=1) }}">1</a>
+                                </li>
+
+                                <!-- Show ellipsis if current page is far from start -->
+                                {% if pipeline_no_show_page > 3 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Current page (if not 1 or last) -->
+                                {% if pipeline_no_show_page != 1 and pipeline_no_show_page != total_pages %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', pipeline_no_show_page=pipeline_no_show_page) }}">
+                                            {{ pipeline_no_show_page }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Show ellipsis if current page is far from end -->
+                                {% if pipeline_no_show_page < total_pages - 2 %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+
+                                <!-- Last page -->
+                                {% if total_pages > 1 %}
+                                    <li class="page-item {% if pipeline_no_show_page == total_pages %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('review.get_call_setting_data', pipeline_no_show_page=total_pages) }}">
+                                            {{ total_pages }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <!-- Next button -->
+                                <li class="page-item {% if pipeline_no_show_page == total_pages %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                    href="{{ url_for('review.get_call_setting_data', pipeline_no_show_page=pipeline_no_show_page+1) }}"
+                                    {% if pipeline_no_show_page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        Next
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

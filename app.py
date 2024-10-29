@@ -132,8 +132,8 @@ def number_format(value):
     except ValueError:
         return value  # Return the original value if it can't be converted
 
-    # Format the number as currency (USD in this example, you can change as needed)
-    formatted_value = format_currency(numeric_value, '', locale='en_IN')
+    # Format the number as currency without decimals
+    formatted_value = format_currency(int(numeric_value), '', locale='en_IN')
     
     # Remove the currency symbol if you only want the formatted number
     formatted_number = formatted_value.replace('$', '')
@@ -161,7 +161,7 @@ def format_date(value):
             except ValueError:
                 return value  # Return the original string if it can't be parsed
     
-    formatted_date = value.strftime('%d %b')
+    formatted_date = value.strftime('%d %b %Y')
     return formatted_date
 
 @app.template_filter()
