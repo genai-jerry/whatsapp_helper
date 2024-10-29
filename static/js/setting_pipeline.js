@@ -41,10 +41,10 @@ class SettingPipeline {
 
             const data = await response.json();
 
-            if (response.ok) {
+            if (data.status === 'success') {
                 // Success handling
                 this.moveOpportunityToAssigned(opportunityId);
-                button.innerHTML = 'Assigned';
+                button.innerHTML = 'Assigned to You';
                 button.classList.remove('btn-primary');
                 button.classList.add('btn-success');
             } else {
@@ -53,9 +53,10 @@ class SettingPipeline {
             }
         } catch (error) {
             console.error('Assignment failed:', error);
-            button.disabled = false;
-            button.innerHTML = 'Assign';
-            alert('Failed to assign opportunity: ' + error.message);
+            button.disabled = true;
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-danger');
+            button.innerHTML = 'Already Assigned';
         }
     }
 
@@ -113,6 +114,62 @@ class SettingPipeline {
                 assignedCount.textContent = count;
             }
         });
+    }
+
+    initializeStatusSelects() {
+        document.querySelectorAll('.status-select').forEach(select => {
+            // Set initial styling
+            this.updateSelectStyling(select);
+
+            // Add change event listener
+            select.addEventListener('change', (e) => {
+                this.handleStatusChange(e);
+            });
+        });
+    }
+
+    updateSelectStyling(select) {
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            select.style.backgroundColor = selectedOption.dataset.bgColor;
+            select.style.color = selectedOption.dataset.textColor;
+        } else {
+            select.style.backgroundColor = '';
+            select.style.color = '';
+        }
+    }
+
+    async handleStatusChange(event) {
+        const select = event.target;
+        const opportunityId = select.dataset.opportunityId;
+        const newStatus = select.value;
+
+        try {
+            const response = await fetch('/api/opportunity/status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    opportunity_id: opportunityId,
+                    status: newStatus,
+                    status_type: 'call_status'
+                })
+            });
+
+            if (response.ok) {
+                // Update the select styling
+                this.updateSelectStyling(select);
+            } else {
+                throw new Error('Failed to update status');
+            }
+        } catch (error) {
+            console.error('Status update failed:', error);
+            // Revert the select to its previous value
+            select.value = select.dataset.previousValue;
+            this.updateSelectStyling(select);
+            alert('Failed to update status: ' + error.message);
+        }
     }
 }
 

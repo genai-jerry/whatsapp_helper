@@ -132,11 +132,11 @@ def update_opportunity_status(opportunity_data, status_columns=None):
         status_type = opportunity_data['status_type']
         # Define the SQL query with placeholders
         if status_type == "call_status":
-            sql = "UPDATE opportunity SET call_status = %s "
+            sql = "UPDATE opportunity SET call_status = %s, last_updated = NOW()"
         elif status_type == "opportunity_status":
-            sql = "UPDATE opportunity SET opportunity_status = %s "
+            sql = "UPDATE opportunity SET opportunity_status = %s, last_updated = NOW()"
         elif status_type == "agent":
-            sql = "UPDATE opportunity SET optin_caller = %s "
+            sql = "UPDATE opportunity SET optin_caller = %s, last_updated = NOW()"
         else:
             raise ValueError("Invalid status type")
 
@@ -784,7 +784,7 @@ def list_all_new_leads(assigned = False, agent_id=None, page=1, page_size=10):
     try:
         connection = create_connection()
         cursor = connection.cursor()
-        sql = '''SELECT id, name, email, phone, register_time FROM opportunity 
+        sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated FROM opportunity 
                 WHERE call_status IS NULL'''
         if agent_id:
             sql += f" AND assigned_to = %s ORDER BY register_time DESC LIMIT %s OFFSET %s"
@@ -820,6 +820,8 @@ def list_all_new_leads(assigned = False, agent_id=None, page=1, page_size=10):
                 'email': row[2],
                 'phone': row[3],
                 'register_time': row[4],
+                'call_status': row[5],
+                'last_updated': row[6],
             })
         return opportunities, total_count
     finally:
@@ -833,7 +835,7 @@ def list_all_leads_for_follow_up(assigned = False, agent_id=None, page=1, page_s
         connection = create_connection()
         cursor = connection.cursor()
         # Return all leads that have a call_status of 12, 13, 14
-        sql = '''SELECT id, name, email, phone, register_time FROM opportunity 
+        sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated FROM opportunity 
                 WHERE call_status IN (12, 13)'''
         if agent_id:
             sql += f" AND assigned_to = %s ORDER BY register_time DESC LIMIT %s OFFSET %s"
@@ -855,6 +857,8 @@ def list_all_leads_for_follow_up(assigned = False, agent_id=None, page=1, page_s
                 'email': row[2],
                 'phone': row[3],
                 'register_time': row[4],
+                'call_status': row[5],
+                'last_updated': row[6],
             })
         
         count_sql = "SELECT COUNT(*) FROM opportunity WHERE call_status IN (12, 13)"
@@ -879,7 +883,7 @@ def list_all_leads_for_no_show(assigned = False, agent_id=None, page=1, page_siz
     try:
         connection = create_connection()
         cursor = connection.cursor()
-        sql = '''SELECT o.id, o.name, o.email, o.phone, o.register_time FROM opportunity o
+        sql = '''SELECT o.id, o.name, o.email, o.phone, o.register_time, o.call_status, o.last_updated FROM opportunity o
                 LEFT JOIN appointments a on a.opportunity_id = o.id
                 WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
                 AND a.status = 1'''
@@ -903,6 +907,8 @@ def list_all_leads_for_no_show(assigned = False, agent_id=None, page=1, page_siz
                 'email': row[2],
                 'phone': row[3],
                 'register_time': row[4],
+                'call_status': row[5],
+                'last_updated': row[6],
             })
         count_sql = '''SELECT COUNT(*) FROM opportunity o
                     LEFT JOIN appointments a on a.opportunity_id = o.id 
@@ -929,8 +935,16 @@ def assign_opportunity_to_agent(opportunity_id, agent_id):
     try:
         connection = create_connection()
         cursor = connection.cursor()
-        sql = "UPDATE opportunity SET assigned_to = %s WHERE id = %s"
+            
+        # If not assigned, proceed with assignment
+        sql = "UPDATE opportunity SET assigned_to = %s WHERE id = %s AND assigned_to IS NULL"
         cursor.execute(sql, (agent_id, opportunity_id))
+        updated_count = cursor.rowcount
+        print(f'Updated {updated_count} rows')
+        if updated_count == 0:
+            print(f'Opportunity {opportunity_id} is already assigned to {agent_id}')
+            raise ValueError("Failed to assign opportunity - may already be assigned")
+            
         connection.commit()
     finally:
         if cursor:
@@ -962,10 +976,6 @@ def get_all_opportunities_updated(since_days=7, agent_id=None):
             cursor.execute(sql, (start_date,))
             
         # Convert results to dictionary for easier lookup
-        results = cursor.fetchall()
-        updates_dict = {row[1]: row[0] for row in results}
-
-        cursor.execute(sql, (start_date,))
         results = cursor.fetchall()
         updates_dict = {row[1]: row[0] for row in results}
 

@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import Blueprint, jsonify, render_template, request
 from routers.sales import get_weekly_summary, get_pipeline
 from store.employee_store import get_all_departments, get_all_employees
-from store.opportunity_store import assign_opportunity_to_agent, get_all_opportunities_updated, list_all_leads_for_follow_up, list_all_leads_for_no_show, list_all_new_leads
+from store.opportunity_store import *
 from store.sales_store import get_hot_list
 from store.tasks_store import get_tasks_due
 from store.win_store import get_all_wins_for_date
@@ -105,6 +105,7 @@ def get_call_setting_data(agent_id=None):
     pipeline_leads, pipeline_leads_count = list_all_new_leads(assigned=False, agent_id=None, page=pipeline_leads_pages, page_size=10)
     pipeline_follow_up, pipeline_follow_up_count = list_all_leads_for_follow_up(assigned=False, agent_id=None, page=pipeline_follow_up_pages, page_size=10)
     pipeline_no_show, pipeline_no_show_count = list_all_leads_for_no_show(assigned=False, agent_id=None, page=pipeline_no_show_page, page_size=10)
+    call_statuses = get_all_call_status()
 
     update_counts = get_all_opportunities_updated(since_days=7, agent_id=agent_id)
     print(f'Update Counts: {update_counts}')
@@ -130,39 +131,16 @@ def get_call_setting_data(agent_id=None):
                            pipeline_follow_up_count=pipeline_follow_up_count,
                            pipeline_no_show_count=pipeline_no_show_count,
                            selected_employee_id=agent_id,
+                           call_statuses=call_statuses,
                            page_size=10)
 
 @review_blueprint.route('call-setting/assign-lead', methods=['POST'])
 def assign_lead():
-    opportunity_id = request.form.get('opportunity_id')
-    agent_id = request.form.get('agent_id')
+    opportunity_id = request.json.get('opportunity_id')
+    agent_id = request.json.get('employee_id')
     try:
+        print(f'Assigning lead {opportunity_id} to agent {agent_id}')
         assign_opportunity_to_agent(opportunity_id, agent_id)
         return jsonify({'status': 'success'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
-
-@review_blueprint.route('/api/opportunity/assign', methods=['POST'])
-@login_required
-def assign_opportunity():
-    try:
-        data = request.get_json()
-        opportunity_id = data.get('opportunity_id')
-        employee_id = data.get('employee_id')
-
-        if not opportunity_id or not employee_id:
-            return jsonify({'error': 'Missing required fields'}), 400
-
-        # Update the opportunity in the database
-        opportunity = OpportunityStore.assign_to_employee(opportunity_id, employee_id)
-        
-        if opportunity:
-            return jsonify({
-                'message': 'Opportunity assigned successfully',
-                'opportunity': opportunity.to_dict()
-            })
-        else:
-            return jsonify({'error': 'Failed to assign opportunity'}), 400
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
