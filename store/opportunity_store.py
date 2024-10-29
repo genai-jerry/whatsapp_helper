@@ -787,14 +787,14 @@ def list_all_new_leads(assigned = False, agent_id=None, page=1, page_size=10):
         sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated FROM opportunity 
                 WHERE call_status IS NULL'''
         if agent_id:
-            sql += f" AND assigned_to = %s ORDER BY register_time DESC LIMIT %s OFFSET %s"
+            sql += f" AND assigned_to = %s ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (agent_id, page_size, offset))
         else:
             if assigned:
-                sql += " AND assigned_to IS NOT NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                sql += " AND assigned_to IS NOT NULL ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
             else:
-                sql += " AND assigned_to IS NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                sql += " AND assigned_to IS NULL ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (page_size, offset))
         results = cursor.fetchall()
@@ -838,14 +838,14 @@ def list_all_leads_for_follow_up(assigned = False, agent_id=None, page=1, page_s
         sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated FROM opportunity 
                 WHERE call_status IN (12, 13)'''
         if agent_id:
-            sql += f" AND assigned_to = %s ORDER BY register_time DESC LIMIT %s OFFSET %s"
+            sql += f" AND assigned_to = %s ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (agent_id, page_size, offset))
         else:
             if assigned:
-                sql += " AND assigned_to IS NOT NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                sql += " AND assigned_to IS NOT NULL ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
             else:
-                sql += " AND assigned_to IS NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                sql += " AND assigned_to IS NULL ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (page_size, offset))
         results = cursor.fetchall()
@@ -888,14 +888,14 @@ def list_all_leads_for_no_show(assigned = False, agent_id=None, page=1, page_siz
                 WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
                 AND a.status = 1'''
         if agent_id:
-            sql += f" AND o.assigned_to = %s ORDER BY o.register_time DESC LIMIT %s OFFSET %s"
+            sql += f" AND o.assigned_to = %s ORDER BY o.last_updated IS NULL DESC, o.last_updated ASC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (agent_id, page_size, offset))
         else:
             if assigned:
-                sql += " AND assigned_to IS NOT NULL ORDER BY o.register_time DESC LIMIT %s OFFSET %s"
+                sql += " AND o.assigned_to IS NOT NULL ORDER BY o.last_updated IS NULL DESC, o.last_updated ASC LIMIT %s OFFSET %s"
             else:
-                sql += " AND assigned_to IS NULL ORDER BY o.register_time DESC LIMIT %s OFFSET %s"
+                sql += " AND o.assigned_to IS NULL ORDER BY o.last_updated IS NULL DESC, o.last_updated ASC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (page_size, offset))
         results = cursor.fetchall()

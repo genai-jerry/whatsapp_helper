@@ -6,12 +6,7 @@
         <div class="col-md-4">
             <div class="form-group">
                 <h3>Select for Review</h3>
-                <select class="form-control" id="employeeSelect">
-                    <option value="">All Employees</option>
-                    {% for employee in employees %}
-                        <option value="{{ employee.user_id }}" {% if employee.user_id == selected_employee_id %}selected{% endif %}>{{ employee.name }}</option>
-                    {% endfor %}
-                </select>
+                {% include "common/_employees.html" %}
             </div>
         </div>
     </div>

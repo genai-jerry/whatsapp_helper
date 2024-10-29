@@ -1,6 +1,7 @@
 class SettingPipeline {
     constructor() {
         this.initializeEventListeners();
+        this.initializeStatusSelects();
     }
 
     initializeEventListeners() {
@@ -43,8 +44,8 @@ class SettingPipeline {
 
             if (data.status === 'success') {
                 // Success handling
-                this.moveOpportunityToAssigned(opportunityId);
-                button.innerHTML = 'Assigned to You';
+                // this.moveOpportunityToAssigned(opportunityId);
+                button.innerHTML = 'Assigned';
                 button.classList.remove('btn-primary');
                 button.classList.add('btn-success');
             } else {
@@ -60,62 +61,7 @@ class SettingPipeline {
         }
     }
 
-    moveOpportunityToAssigned(opportunityId) {
-        // Find the opportunity row in the pipeline section
-        const opportunityRow = document.querySelector(`tr[data-opportunity-id="${opportunityId}"]`);
-        if (!opportunityRow) return;
-
-        // Clone the row
-        const clonedRow = opportunityRow.cloneNode(true);
-        
-        // Update the assign button in the cloned row
-        const assignButton = clonedRow.querySelector('.assign-btn');
-        if (assignButton) {
-            assignButton.innerHTML = 'Assigned';
-            assignButton.disabled = true;
-            assignButton.classList.remove('btn-primary');
-            assignButton.classList.add('btn-success');
-        }
-
-        // Find the appropriate assigned leads table based on the opportunity's status
-        const status = opportunityRow.dataset.status || 'new-leads';
-        const targetTableId = status === 'follow-up' ? 'followUpList' :
-                            status === 'no-show' ? 'noShowsList' :
-                            'newLeadsList';
-
-        // Add to assigned section
-        const targetTable = document.querySelector(`#${targetTableId} tbody`);
-        if (targetTable) {
-            targetTable.appendChild(clonedRow);
-        }
-
-        // Remove from pipeline section
-        opportunityRow.remove();
-
-        // Update counts if they exist
-        this.updateCounts();
-    }
-
-    updateCounts() {
-        // Update the counts in both sections if count elements exist
-        const sections = ['new-leads', 'follow-up', 'no-show'];
-        
-        sections.forEach(section => {
-            const pipelineCount = document.querySelector(`#pipeline-${section}-count`);
-            const assignedCount = document.querySelector(`#assigned-${section}-count`);
-            
-            if (pipelineCount) {
-                const count = document.querySelector(`#pipelinePipeline tr[data-status="${section}"]`).length;
-                pipelineCount.textContent = count;
-            }
-            
-            if (assignedCount) {
-                const count = document.querySelector(`#${section}List tr[data-status="${section}"]`).length;
-                assignedCount.textContent = count;
-            }
-        });
-    }
-
+   
     initializeStatusSelects() {
         document.querySelectorAll('.status-select').forEach(select => {
             // Set initial styling
@@ -145,29 +91,28 @@ class SettingPipeline {
         const newStatus = select.value;
 
         try {
-            const response = await fetch('/api/opportunity/status', {
+            fetch(`/opportunity/status/${opportunityId}/call_status`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    opportunity_id: opportunityId,
                     status: newStatus,
-                    status_type: 'call_status'
                 })
+            }).then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    // Update the select styling
+                    this.updateSelectStyling(select);
+                } else {
+                    select.value = select.dataset.previousValue;
+                    this.updateSelectStyling(select);
+                    alert('Failed to update status: ' + result.message);
+                }
             });
-
-            if (response.ok) {
-                // Update the select styling
-                this.updateSelectStyling(select);
-            } else {
-                throw new Error('Failed to update status');
-            }
         } catch (error) {
             console.error('Status update failed:', error);
             // Revert the select to its previous value
-            select.value = select.dataset.previousValue;
-            this.updateSelectStyling(select);
             alert('Failed to update status: ' + error.message);
         }
     }

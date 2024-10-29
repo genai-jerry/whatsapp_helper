@@ -334,7 +334,7 @@ def update_status_type(opportunity_id, status_type):
         
         # Call the update_opportunity function
         update_opportunity_status(opportunity_data)
-        
+        print('Opportunity status updated successfully')
         return jsonify({'status': 'success', 'message': 'Opportunity status updated successfully'}), 200
     except Exception as e:
         print(str(e))
