@@ -166,6 +166,8 @@ def format_date(value):
 
 @app.template_filter()
 def format_date_time(value):
+    if value is None:
+        return ""
     formatted_date = value.strftime('%d %b %Y %H:%M')
     return formatted_date
 

@@ -1,0 +1,6 @@
+<label for="opportunityName" class="form-label">Opportunity</label>
+<input type="text" class="form-control" id="opportunityName" name="opportunityName" required>
+<ul id="opportunityList" class="list-group position-absolute w-100" style="z-index: 1000;"></ul>
+<input type="hidden" id="taskEmployeeId" name="employee_id">
+
+<script src="{{ url_for('static', filename='js/search_opportunities.js') }}"></script>

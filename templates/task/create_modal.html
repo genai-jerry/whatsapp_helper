@@ -9,11 +9,9 @@
       <div class="modal-body">
         <form id="createTaskForm">
           <input type="hidden" id="taskOpportunityId" name="opportunity_id">
+   
           <div class="mb-3">
-            <label for="opportunityName" class="form-label">Opportunity</label>
-            <input type="text" class="form-control" id="opportunityName" name="opportunityName" required>
-            <input type="hidden" id="taskOpportunityId" name="opportunity_id">
-            <ul id="opportunityList" class="list-group position-absolute w-100" style="z-index: 1000;"></ul>
+            {% include 'common/_searchable_opportunities.html' %}
           </div>
           <div class="mb-3">
             <label for="taskDescription" class="form-label">Task Description</label>

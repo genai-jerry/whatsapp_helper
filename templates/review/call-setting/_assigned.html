@@ -3,8 +3,50 @@
 </div>
 <div class="card-body">
     <div class="row">
+        <!-- Appointments Column -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">Appointments ({{ assigned_appointments_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="leads-list" id="appointmentsList">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in assigned_appointments %}
+                                <tr class="lead-item">
+                                    <td class="opportunity-name">
+                                        {% include 'review/call-setting/_appt_assigned_title.html' %}
+                                    </td>
+                                    <td class="status">
+                                        {% include 'review/call-setting/_appt_status_list.html' %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->    
+                        {% with page=assigned_appointments_page %}
+                        {% with count=assigned_appointments_count %}
+                        {% with page_args='assigned_appointments_page' %}
+                        {% include 'review/call-setting/_pagination.html' %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        <!-- Add pagination controls -->
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- New Leads Column -->
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h6 class="mb-0">New Leads ({{ assigned_leads_count }})</h6>
@@ -22,7 +64,7 @@
                                 {% for lead in assigned_leads %}
                                 <tr class="lead-item">
                                     <td class="opportunity-name">
-                                        {% include 'review/call-setting/_title.html' %}
+                                        {% include 'review/call-setting/_assigned_title.html' %}
                                     </td>
                                     <td class="status">
                                         {% include 'review/call-setting/_status_list.html' %}
@@ -47,7 +89,7 @@
         </div>
 
         <!-- Follow Up Column -->
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card">
                 <div class="card-header bg-warning">
                     <h6 class="mb-0">Follow Up ({{ assigned_follow_up_count }})</h6>
@@ -66,7 +108,7 @@
                                 {% for lead in assigned_follow_up %}
                                 <tr class="lead-item">
                                     <td class="opportunity-name">
-                                        {% include 'review/call-setting/_title.html' %}
+                                        {% include 'review/call-setting/_assigned_title.html' %}
                                     </td>
                                     <td class="status">
                                         {% include 'review/call-setting/_status_list.html' %}
@@ -91,7 +133,7 @@
         </div>
 
         <!-- No Shows Column -->
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card">
                 <div class="card-header bg-danger text-white">
                     <h6 class="mb-0">No Shows ({{ assigned_no_show_count }})</h6>
@@ -110,9 +152,9 @@
                                 {% for lead in assigned_no_show %}
                                 <tr class="lead-item">
                                     <td class="opportunity-name">
-                                        {% include 'review/call-setting/_title.html' %}
+                                        {% include 'review/call-setting/_assigned_title.html' %}
                                     </td>
-                                    <td class="status">
+                                    <td class="status no-shows">
                                         {% include 'review/call-setting/_status_list.html' %}
                                     </td>
                                 </tr>

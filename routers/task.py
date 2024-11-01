@@ -33,12 +33,13 @@ def get_create_task_modal_api():
 @task_blueprint.route('/', methods=['POST'])
 @login_required
 def create_task_api():
+    employee_id = request.form.get("employee_id")
     task_data = {
         "opportunity_id": request.form.get("opportunity_id"),
         "due_date": request.form.get("due_date"),
         "task_details": request.form.get("description"),
         "status": "pending",
-        "user_id": current_user.id  # Add the current user's ID
+        "user_id": employee_id if employee_id else current_user.id  # Add the current user's ID
     }
     
     new_task = create_task(task_data["user_id"], '', task_data["task_details"], 

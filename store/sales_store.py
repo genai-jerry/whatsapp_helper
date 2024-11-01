@@ -927,24 +927,26 @@ def get_weekly_summary(user_id, start_date, end_date, page=1, per_page=10):
         cursor = connection.cursor()
 
         weeks = []
-        current_date = start_date - timedelta(days=start_date.weekday())  # Move to the previous Monday
+        current_date = start_date
         week_number = 1
 
         while current_date <= end_date:
             week_end = current_date + timedelta(days=6)  # Sunday of the same week
+            if week_end > end_date:
+                week_end = end_date - timedelta(days=1)
+                
             query = f'''SELECT 
-                COUNT(DISTINCT(a.opportunity_id)) as calls_scheduled,
+                COUNT(a.id) as calls_scheduled,
                 SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as no_shows,
-                SUM(CASE WHEN status = 6 THEN 1 ELSE 0 END) as cancelled,
-                SUM(CASE WHEN status = 4 THEN 1 ELSE 0 END) as follow_up,
                 SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as sale,
-                SUM(CASE WHEN status = 5 THEN 1 ELSE 0 END) as rescheduled,
                 SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as no_sale,
-                SUM(CASE WHEN status = 7 THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN status = 4 THEN 1 ELSE 0 END) as follow_up,
+                SUM(CASE WHEN status = 5 THEN 1 ELSE 0 END) as rescheduled,
+                SUM(CASE WHEN status = 6 THEN 1 ELSE 0 END) as cancelled,
                 SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as pending
             FROM appointments a
             LEFT JOIN sales_agent sa ON sa.id = a.mentor_id
-            WHERE a.appointment_time >= %s AND a.appointment_time <= %s
+            WHERE a.appointment_time between %s AND %s
             '''
             current_date = datetime.datetime.strptime(current_date.strftime('%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%M:%S')        
             week_end = datetime.datetime.strptime(week_end.strftime('%Y-%m-%d 23:59:59'), '%Y-%m-%d %H:%M:%S')
@@ -962,13 +964,12 @@ def get_weekly_summary(user_id, start_date, end_date, page=1, per_page=10):
                 'number': week_number,
                 'calls_scheduled': result[0] or 0,
                 'no_shows': result[1] or 0,
-                'cancelled': result[2] or 0,
-                'follow_up': result[3] or 0,
-                'sale': result[4] or 0,
+                'sale': result[2] or 0,
+                'no_sale': result[3] or 0,
+                'follow_up': result[4] or 0,
                 'rescheduled': result[5] or 0,
-                'no_sale': result[6] or 0,
-                'completed': result[7] or 0,
-                'pending': result[8] or 0
+                'cancelled': result[6] or 0,
+                'pending': result[7] or 0
             })
 
             current_date = week_end + timedelta(days=1)  # Move to next Monday

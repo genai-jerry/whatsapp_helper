@@ -1,0 +1,5 @@
+<a href="/opportunity/{{ lead.id }}">
+    {{ lead.name }}
+</a>
+<p><h6><a class="btn btn-sm btn-outline-primary" href="tel:{{lead.phone}}">{{lead.phone}}</a></h6></p>
+<p><h6>{{lead.last_updated | format_date}}</h6></p>

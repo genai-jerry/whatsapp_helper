@@ -95,7 +95,8 @@ def get_performance_metrics_for_date_range(start_date, end_date, sales_agent_id=
         appointment_sql = '''
             SELECT 
                 COUNT(DISTINCT(a.opportunity_id)) as total_appointments_booked,
-                COUNT(DISTINCT CASE WHEN a.status NOT IN (1, 5, 6) THEN a.opportunity_id END) as total_appointments_attended
+                COUNT(DISTINCT CASE WHEN a.status IS NULL OR a.status IN (2,3,4) 
+                    THEN a.opportunity_id END) as total_appointments_attended
             FROM appointments a
             WHERE a.appointment_time BETWEEN %s AND %s
         '''
@@ -360,13 +361,13 @@ def get_monthly_performance_for_agent(month, year, user_id):
     end_date_of_month = datetime(year, month, calendar.monthrange(year, month)[1])
 
     # Find the Monday of the first week of the month
-    first_monday = start_date_of_month - timedelta(days=start_date_of_month.weekday())    
+    # first_monday = start_date_of_month - timedelta(days=start_date_of_month.weekday())    
     # Find the Sunday of the last week of the month
-    last_sunday = end_date_of_month + timedelta(days=6 - end_date_of_month.weekday())
+    # last_sunday = end_date_of_month + timedelta(days=6 - end_date_of_month.weekday())
 
     # Calculate the number of weeks
-    num_weeks = (last_sunday - first_monday).days // 7 + 1
-    start_date = first_monday
+    num_weeks = (end_date_of_month - start_date_of_month).days // 7 + 1
+    start_date = start_date_of_month
 
     if user_id:
         agent_id = get_sales_agent_id_for_user(user_id)
@@ -380,8 +381,8 @@ def get_monthly_performance_for_agent(month, year, user_id):
     apps_month = 0
     for week in range(num_weeks):
         week_start = start_date + timedelta(days=7*week)
-        week_end = min(week_start + timedelta(days=6), last_sunday)
-        
+        week_end = min(week_start + timedelta(days=6), end_date_of_month)
+        week_end = week_end.strptime(week_end.strftime('%Y-%m-%d 23:59:59'), '%Y-%m-%d %H:%M:%S')
         # Fetch actual data for this week
         data = get_performance_metrics_for_date_range(week_start, week_end, agent_id)
         

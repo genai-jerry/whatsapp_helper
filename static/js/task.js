@@ -70,6 +70,10 @@ function showCreateTaskModal(opportunity_id, opportunity_name) {
 
 // Function to create a new task
 function createTask() {
+    const employee_id = $('#employeeSelect')?.val();
+    if (employee_id && employee_id != '') {
+        $('#taskEmployeeId').val(employee_id);
+    }
     const form = document.getElementById('createTaskForm');
     const formData = new FormData(form);
     const taskFeedback = document.getElementById('taskFeedback');
@@ -148,10 +152,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 $(document).ready(function() {
-    var opportunitySearch = $('#opportunityName');
-    var opportunityList = $('#opportunityList');
-    var selectedOpportunityId = $('#taskOpportunityId');
-    var searchTimeout;
     var taskFeedback = $('#taskFeedback');
   
     function showFeedback(message, isSuccess) {
@@ -161,49 +161,6 @@ $(document).ready(function() {
         taskFeedback.hide();
       }, 5000);
     }
-  
-    opportunitySearch.on('input', function() {
-      clearTimeout(searchTimeout);
-      var query = $(this).val();
-  
-      if (query.length < 2) {
-        opportunityList.empty();
-        return;
-      }
-  
-      searchTimeout = setTimeout(function() {
-        $.ajax({
-          url: '/opportunity/search_opportunities',
-          method: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({ query: query }),
-          success: function(data) {
-            opportunityList.empty();
-            data.forEach(function(opportunity) {
-              var listItem = $('<li>')
-                .addClass('list-group-item list-group-item-action')
-                .text(opportunity.name + ' (' + opportunity.email + ') - ' + opportunity.phone)
-                .data('id', opportunity.id)
-                .data('name', opportunity.name);
-              opportunityList.append(listItem);
-            });
-            opportunityList.show(); // Make sure the list is visible
-          },
-          error: function(xhr, status, error) {
-            console.error('Error searching opportunities:', error);
-            showFeedback('Error searching opportunities. Please try again.', false);
-          }
-        });
-      }, 300);
-    });
-  
-    opportunityList.on('click', 'li', function() {
-      var selected = $(this);
-      selectedOpportunityId.val(selected.data('id'));
-      opportunitySearch.val(selected.data('name'));
-      opportunityList.hide(); // Hide the list after selection
-    });
-  
     $('#submitCreateTask').click(function() {
       var form = $('#createTaskForm');
       var formData = new FormData(form[0]);
@@ -232,11 +189,5 @@ $(document).ready(function() {
           showFeedback('An error occurred while creating the task. Please try again.', false);
         }
       });
-    });
-  
-    $(document).on('click', function(event) {
-      if (!$(event.target).closest('#opportunityList, #opportunityName').length) {
-        opportunityList.hide();
-      }
     });
   });

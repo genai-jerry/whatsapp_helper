@@ -44,8 +44,9 @@
                         {% with monthly_value = performance_data.projection[metric] | int if performance_data.projection is not none else 0 %}
                         <td>{{ monthly_value }}</td>
                         <td class="{{ 'above-projection' if performance_data[metric + '_month'] > monthly_value else 'below-projection' }}">{{ performance_data[metric + '_month'] }}</td>
+                        {% if performance_data.weeks %}
                         {% for week in performance_data.weeks %}
-                            {% with projection_value = (((performance_data.projection[metric] if performance_data.projection is not none else 0) / performance_data.weeks|length) | round_up ) %}
+                            {% with projection_value = (((performance_data.projection[metric] if performance_data.projection is not none and performance_data.projection[metric] is not none else 0) / performance_data.weeks|length) | round_up ) %}
                             {% with actual_value = (week[metric + '_actual'] if week[metric + '_actual'] is not none else '') %}
                                 <td>{{ projection_value }}</td>
                                 <td class="{{ 'above-projection' if actual_value > projection_value else 'below-projection' }}">{{ actual_value}}</td>
@@ -53,7 +54,7 @@
                             {% endwith %}
                             {% endwith %}
                         {% endfor %}
-                        
+                        {% endif %}
                         {% endwith %}
                         {% endif %}
                     </tr>

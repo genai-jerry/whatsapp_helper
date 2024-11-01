@@ -9,6 +9,7 @@ from store.win_store import get_all_wins_for_date
 from store.metrics_store import get_monthly_performance_for_agent
 from store.metrics_store import get_projection_for_sales_agent_for_month
 from utils import get_month_dates, get_month_number, get_month_year
+from store.appointment_store import get_all_appointment_status, list_all_appointments_for_confirmation, set_call_setter
 from flask_login import current_user, login_required
 
 review_blueprint = Blueprint('review', __name__)
@@ -29,11 +30,11 @@ def review(user_id=None):
     return render_template('review/review.html', **context)
 
 @review_blueprint.route('sales-metrics', methods=['GET'])
-@review_blueprint.route('sales-metrics/<int:user_id>', methods=['GET'])
 @review_blueprint.route('sales-metrics/all', methods=['GET'])
 @login_required
-def get_sales_review_dashboard(user_id=None):
-    context = get_sales_review_data(user_id)  
+def get_sales_review_dashboard():
+    employee_id = request.args.get('employee_id', current_user.id, type=int)
+    context = get_sales_review_data(employee_id)  
     return render_template('review/sales/sales.html', **context)
 
 @review_blueprint.route('sales-metrics/all', methods=['GET'])
@@ -84,6 +85,7 @@ def get_sales_review_data(user_id):
         "month": month,
         "employees": employees,
         "selected_employee_id": user_id,
+        "employee_id": user_id,
         "performance_data": performance_data
     }
     return context
@@ -98,14 +100,19 @@ def get_call_setting_data(agent_id=None):
     pipeline_leads_pages = request.args.get('pipeline_leads_page', 1, type=int)
     pipeline_follow_up_pages = request.args.get('pipeline_follow_up_page', 1, type=int)
     pipeline_no_show_page = request.args.get('pipeline_no_show_page', 1, type=int)
+    assigned_appointments_page = request.args.get('assigned_appointments_page', 1, type=int)
+    pipeline_appointments_page = request.args.get('pipeline_appointments_page', 1, type=int)
     
     assigned_leads, assigned_leads_count = list_all_new_leads(assigned=True, agent_id=agent_id, page=assigned_leads_pages, page_size=10)
     assigned_follow_up, assigned_follow_up_count = list_all_leads_for_follow_up(assigned=True, agent_id=agent_id, page=assigned_follow_up_page, page_size=10)
     assigned_no_show, assigned_no_show_count = list_all_leads_for_no_show(assigned=True, agent_id=agent_id, page=assigned_no_show_page, page_size=10)
+    assigned_appointments, assigned_appointments_count = list_all_appointments_for_confirmation(assigned=True, agent_id=agent_id, page=assigned_appointments_page, page_size=10)
     pipeline_leads, pipeline_leads_count = list_all_new_leads(assigned=False, agent_id=None, page=pipeline_leads_pages, page_size=10)
     pipeline_follow_up, pipeline_follow_up_count = list_all_leads_for_follow_up(assigned=False, agent_id=None, page=pipeline_follow_up_pages, page_size=10)
     pipeline_no_show, pipeline_no_show_count = list_all_leads_for_no_show(assigned=False, agent_id=None, page=pipeline_no_show_page, page_size=10)
+    pipeline_appointments, pipeline_appointments_count = list_all_appointments_for_confirmation(assigned=False, agent_id=None, page=pipeline_appointments_page, page_size=10)
     call_statuses = get_all_call_status()
+    appointment_statuses = get_all_appointment_status()
 
     update_counts = get_all_opportunities_updated(since_days=7, agent_id=agent_id)
     print(f'Update Counts: {update_counts}')
@@ -124,14 +131,21 @@ def get_call_setting_data(agent_id=None):
                            pipeline_leads_page=pipeline_leads_pages,
                            pipeline_follow_up_page=pipeline_follow_up_pages,
                            pipeline_no_show_page=pipeline_no_show_page,
+                           assigned_appointments=assigned_appointments,
+                           pipeline_appointments=pipeline_appointments,
                            assigned_leads_count=assigned_leads_count,
                            assigned_follow_up_count=assigned_follow_up_count,
                            assigned_no_show_count=assigned_no_show_count,
                            pipeline_leads_count=pipeline_leads_count,
                            pipeline_follow_up_count=pipeline_follow_up_count,
                            pipeline_no_show_count=pipeline_no_show_count,
+                           assigned_appointments_count=assigned_appointments_count,
+                           pipeline_appointments_count=pipeline_appointments_count,
+                           assigned_appointments_page=assigned_appointments_page,
+                           pipeline_appointments_page=pipeline_appointments_page,
                            selected_employee_id=agent_id,
                            call_statuses=call_statuses,
+                           appointment_statuses=appointment_statuses,
                            page_size=10)
 
 @review_blueprint.route('call-setting/assign-lead', methods=['POST'])
@@ -141,6 +155,17 @@ def assign_lead():
     try:
         print(f'Assigning lead {opportunity_id} to agent {agent_id}')
         assign_opportunity_to_agent(opportunity_id, agent_id)
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+@review_blueprint.route('call-setting/assign-appointment', methods=['POST'])
+def assign_appointment():
+    appointment_id = request.json.get('appointment_id')
+    agent_id = request.json.get('employee_id')
+    try:
+        print(f'Assigning appointment {appointment_id} to agent {agent_id}')
+        set_call_setter(appointment_id, agent_id)
         return jsonify({'status': 'success'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})

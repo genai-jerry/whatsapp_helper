@@ -122,7 +122,7 @@ def remove_opportunity(email):
         if cursor:
             cursor.close()
 
-def update_opportunity_status(opportunity_data, status_columns=None):
+def update_opportunity_status(opportunity_data, status_columns=None, agent_id=None):
     status = opportunity_data['status']
     # Update data in 'opportunities' table using a prepared statement
     try:
@@ -179,13 +179,41 @@ def update_opportunity_status(opportunity_data, status_columns=None):
             'fbc': row[5],
             'ad_account': row[6]
         }
-
+        if status_type == "call_status":
+            store_optin_call_record({'opportunity_id': opportunity_data['opportunity_id'],
+                                     'call_date': datetime.now(),
+                                     'call_duration': 0,
+                                     'call_type': status_type,
+                                     'call_status': status,
+                                     'agent_id': agent_id})
         if status_type != "agent":
             handle_opportunity_update(opportunity, status_type, status)
 
     finally:
         if cursor:
             cursor.close()
+
+def store_optin_call_record(opportunity_data):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = '''INSERT INTO optin_call_record (opportunity_id, call_date, call_duration, 
+                call_type, call_status, agent_id) 
+                VALUES (%s, %s, %s, %s, %s, %s)'''
+        cursor.execute(sql, (opportunity_data['opportunity_id'], 
+                             opportunity_data['call_date'], 
+                             opportunity_data['call_duration'], 
+                             opportunity_data['call_type'], 
+                             opportunity_data['call_status'], 
+                             opportunity_data['agent_id']))
+        connection.commit()
+    except Exception as e:
+        raise e
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
 
 def get_opportunities(page, per_page, search_term=None, search_type=None, filter_type=None, filter_value=None):
     try:
@@ -450,7 +478,8 @@ def get_opportunity_by_email(email):
         connection = create_connection()
         cursor = connection.cursor()
         # Define the SQL query with placeholders
-        sql = "SELECT id, name, email, phone, ad_fbp as fbp, ad_fbc as fbc, ad_account as ad_account FROM opportunity where email = %s"
+        sql = '''SELECT id, name, email, phone, ad_fbp as fbp, ad_fbc as fbc, ad_account as ad_account 
+                FROM opportunity where email = %s'''
 
         # Prepare the query and execute it with the provided values
         cursor.execute(sql, (email,))
@@ -687,9 +716,9 @@ def generate_metrics(start_date, end_date):
         queries = {
             'total_leads': load_total_opportunities,
             'call_booked_follow_up': f"{load_followup_opportunities} and a.appointment_time BETWEEN %s AND %s",
-            'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status != 1 AND (a.status !=6 and a.status != 5) AND a.appointment_time BETWEEN %s AND %s",
+            'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status in (2,3,4) AND a.appointment_time BETWEEN %s AND %s",
             'call_booked_vsl': f"{load_self_opportunities} AND a.appointment_time BETWEEN %s AND %s",
-            'call_show_up_self': f"{load_self_opportunities} AND a.status != 1 AND a.appointment_time BETWEEN %s AND %s",
+            'call_show_up_self': f"{load_self_opportunities} AND a.status in (2,3,4) AND a.appointment_time BETWEEN %s AND %s",
             'sale_conversion': f"SELECT count(s.id) from sale s where s.sale_date BETWEEN %s AND %s AND s.is_final = 1 AND s.cancelled != 1",
             'total_calls_booked': f"{load_opportunities_not_canceled} AND a.appointment_time BETWEEN %s AND %s",
         }
@@ -895,7 +924,7 @@ def list_all_leads_for_no_show(assigned = False, agent_id=None, page=1, page_siz
             if assigned:
                 sql += " AND o.assigned_to IS NOT NULL ORDER BY o.last_updated IS NULL DESC, o.last_updated ASC LIMIT %s OFFSET %s"
             else:
-                sql += " AND o.assigned_to IS NULL ORDER BY o.last_updated IS NULL DESC, o.last_updated ASC LIMIT %s OFFSET %s"
+                sql += " AND o.assigned_to IS NULL ORDER BY o.last_updated IS NULL DESC, a.appointment_time ASC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (page_size, offset))
         results = cursor.fetchall()
@@ -942,7 +971,7 @@ def assign_opportunity_to_agent(opportunity_id, agent_id):
         updated_count = cursor.rowcount
         print(f'Updated {updated_count} rows')
         if updated_count == 0:
-            print(f'Opportunity {opportunity_id} is already assigned to {agent_id}')
+            print(f'Opportunity {opportunity_id} is already assigned to an agent')
             raise ValueError("Failed to assign opportunity - may already be assigned")
             
         connection.commit()
@@ -965,14 +994,14 @@ def get_all_opportunities_updated(since_days=7, agent_id=None):
 
         # Get the data from database
         start_date = datetime.now() - timedelta(days=since_days)
-        sql = '''SELECT COUNT(id), DATE(last_updated) as update_date 
-                FROM opportunity 
-                WHERE DATE(last_updated) >= %s'''
+        sql = '''SELECT COUNT(DISTINCT(opportunity_id)), DATE(call_date) as update_date 
+                FROM optin_call_record 
+                WHERE DATE(call_date) >= %s'''
         if agent_id:
-            sql += " AND assigned_to = %s GROUP BY DATE(last_updated)"
+            sql += " AND agent_id = %s GROUP BY DATE(call_date)"
             cursor.execute(sql, (start_date, agent_id))
         else:
-            sql += " GROUP BY DATE(last_updated)"
+            sql += " GROUP BY DATE(call_date)"
             cursor.execute(sql, (start_date,))
             
         # Convert results to dictionary for easier lookup
@@ -1003,6 +1032,19 @@ def get_all_opportunities_updated(since_days=7, agent_id=None):
             })
             
         return opportunities
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def update_call_setter(opportunity_id, call_setter):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "UPDATE opportunity SET call_setter = %s WHERE id = %s"
+        cursor.execute(sql, (call_setter, opportunity_id))
+        connection.commit()
     finally:
         if cursor:
             cursor.close()

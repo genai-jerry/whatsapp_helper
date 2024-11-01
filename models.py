@@ -171,6 +171,7 @@ class Appointment(db.Model):
     canceled = db.Column(db.Boolean, nullable=True)
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
     status = db.Column(db.Integer, db.ForeignKey('opportunity_status.id'), nullable=True)
+    call_setter = db.Column(db.Integer, db.ForeignKey('sales_agent.id'), nullable=True)
     
 
 class MaxScore(db.Model):
@@ -358,3 +359,14 @@ class FacebookAdAccount(db.Model):
     app_id = db.Column(db.String(255), nullable=False)
     app_secret = db.Column(db.String(255), nullable=False)
     last_updated = db.Column(db.DateTime, nullable=True)
+
+class OptinCallRecord(db.Model):
+    __tablename__ = 'optin_call_record'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'))
+    call_date = db.Column(db.DateTime, nullable=False)
+    call_duration = db.Column(db.Integer, nullable=False)
+    call_type = db.Column(db.String(255), nullable=False)
+    call_status = db.Column(db.String(255), nullable=False)
+    agent_id = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))

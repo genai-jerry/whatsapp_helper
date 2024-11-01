@@ -21,6 +21,6 @@ const employeeSelect = document.getElementById('employeeSelect');
 employeeSelect.addEventListener('change', function() {
     const selectedUserId = this.value;
     if (selectedUserId) {
-        window.location.href = `/review/${destination}/${selectedUserId}`;
+        window.location.href = `/review/${destination}?employee_id=${selectedUserId}`;
     }
 });

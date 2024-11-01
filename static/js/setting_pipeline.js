@@ -10,15 +10,16 @@ class SettingPipeline {
             if (e.target.classList.contains('assign-btn')) {
                 this.handleAssignment(e);
             }
+            if (e.target.classList.contains('assign-appt-btn')) {
+                this.assignCallSetterToAppointment(e);
+            }
         });
-
-        
     }
 
     async handleAssignment(event) {
         const button = event.target;
         const opportunityId = button.dataset.opportunityId;
-        const employeeId = document.getElementById('employeeSelect').value;
+        const employeeId = $('#employeeSelect').val();
 
         if (!employeeId) {
             alert('Please select an employee first');
@@ -47,7 +48,7 @@ class SettingPipeline {
                 // this.moveOpportunityToAssigned(opportunityId);
                 button.innerHTML = 'Assigned';
                 button.classList.remove('btn-primary');
-                button.classList.add('btn-success');
+                button.classList.add('btn-outline-success');
             } else {
                 // Error handling
                 throw new Error(data.message || 'Failed to assign opportunity');
@@ -56,11 +57,38 @@ class SettingPipeline {
             console.error('Assignment failed:', error);
             button.disabled = true;
             button.classList.remove('btn-primary');
-            button.classList.add('btn-danger');
+            button.classList.add('btn-outline-danger');
             button.innerHTML = 'Already Assigned';
         }
     }
 
+    async assignCallSetterToAppointment(event) {
+        try {
+            const button = event.target;
+            const appointmentId = button.dataset.appointmentId;
+            const employee_id = $('#employeeSelect').val();
+            const response = await fetch(`/review/call-setting/assign-appointment`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    },
+                body: JSON.stringify({
+                    appointment_id: appointmentId,
+                    employee_id: employee_id
+                })
+            });
+            const data = await response.json();
+            if (data.status === 'success') {
+                button.innerHTML = 'Assigned';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-outline-success');
+            } else {
+                throw new Error(data.message || 'Failed to assign appointment');
+            }
+        } catch (error) {
+            console.error('Assignment failed:', error);
+        }
+    }
    
     initializeStatusSelects() {
         document.querySelectorAll('.status-select').forEach(select => {
@@ -71,7 +99,21 @@ class SettingPipeline {
             select.addEventListener('change', (e) => {
                 this.handleStatusChange(e);
             });
+            const status = select.value;
+            
+            // Check if parent td has no-shows class
+            if (select.closest('td').classList.contains('no-shows')) {
+                // unset the value of the select
+                select.value = '';
+                select.style.backgroundColor = 'white';
+                select.style.color = 'black';
+            }
         });
+    }
+
+    showCallSetterButton(select) {
+        // Find and enable the nearest set-call button
+        select.closest('tr').querySelector('.set-call').classList.remove('disabled');
     }
 
     updateSelectStyling(select) {
@@ -84,14 +126,26 @@ class SettingPipeline {
             select.style.color = '';
         }
     }
+    
+    updateModifiedSelectStyling(select) {
+        select.closest('tr').style.backgroundColor = '#e8f5e9';
+    }
+
+    checkCallBooked(select) {
+        const status = select.value;
+        if (status === '8') {
+            select.closest('tr').style.backgroundColor = '#c8e6c9';
+            this.showCallSetterButton(select);
+        }
+    }
 
     async handleStatusChange(event) {
         const select = event.target;
         const opportunityId = select.dataset.opportunityId;
         const newStatus = select.value;
-
+        const employeeId = document.getElementById('employeeSelect').value;
         try {
-            fetch(`/opportunity/status/${opportunityId}/call_status`, {
+            fetch(`/opportunity/status/${opportunityId}/call_status?employee_id=${employeeId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -104,6 +158,8 @@ class SettingPipeline {
                 if (result.status === 'success') {
                     // Update the select styling
                     this.updateSelectStyling(select);
+                    this.updateModifiedSelectStyling(select);
+                    this.checkCallBooked(select);
                 } else {
                     select.value = select.dataset.previousValue;
                     this.updateSelectStyling(select);
@@ -115,6 +171,20 @@ class SettingPipeline {
             // Revert the select to its previous value
             alert('Failed to update status: ' + error.message);
         }
+    }
+}
+
+function assignCallSetter(opportunity_id) {
+    try {
+        const employee_id = $('#employeeSelect').val();
+        fetch(`/opportunity/${opportunity_id}/call-setter/${employee_id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                },
+        });
+    } catch (error) {
+        console.error('Assignment failed:', error);
     }
 }
 
