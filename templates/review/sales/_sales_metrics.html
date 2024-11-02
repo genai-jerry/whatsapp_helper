@@ -1,0 +1,23 @@
+<div class="row">
+    <div class="col-md-4">
+        {% set link_url = '/review/sales-metrics' %}
+        {% include 'calendar/monthly_dropdown.html' %}
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <h2>{{ month }} {{ year }} Projections</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        {% include "review/sales/_kpi.html" %}
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        {% include "review/sales/_weekly_summary.html" %}
+    </div>
+</div>
+

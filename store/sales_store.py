@@ -1,7 +1,8 @@
 from db.connection_manager import *
 from store.opportunity_store import get_opportunity_by_id, handle_opportunity_update
 import datetime
-import json
+from datetime import timedelta
+import math
 
 def get_sales_data(page_number, page_size, opportunity_name):
     try:
@@ -31,7 +32,7 @@ def get_sales_data(page_number, page_size, opportunity_name):
             WHERE paid=0 and cancelled=0
             GROUP BY sale_id
         ) pd_min ON s.id = pd_min.sale_id
-        LEFT JOIN payment_due pd ON s.id = pd.sale_id AND pd.due_date = pd_min.due_date
+        LEFT JOIN payment_due pd ON s.id = pd.sale_id AND pd.due_date = pd_min.due_date AND pd.paid = 0 AND pd.cancelled = 0
         LEFT JOIN products prd ON s.product = prd.id
         JOIN opportunity o ON s.opportunity_id = o.id
         WHERE o.name LIKE '%{opportunity_name}%'
@@ -892,10 +893,10 @@ def get_invoice_data(payment_id):
         FROM payments p
         LEFT JOIN sale s ON p.sale = s.id
         LEFT JOIN opportunity o ON o.id = s.opportunity_id
-        WHERE p.id = {payment_id}'''
+        WHERE p.id = %s'''
 
         # Execute the query
-        cursor.execute(query)
+        cursor.execute(query, (payment_id,))
 
         # Fetch the row from the query result
         row = cursor.fetchone()
@@ -914,6 +915,212 @@ def get_invoice_data(payment_id):
         }
 
         return invoice_data
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_weekly_summary(user_id, start_date, end_date, page=1, per_page=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        weeks = []
+        current_date = start_date
+        week_number = 1
+
+        while current_date <= end_date:
+            week_end = current_date + timedelta(days=6)  # Sunday of the same week
+            if week_end > end_date:
+                week_end = end_date - timedelta(days=1)
+                
+            query = f'''SELECT 
+                COUNT(a.id) as calls_scheduled,
+                SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as no_shows,
+                SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as sale,
+                SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as no_sale,
+                SUM(CASE WHEN status = 4 THEN 1 ELSE 0 END) as follow_up,
+                SUM(CASE WHEN status = 5 THEN 1 ELSE 0 END) as rescheduled,
+                SUM(CASE WHEN status = 6 THEN 1 ELSE 0 END) as cancelled,
+                SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as pending
+            FROM appointments a
+            LEFT JOIN sales_agent sa ON sa.id = a.mentor_id
+            WHERE a.appointment_time between %s AND %s
+            '''
+            current_date = datetime.datetime.strptime(current_date.strftime('%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%M:%S')        
+            week_end = datetime.datetime.strptime(week_end.strftime('%Y-%m-%d 23:59:59'), '%Y-%m-%d %H:%M:%S')
+            if user_id is not None:
+                query += 'AND sa.user_id = %s'
+                cursor.execute(query, (current_date, week_end, user_id))
+            else:
+                cursor.execute(query, (current_date, week_end))
+
+            result = cursor.fetchone()
+
+            weeks.append({
+                'start_date': current_date.strftime('%Y-%m-%d'),
+                'end_date': week_end.strftime('%Y-%m-%d'),
+                'number': week_number,
+                'calls_scheduled': result[0] or 0,
+                'no_shows': result[1] or 0,
+                'sale': result[2] or 0,
+                'no_sale': result[3] or 0,
+                'follow_up': result[4] or 0,
+                'rescheduled': result[5] or 0,
+                'cancelled': result[6] or 0,
+                'pending': result[7] or 0
+            })
+
+            current_date = week_end + timedelta(days=1)  # Move to next Monday
+            week_number += 1
+
+        total_weeks = len(weeks)
+        start = (page - 1) * per_page
+        end = start + per_page
+        paginated_weeks = weeks[start:end]
+
+        return paginated_weeks, total_weeks
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_hot_list(user_id, page=1, per_page=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        query = f'''SELECT 
+        DISTINCT o.id as opportunity_id, o.name, s.sale_date
+        FROM sale s
+        LEFT JOIN opportunity o ON o.id = s.opportunity_id
+        LEFT JOIN sales_agent sa ON sa.id = s.sales_agent '''
+        if user_id is not None:
+            query += f'''WHERE sa.user_id = %s
+            AND s.is_final = 0 AND s.cancelled = 0
+            ORDER BY s.sale_date ASC
+            LIMIT {per_page} OFFSET {(page - 1) * per_page}
+            '''
+            cursor.execute(query, (user_id,))
+        else:
+            query += f'''WHERE s.is_final = 0 AND s.cancelled = 0
+            ORDER BY s.sale_date ASC
+            LIMIT {per_page} OFFSET {(page - 1) * per_page}'''
+            cursor.execute(query)
+
+        opportunities = cursor.fetchall()
+
+        count_query = f'''SELECT
+            count(DISTINCT o.id) as opportunity_id
+            FROM sale s
+            LEFT JOIN opportunity o ON o.id = s.opportunity_id
+            LEFT JOIN sales_agent sa ON sa.id = s.sales_agent
+        '''
+        if user_id is not None:
+            count_query += f'''WHERE s.is_final = 0 AND s.cancelled = 0 AND sa.user_id = %s'''
+            cursor.execute(count_query, (user_id,))
+        else:
+            count_query += f'''WHERE s.is_final = 0 AND s.cancelled = 0'''
+            cursor.execute(count_query)
+
+        total_count = cursor.fetchone()[0]
+        total_pages = math.ceil(total_count / per_page)
+
+        return [
+            {
+                'opportunity_id': opp[0],
+                'name': opp[1],
+                'sale_date': opp[2]
+            } for opp in opportunities
+        ], total_pages
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_pipeline(user_id, page=1, per_page=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        query = f'''
+        WITH FollowUps AS (
+            SELECT DISTINCT opportunity_id
+            FROM appointments
+            WHERE status = 4
+        ),
+        LatestAppointment AS (
+            SELECT a.opportunity_id, MAX(a.appointment_time) as latest_appointment_time,
+                a.mentor_id as mentor_id
+            FROM appointments a
+            INNER JOIN FollowUps f ON f.opportunity_id = a.opportunity_id
+            GROUP BY a.opportunity_id, a.mentor_id
+        )
+        SELECT DISTINCT o.id AS opportunity_id, o.name,
+               la.latest_appointment_time as follow_up_date
+        FROM opportunity o
+        INNER JOIN LatestAppointment la ON o.id = la.opportunity_id
+        INNER JOIN appointments a ON o.id = a.opportunity_id 
+            AND a.appointment_time = la.latest_appointment_time
+            AND (a.status = 4 or a.status is NULL)
+        LEFT JOIN sales_agent sa ON sa.id = la.mentor_id
+        '''
+        if user_id is not None:
+            query += f'''
+                WHERE sa.user_id = %s
+                ORDER BY la.latest_appointment_time DESC
+                LIMIT {per_page} OFFSET {(page - 1) * per_page}
+            '''
+            cursor.execute(query, (user_id,))
+        else:
+            query += f'''   
+                ORDER BY la.latest_appointment_time DESC
+                LIMIT {per_page} OFFSET {(page - 1) * per_page}
+            '''
+            cursor.execute(query)
+
+        pipeline = cursor.fetchall()
+
+        count_query = f'''
+        WITH FollowUps AS (
+            SELECT DISTINCT opportunity_id
+            FROM appointments
+            WHERE status = 4
+        ),
+        LatestAppointment AS (
+            SELECT a.opportunity_id, MAX(a.appointment_time) as latest_appointment_time,
+                a.mentor_id as mentor_id
+            FROM appointments a
+            INNER JOIN FollowUps f ON f.opportunity_id = a.opportunity_id
+            GROUP BY a.opportunity_id, a.mentor_id
+        )
+        SELECT COUNT(DISTINCT o.id) AS opportunity_id
+        FROM opportunity o
+        INNER JOIN LatestAppointment la ON o.id = la.opportunity_id
+        INNER JOIN appointments a ON o.id = a.opportunity_id 
+            AND a.appointment_time = la.latest_appointment_time
+            AND (a.status = 4 or a.status is NULL)
+        LEFT JOIN sales_agent sa ON sa.id = la.mentor_id
+        '''
+        if user_id is not None:
+            count_query += f'''WHERE sa.user_id = %s'''
+            cursor.execute(count_query, (user_id,))
+        else:
+            cursor.execute(count_query)
+
+        total_count = cursor.fetchone()[0]
+        total_pages = math.ceil(total_count / per_page)
+        print(f'total_pages: {total_pages}')
+        return [
+            {
+                'opportunity_id': item[0],
+                'name': item[1],
+                'follow_up_date': item[2]
+            } for item in pipeline
+        ], total_pages
     finally:
         if cursor:
             cursor.close()

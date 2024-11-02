@@ -13,25 +13,27 @@
                     Appointments
                 </a>
             </li>
-            <li class="nav-item">
+            <!-- <li class="nav-item">
                 <a class="nav-link" aria-current="page" href="/instance">
                     Instances
                 </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" aria-current="page" href="/template">
-                    Templates
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" aria-current="page" href="/opportunity">
+            </li> -->
+            <li class="nav-item"></li>
+                <a class="nav-link nav-main" aria-current="page" href="/opportunity">
                     Opportunities
                 </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" aria-current="page" href="/message/">
-                    Messages
-                </a>
+                <ul class="submenu" style="display: none;">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/opportunity">
+                            List
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/message/">
+                            Messages
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li class="nav-item">
                 <a class="nav-link nav-main" aria-current="page" href="/sales">
@@ -51,9 +53,40 @@
                 </ul>
             </li>
             <li class="nav-item">
-                <a class="nav-link" aria-current="page" href="/import">
-                    Import
+                <a class="nav-link" aria-current="page" href="#">
+                    Metrics
                 </a>
+                <ul class="submenu" style="display: none;">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/review">
+                            Review
+                        </a>
+                    </li>
+                    {% if current_user.role == "Admin" %}
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/metrics/projections">
+                            Projections
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link nav-main" aria-current="page" href="/template">
+                    Config
+                </a>
+                <ul class="submenu" style="display: none;">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/template">
+                            Templates
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/import">
+                            Import
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li class="nav-item">
                 <a class="nav-link" aria-current="page" href="/logout">

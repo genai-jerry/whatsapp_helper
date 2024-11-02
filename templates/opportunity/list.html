@@ -8,7 +8,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <div class="container mt-5">
-    <h2>List of Opportunities</h2>
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>List of Opportunities</h2>
+    </div>
     <form id="searchForm" class="mt-12">
         <div class="row">
             <div class="col-md-4">
@@ -19,6 +21,7 @@
                     <option value="name">Name</option>
                     <option value="email">Email</option>
                     <option value="phone">Phone Number</option>
+                    <option value="ad_name">Ad Name</option>
                 </select>
             </div>
             <div class="col-md-4">
@@ -43,10 +46,17 @@
                 </th>
                 <th>Phone</th>
                 <th>Ad Details</th>
-                <th id="call_status_heading">
-                </th>
+                <th id="call_status_heading"></th>
                 <th id="opportunity_status_heading"></th>
                 <th id="agent_heading">Call Setter</th>
+                <th>Actions
+                    <!--<span id="excel-export" class="cursor-pointer float-end" title="Export to Excel">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-file-earmark-excel" viewBox="0 0 16 16">
+                            <path d="M5.884 6.68a.5.5 0 1 0-.768.64L7.349 10l-2.233 2.68a.5.5 0 0 0 .768.64L8 10.781l2.116 2.54a.5.5 0 0 0 .768-.641L8.651 10l2.233-2.68a.5.5 0 0 0-.768-.64L8 9.219l-2.116-2.54z"/>
+                            <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                        </svg>
+                    </span>-->
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -63,4 +73,8 @@
 </div>
 <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
 <script src="{{ url_for('static', filename='js/opportunity.js') }}"></script>
+
+{% include 'comment/comment_modals.html' %}
+{% include 'task/create_modal.html' %}
+{% include 'task/list_modal.html' %}
 {% endblock %}

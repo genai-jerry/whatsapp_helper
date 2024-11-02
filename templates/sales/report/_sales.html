@@ -9,9 +9,9 @@
     <tbody>
         {% for item in formatted_sales_report %}
         <tr>
-            <td>{{ item.sale_value }}</td>
-            <td>{{ item.total_paid }}</td>
-            <td>{{ item.pending_amount }} </td>
+            <td>{{ item.sale_value | number_format }}</td>
+            <td>{{ item.total_paid | number_format }}</td>
+            <td>{{ item.pending_amount | number_format }} </td>
         </tr>
         {% endfor %}
     </tbody>

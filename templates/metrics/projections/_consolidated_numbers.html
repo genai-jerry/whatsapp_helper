@@ -1,0 +1,171 @@
+<!-- A table showing the revenue goal, revenue projection and actual revenue -->
+<div class="card mt-2">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-10">
+                <h4>Revenue Metrics</h4>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <h5>Total Projected Revenue: Rs <span id="totalProjectedRevenue">0</span></h5>
+                <h5>Total Projected Cost: Rs <span id="totalProjectedCost">0</span></h5>
+                <h5>Net Projected Profit: Rs <span id="totalProjectedProfit">0</span></h5>
+                <h5>Projected RoAS: <span id="totalProjectedROI">0</span>x</h5>
+            </div>
+            <div class="col-md-6">
+                <input type="hidden" id="total_actual_revenue" value="{{performance_metrics.total_final_sale_value}}">
+                <h5>Total Actual Revenue: Rs <span id="totalActualRevenue">0</span></h5>
+                <h5>Total Actual Cost: Rs <span id="totalActualCost">0</span></h5>
+                <h5>Net Actual Profit: Rs <span id="totalActualProfit">0</span></h5>
+                <h5>Actual RoAS: <span id="totalActualROI">0</span>x</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-10">
+                <h4>Sales Funnel Metrics</h4>
+            </div>
+        </div>
+    </div>
+    <form id="salesProjectionForm" class="mt-3" action="/metrics/projections/config" method="post">
+    <input type="hidden" id="selected_month" name="selected_month" value="{{month}}">
+    <input type="hidden" id="selected_year" name="selected_year" value="{{year}}">
+    <input type="hidden" id="selected_date" name="selected_date" value="{{selected_date}}">
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Goal</th>
+                    <th>Goal Value</th>
+                    <th>Projected Rate</th>
+                    <th>Projected Value</th>
+                    <th>Projected Cost</th>
+                    <th>Actual Cost</th>
+                    <th>Actual Value</th>
+                    <th>Actual Rate</th>
+                </tr>
+            </thead>
+            <input type="hidden" id="sales_slots_possible" value="{{sales_metrics.total_call_slots}}">
+            <tbody>
+                <tr>
+                    <td>Leads</td>
+                    <td><b>{{sales_metrics.total_call_slots}}</b> Calls</td>
+                    <td><input type="number" id="lead_generation_goal" class="form-control" value="" readonly>
+                    </td>
+                    <td><b>{{sales_metrics.total_call_slots}}</b> Calls</td>
+                    <td><input type="number" id="lead_generation_projection" class="form-control" value="" readonly>
+                        </td>
+                    <td>Rs <span id="projected_lead_cost">0</span></td>
+                    <td>
+                        Rs <span id="actual_lead_cost">{{projection_config.marketing_spend}}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise refresh-ad-spend" viewBox="0 0 16 16" style="cursor: pointer; margin-left: 5px;">
+                          <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                          <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                        </svg>
+                    </td>
+                    <td><span id="actual_lead_value">{{opportunity_count}}</span></td>
+                    <td><span id="actual_lead_rate"></span></td>
+                </tr>
+                <tr>
+                    <td>Appointments</td>
+                    <td><input type="number" id="appointment_booked_goal" name="appointment_booked_goal" class="form-control" value="{{projection_config.appointment_booked_goal}}" required> %</td>
+                    <td><span id="appointment_booked_goal_value">0</span></td>
+                    <td><input type="number" id="appointment_booked_projection" name="appointment_booked_projection" class="form-control" value="{{projection_config.appointment_booked_projection}}" required> %</td>
+                    <td><span id="appointment_booked_projection_value">0</span></td>
+                    <td>Rs <span id="appointment_booked_cost">0</span></td>
+                    <td>Rs <span id="actual_appointment_booked_cost">0</span></td>
+                    <td><span id="appointment_booked_count">{{performance_metrics.total_appointments_booked}}</span></td>
+                    <td><span id="actual_appointment_booked_rate"></span> %</td>
+                </tr>
+                <tr>
+                    <td>Show Ups</td>
+                    <td><input type="number" id="show_up_rate_goal" name="show_up_rate_goal" class="form-control" value="{{projection_config.show_up_rate_goal}}" required> %</td>
+                    <td><span id="show_up_rate_goal_value">0</span></td>
+                    <td><input type="number" id="show_up_rate_projection" name="show_up_rate_projection" class="form-control" value="{{projection_config.show_up_rate_projection}}" required> %</td>
+                    <td><span id="show_up_rate_projection_value">0</span></td>
+                    <td>Rs <span id="show_up_rate_cost">0</span></td>
+                    <td>Rs <span id="actual_show_up_rate_cost">0</span></td>
+                    <td><span id="actual_show_up_rate_value">{{performance_metrics.total_appointments_attended}}</span></td>
+                    
+                    <td><span id="actual_show_up_rate"></span> %</td>
+                </tr>
+                <tr>
+                    <td>Sales Closure</td>
+                    <td><input type="number" id="close_rate_goal" class="form-control" value="{{sales_metrics.goal_closure_rate}}" readonly> %</td>
+                    <td><span id="sales_goal_closure_rate_value">0</span></td>
+                    <td><input type="number" id="close_rate_projection" class="form-control" value="{{sales_metrics.projected_closure_rate}}" readonly> %</td>
+                    <td><span id="sales_projected_closure_rate_value">0</span></td>
+                    <td>Rs <span id="sales_projected_closure_cost">0</span></td>
+                    <td>Rs <span id="actual_sales_closure_cost">0</span></td>
+                    <td><span id="actual_sales_closure_rate_value">{{performance_metrics.total_sales_final}}</span></td>
+                    <td><span id="actual_sales_closure_rate"></span> %</td>
+                </tr>
+               
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        <div class="form-group">
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="costPerLead">Projected Cost per Lead (Rs):</label>
+                    <input type="number" id="costPerLead" class="form-control input-number" 
+                        name="cost_per_lead" 
+                        value="{{ projection_config.cost_per_lead }}">
+                </div>
+                <div class="col-md-6">
+                    <label for="actualCostPerLead">Actual Cost per Lead (Rs):</label>
+                    <input type="number" id="actual_cost_per_lead" class="form-control input-number" 
+                        name="actual_cost_per_lead" 
+                        value="" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="averageSaleValue">Sale Price (Rs):</label>
+            <input type="number" id="averageSaleValue" class="form-control input-number" name="sale_price" 
+                value="{{ projection_config.sale_price}}">
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary mt-2">Update</button>
+        </div>
+    </div>
+    </form>
+</div>
+<script src="{{ url_for('static', filename='js/projections.js') }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const refreshIcon = document.querySelector('.refresh-ad-spend');
+    const actualLeadCostSpan = document.getElementById('actual_lead_cost');
+    // Convert month name to number
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+                            "July", "August", "September", "October", "November", "December"];
+     
+    refreshIcon.addEventListener('click', function() {
+        const year = selectedYear;
+        const monthName = selectedMonth;
+        
+        const month = (monthNames.indexOf(monthName) + 1).toString().padStart(2, '0');
+
+        fetch(`/facebook/ad_spend/${year}/${month}`)
+            .then(response => response.json())
+            .then(data => {
+                actualLeadCostSpan.textContent = data.ad_spend.toFixed(2);
+                calculateMetrics();
+            })
+            .catch(error => {
+                console.error('Error fetching ad spend:', error);
+                alert('Failed to fetch ad spend data. Please try again.');
+            });
+    });
+});
+</script>

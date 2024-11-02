@@ -1,0 +1,39 @@
+<!-- Create Task Modal -->
+<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="createTaskForm">
+          <input type="hidden" id="taskOpportunityId" name="opportunity_id">
+   
+          <div class="mb-3">
+            {% include 'common/_searchable_opportunities.html' %}
+          </div>
+          <div class="mb-3">
+            <label for="taskDescription" class="form-label">Task Description</label>
+            <textarea class="form-control" id="taskDescription" name="description" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="taskDueDate" class="form-label">Due Date</label>
+            <input type="date" class="form-control" id="taskDueDate" name="due_date" required>
+          </div>
+          <div id="taskFeedback" class="alert" style="display: none;"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="createTask()">Create Task</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script src="{{ url_for('static', filename='js/task.js') }}"></script>
+

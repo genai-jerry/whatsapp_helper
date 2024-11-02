@@ -1,0 +1,181 @@
+<div class="card-header">
+    <h5>Assigned Leads</h5>
+</div>
+<div class="card-body">
+    <div class="row">
+        <!-- Appointments Column -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">Assigned Appointments ({{ assigned_appointments_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="leads-list" id="appointmentsList">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in assigned_appointments %}
+                                <tr class="lead-item">
+                                    <td class="opportunity-name">
+                                        {% include 'review/call-setting/_appt_assigned_title.html' %}
+                                    </td>
+                                    <td class="status">
+                                        {% include 'review/call-setting/_appt_status_list.html' %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->    
+                        {% with page=assigned_appointments_page %}
+                        {% with count=assigned_appointments_count %}
+                        {% with page_args='assigned_appointments_page' %}
+                        {% include 'review/call-setting/_pagination.html' %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        <!-- Add pagination controls -->
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- New Leads Column -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">Assigned New Leads ({{ assigned_leads_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="leads-list" id="newLeadsList">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in assigned_leads %}
+                                <tr class="lead-item">
+                                    <td class="opportunity-name">
+                                        {% include 'review/call-setting/_assigned_title.html' %}
+                                    </td>
+                                    <td class="status">
+                                        {% include 'review/call-setting/_status_list.html' %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->    
+                        {% with page=assigned_leads_page %}
+                        {% with count=assigned_leads_count %}
+                        {% with page_args='assigned_leads_page' %}
+                        {% include 'review/call-setting/_pagination.html' %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        <!-- Add pagination controls -->
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Follow Up Column -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h6 class="mb-0">Assigned Follow Up ({{ assigned_follow_up_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="leads-list" id="followUpList">
+                        <!-- Template for each follow-up -->
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in assigned_follow_up %}
+                                <tr class="lead-item">
+                                    <td class="opportunity-name">
+                                        {% include 'review/call-setting/_assigned_title.html' %}
+                                    </td>
+                                    <td class="status">
+                                        {% include 'review/call-setting/_status_list.html' %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->    
+                        {% with page=assigned_follow_up_page %}
+                        {% with count=assigned_follow_up_count %}
+                        {% with page_args='assigned_follow_up_page' %}
+                        {% include 'review/call-setting/_pagination.html' %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        <!-- Add pagination controls -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Shows Column -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">Assigned No Shows ({{ assigned_no_show_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="leads-list" id="noShowsList">
+                        <!-- Template for each no-show -->
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in assigned_no_show %}
+                                <tr class="lead-item">
+                                    <td class="opportunity-name">
+                                        {% include 'review/call-setting/_assigned_title.html' %}
+                                    </td>
+                                    <td class="status no-shows">
+                                        {% include 'review/call-setting/_status_list.html' %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->    
+                        {% with page=assigned_no_show_page %}
+                        {% with count=assigned_no_show_count %}
+                        {% with page_args='assigned_no_show_page' %}
+                        {% include 'review/call-setting/_pagination.html' %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        <!-- Add pagination controls -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "task/list_modal.html" %}
+{% include "task/create_modal.html" %}
+{% include "comment/comment_modals.html" %}

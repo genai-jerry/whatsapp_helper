@@ -90,8 +90,8 @@
                     <div class="card">
                         <h5 class="card-header {% if not payment.is_deposit %}bg-success{% else %}bg-warning{% endif %}" style="color: white;">GenAI Leap - Date: {{ payment.date.strftime('%b %d, %Y') }}</h5>
                         <div class="card-body">
-                            <p class="card-text">Payment Amount: <b>{{ payment.amount | numberFormat }}</b></p>
-                            <p class="card-text">GST: <b>{{ payment.amount | tax | numberFormat }}</b></p>
+                            <p class="card-text">Payment Amount: <b>{{ payment.amount | number_format }}</b></p>
+                            <p class="card-text">GST: <b>{{ payment.amount | tax | number_format }}</b></p>
                             <p class="card-text">Payment Mode: <b>{{ payment.mode }}</b></p>
                             <p class="card-text">Payment Charges: <b>{{ payment.charges }}</b></p>
                             <p class="card-text">Invoice Link: <a target="_blank" href="{{ payment.invoice_link }}">Invoice Link</a></p>
@@ -170,7 +170,7 @@
                 {% for due in dues %}
                 <tr>
                     <td>{{ due.due_date.strftime('%b %d, %Y') }}</td>
-                    <td>{{ due.amount | numberFormat }}</td>
+                    <td>{{ due.amount | number_format }}</td>
                     <td>
                         <a href="/payments/{{opportunity_id}}/{{sale_id}}/due/{{due.id}}/paid">Mark Paid</a>&nbsp;|&nbsp;
                         <a href="/payments/{{opportunity_id}}/{{sale_id}}/due/{{due.id}}/cancel">Cancel</a>

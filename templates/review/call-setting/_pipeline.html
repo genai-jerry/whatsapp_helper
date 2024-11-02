@@ -1,0 +1,158 @@
+<div class="card-header">
+    <h5>Pipeline</h5>
+</div>
+<div class="card-body">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Appointments ({{ pipeline_appointments_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="pipeline-list" id="appointmentsPipeline">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in pipeline_appointments %}
+                                <tr class="pipeline-item">
+                                    {% include 'review/call-setting/_appt_pipeline_title.html' %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->    
+                        {% with page=pipeline_appointments_page %}
+                        {% with count=pipeline_appointments_count %}
+                        {% with page_args='pipeline_appointments_page' %}
+                        {% include 'review/call-setting/_pagination.html' %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        <!-- Add pagination controls -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- New Leads Pipeline -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">New Leads ({{ pipeline_leads_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="pipeline-list" id="newLeadsPipeline">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in pipeline_leads %}
+                                <tr class="pipeline-item">
+                                    {% include 'review/call-setting/_pipeline_title.html' %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->    
+                        {% with page=pipeline_leads_page %}
+                        {% with count=pipeline_leads_count %}
+                        {% with page_args='pipeline_leads_page' %}
+                        {% include 'review/call-setting/_pagination.html' %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        <!-- Add pagination controls -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Follow Up Pipeline -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h6 class="mb-0">Follow Up ({{ pipeline_follow_up_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="pipeline-list" id="followUpPipeline">
+                        <!-- Template for pipeline items -->
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in pipeline_follow_up %}
+                                <tr class="pipeline-item">
+                                    {% include 'review/call-setting/_pipeline_title.html' %}
+                                </tr>   
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->    
+                        {% with page=pipeline_follow_up_page %}
+                        {% with count=pipeline_follow_up_count %}
+                        {% with page_args='pipeline_follow_up_page' %}
+                        {% include 'review/call-setting/_pagination.html' %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        <!-- Add pagination controls -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Shows Pipeline -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">No Shows ({{ pipeline_no_show_count }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="pipeline-list" id="noShowsPipeline">
+                        <!-- Template for pipeline items -->
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in pipeline_no_show %}
+                                <tr class="pipeline-item">
+                                    {% include 'review/call-setting/_pipeline_title.html' %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->    
+                        {% with page=pipeline_no_show_page %}
+                        {% with count=pipeline_no_show_count %}
+                        {% with page_args='pipeline_no_show_page' %}
+                        {% include 'review/call-setting/_pagination.html' %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        <!-- Add pagination controls -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

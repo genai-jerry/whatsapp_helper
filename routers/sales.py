@@ -1,12 +1,12 @@
 from flask import Blueprint, make_response, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 import csv
-from store.payment_store import store_sales
+from store.payment_store import store_sales, get_unassigned_payments
 from store.sales_store import *
-from store.payment_store import get_unassigned_payments
-from routers.opportunity import get_opportunity_detail
-import calendar
+from routers.opportunity import get_opportunity_detail, get_opportunities
+from utils import get_month_dates
 from datetime import datetime, timedelta
+# from store.metrics_store import get_sales_agent_performance
 
 sales_blueprint = Blueprint('sales', __name__)
 
@@ -68,17 +68,6 @@ def sales_report():
     # For example, retrieve sales data from the database and format it
     formatted_report = get_monthly_sales_data()
     return jsonify(formatted_report), 200
-
-def get_month_dates(month):
-    if month:
-        month = datetime.strptime(month, '%B %Y')
-        first_day = month.replace(day=1)
-        last_day = month.replace(day=calendar.monthrange(month.year, month.month)[1]) + timedelta(days=1)
-    else:
-        first_day = datetime.now().replace(day=1)
-        last_day = datetime.now().replace(day=calendar.monthrange(datetime.now().year, datetime.now().month)[1]) + timedelta(days=1)
-    
-    return first_day, last_day
 
 @sales_blueprint.route('monthly/opportunities')
 def monthly_sales_opportunities_report():
@@ -191,3 +180,17 @@ def generate_invoice(payment_id):
     response.headers['Content-Disposition'] = 'inline; filename=invoice.pdf'
 
     return response
+
+@sales_blueprint.route("/sales", methods=['GET'])
+def get_sales_metrics():
+    agent_id = request.args.get('agent_id', 1, type=int)  # Default to agent_id 1 if not provided
+    start_date = request.args.get('start_date', (datetime.now() - timedelta(days=28)).strftime('%Y-%m-%d'))
+    end_date = request.args.get('end_date', datetime.now().strftime('%Y-%m-%d'))
+    
+    performance_data = [] # get_sales_agent_performance(agent_id, start_date, end_date)
+    
+    return render_template("metrics/sales.html", 
+                           performance_data=performance_data,
+                           agent_id=agent_id,
+                           start_date=start_date,
+                           end_date=end_date)

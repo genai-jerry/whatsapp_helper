@@ -1,0 +1,5 @@
+<a href="/opportunity/{{ appointment.opportunity_id }}">
+    {{ appointment.opportunity_name }}
+</a>
+<p><h6><a class="btn btn-sm btn-outline-primary" href="tel:{{appointment.opportunity_phone}}">{{appointment.opportunity_phone}}</a></h6></p>
+<p><h6>{{appointment.appointment_time | format_date}}</h6></p>

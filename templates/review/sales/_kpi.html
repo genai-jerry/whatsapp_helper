@@ -1,0 +1,70 @@
+<!-- New table for monthly and weekly metrics -->
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center float-start">
+            <h5 class="card-title mb-0">Monthly and Weekly Performance Metrics</h5>
+        </div>
+        <div class="d-flex float-end">
+            <button type="button" class="btn btn-primary btn-sm task-comment-btn border border-white" onclick="listTasks()" title="List Tasks">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16" data-bs-toggle="tooltip" data-bs-placement="top">
+                    <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5H2zM3 3H2v1h1V3z"/>
+                    <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9z"/>
+                    <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5V7zM2 7h1v1H2V7zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5H2zm1 .5H2v1h1v-1z"/>
+                </svg>
+            </button>
+            <button type="button" class="btn btn-primary btn-sm task-comment-btn border border-white" onclick="showCreateTaskModal()" title="Create Task">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16" data-bs-toggle="tooltip" data-bs-placement="top">
+                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="thead-light">
+                <tr>
+                    <th>Metric</th>
+                    <th>Month</th>
+                    <th>Actual</th>
+                    {% if performance_data %}
+                        {% for week in performance_data.weeks %}
+                            <th title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Proj)</th>
+                            <th title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Actual)</th>
+                        {% endfor %}
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% set actual_values = {'goal': 0, 'projection': 0, 'calls': 0, 'apps': 0} %}
+                {% for metric in ['goal', 'projection', 'calls', 'apps'] %}
+                    <tr>
+                        <td>{{ metric|title }}</td>
+                        {% if performance_data %}
+                        {% with monthly_value = performance_data.projection[metric] | int if performance_data.projection is not none else 0 %}
+                        <td>{{ monthly_value }}</td>
+                        <td class="{{ 'above-projection' if performance_data[metric + '_month'] > monthly_value else 'below-projection' }}">{{ performance_data[metric + '_month'] }}</td>
+                        {% if performance_data.weeks %}
+                        {% for week in performance_data.weeks %}
+                            {% with projection_value = (((performance_data.projection[metric] if performance_data.projection is not none and performance_data.projection[metric] is not none else 0) / performance_data.weeks|length) | round_up ) %}
+                            {% with actual_value = (week[metric + '_actual'] if week[metric + '_actual'] is not none else '') %}
+                                <td>{{ projection_value }}</td>
+                                <td class="{{ 'above-projection' if actual_value > projection_value else 'below-projection' }}">{{ actual_value}}</td>
+                                {% set actual_values = actual_values.update({metric: actual_values[metric] + actual_value}) %}
+                            {% endwith %}
+                            {% endwith %}
+                        {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .above-projection { color: green; }
+    .below-projection { color: red; }
+</style>

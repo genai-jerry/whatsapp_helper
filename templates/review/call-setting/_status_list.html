@@ -1,0 +1,32 @@
+<p>
+<select class="form-select form-select-sm status-select" 
+            data-opportunity-id="{{ lead.id }}"
+            style="background-color: {% if lead.call_status %}
+                    {{ call_statuses[lead.call_status-1].color_code }}
+                {% endif %};
+                color: {% if lead.call_status %}
+                    {{ call_statuses[lead.call_status-1].text_color }}
+                {% endif %};">
+        <option value="">Select Status</option>
+        {% for status in call_statuses %}
+            <option value="{{ status.id }}" 
+                    {% if lead.call_status == status.id %}selected{% endif %}
+                    data-bg-color="{{ status.color_code }}"
+                    data-text-color="{{ status.text_color }}">
+                {{ status.name }}
+            </option>
+        {% endfor %}
+</select>
+</p>
+<p>
+    {% with id = lead.id, name = lead.name %}
+        {% include 'common/_list_tasks.html' %}
+    {% endwith %}
+</p>
+<p>
+    <button type="button" class="btn btn-success btn-sm task-comment-btn border border-white float-start set-call disabled" onclick="assignCallSetter('{{ lead.id }}')" title="Assign Setter">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16" data-bs-toggle="tooltip" data-bs-placement="top">
+            <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+        </svg>
+    </button>
+</p>

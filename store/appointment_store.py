@@ -230,7 +230,10 @@ def convert_date_str_to_datetime(date_str):
     appointment_date_str = appointment_date.strftime('%Y-%m-%d')
     return appointment_date_str
 
-def retrieve_appointments(page_number, page_size, max=0, app_date=None):
+def retrieve_appointments_for_mentor(mentor_id, page_number, page_size, max=0, app_date=None):
+    return retrieve_appointments(page_number, page_size, max, app_date, mentor_id)
+
+def retrieve_appointments(page_number, page_size, max=0, app_date=None, mentor_id=None):
     # Define the SQL query for retrieving appointments with associated opportunities and mentors
     
     query = """
@@ -248,6 +251,10 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None):
     try:
         # Create a new database connection
         cnx = create_connection()
+
+        if mentor_id:
+            query = query + " AND a.mentor_id = %s"
+            count_query = count_query + " AND a.mentor_id = %s"
 
         # Get the current time in GMT
         if max == 1:
@@ -470,3 +477,117 @@ def get_initial_discussion_appointment(opportunity_id):
         # Close the cursor and connection
         if cursor:
             cursor.close()
+
+def list_all_appointments_for_confirmation(assigned=False, agent_id=None, page=1, page_size=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = '''SELECT DISTINCT a.id, a.opportunity_id, a.status, a.created_at, a.appointment_time,
+                o.name, o.email, o.phone, a.confirmed
+                FROM appointments a
+                JOIN opportunity o on o.id = a.opportunity_id
+                WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
+                AND (a.confirmed = 0 OR a.status IS NULL)'''
+        if assigned:
+            if agent_id:
+                sql += " AND a.call_setter = %s ORDER BY a.appointment_time ASC "
+                offset = (page - 1) * page_size
+                sql += " LIMIT %s OFFSET %s"
+                cursor.execute(sql, (agent_id, page_size, offset))
+            else:
+                sql += " AND a.call_setter IS NOT NULL ORDER BY a.appointment_time ASC "
+                offset = (page - 1) * page_size
+                sql += " LIMIT %s OFFSET %s"
+                cursor.execute(sql, (page_size, offset))
+        else:
+            sql += " AND a.call_setter IS NULL ORDER BY a.appointment_time ASC "
+            offset = (page - 1) * page_size
+            sql += " LIMIT %s OFFSET %s"
+            cursor.execute(sql, (page_size, offset))
+        results = cursor.fetchall()
+        appointments = []
+        for result in results:
+            appointment = {
+                'appointment_id': result[0],
+                'opportunity_id': result[1],
+                'status': result[2],
+                'created_at': result[3],
+                'appointment_time': result[4],
+                'opportunity_name': result[5],
+                'opportunity_email': result[6],
+                'opportunity_phone': result[7],
+                'confirmed': result[8]
+            }
+            appointments.append(appointment)
+        count_query = '''SELECT COUNT(DISTINCT a.opportunity_id) FROM appointments a 
+                        WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
+                        AND a.confirmed = 0 AND a.status IS NULL'''
+        
+        if assigned:
+            if agent_id:
+                count_query += " AND a.call_setter = %s"
+                cursor.execute(count_query, (agent_id,))
+            else:
+                count_query += " AND a.call_setter IS NOT NULL"
+                cursor.execute(count_query)
+        else:
+            count_query += " AND a.call_setter IS NULL"
+            cursor.execute(count_query)
+        total_appointments = cursor.fetchone()[0]
+
+        return appointments, total_appointments
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def set_call_setter(appointment_id, agent_id):
+    try:
+        # Create a new database connection
+        cnx = create_connection()   
+        cursor = cnx.cursor()
+
+        # Define the SQL query for updating the appointment with the given ID
+        query = "UPDATE appointments SET call_setter = %s WHERE id = %s AND call_setter IS NULL"
+
+        # Execute the SQL query with the agent ID and appointment ID as parameters
+        cursor.execute(query, (agent_id, appointment_id))
+        updated_count = cursor.rowcount
+
+        if updated_count == 0:
+            print(f'Appointment {appointment_id} is already assigned to an agent')
+            raise ValueError("Failed to assign appointment - may already be assigned")
+        # Commit the transaction
+        cnx.commit()
+
+    except Exception as err:
+        raise err
+    finally:
+        if cursor:
+            cursor.close()
+        if cnx:
+            cnx.close()
+        
+def get_all_appointment_status():
+    try:
+        cnx = create_connection()
+        cursor = cnx.cursor()
+        query = "SELECT id, name, color_code, text_color FROM opportunity_status"
+        cursor.execute(query)
+        results = cursor.fetchall()
+        appointment_statuses = []
+        for result in results:
+            appointment_status = {
+                'id': result[0],
+                'name': result[1],
+                'color_code': result[2],
+                'text_color': result[3]
+            }
+            appointment_statuses.append(appointment_status)
+        return appointment_statuses
+    finally:
+        if cursor:
+            cursor.close()
+        if cnx:
+            cnx.close()

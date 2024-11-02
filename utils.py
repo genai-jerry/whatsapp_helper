@@ -1,3 +1,5 @@
+import calendar
+from datetime import datetime, timedelta
 import os
 import re
 from flask import jsonify, request, g
@@ -57,3 +59,33 @@ def require_api_key(view_function):
             return jsonify({'error': 'Invalid API key'}), 403
         return view_function(*args, **kwargs)
     return decorated_function
+
+def get_month_dates(month):
+    if month:
+        month = datetime.strptime(month, '%B %Y')
+        first_day = month.replace(day=1)
+        last_day = month.replace(day=calendar.monthrange(month.year, month.month)[1]) + timedelta(days=1)
+    else:
+        first_day = datetime.now().replace(day=1)
+        last_day = datetime.now().replace(day=calendar.monthrange(datetime.now().year, datetime.now().month)[1]) + timedelta(days=1)
+    
+    return first_day, last_day
+
+def get_month_year(month_year):
+    if month_year:
+        date = datetime.strptime(month_year, '%B %Y')
+        month = date.strftime('%B')
+        year = date.year
+    else:
+        month = datetime.now().strftime('%B')
+        year = datetime.now().year
+    return month, year
+
+def get_month_number(month_name):
+    print(f'Month Name for : {month_name}')
+    month_number = datetime.strptime(month_name, '%B').month
+    print(f'Month Number for : {month_number}')
+    return month_number
+
+def get_month_name(month_number):
+    return calendar.month_name[month_number]

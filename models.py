@@ -81,6 +81,9 @@ class Opportunity(db.Model):
     optin_caller = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
     company_type = db.Column(db.Integer, db.ForeignKey('company_type.id'))
     challenge_type = db.Column(db.Integer, db.ForeignKey('challenge_type.id'))
+    assigned_to = db.Column(db.Integer, db.ForeignKey('sales_agent.id'), nullable=True)
+    last_updated = db.Column(db.DateTime, nullable=True)
+    last_updated_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
 class CompanyType(db.Model):
     __tablename__ = 'company_type'
@@ -107,6 +110,7 @@ class SalesAgent(db.Model):
     name = db.Column(db.String(255), nullable=False, unique=True)
     color_code = db.Column(db.String(25))
     text_color = db.Column(db.String(25))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 class Templates(db.Model):
     __tablename__ = 'templates'
@@ -121,6 +125,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
     active = db.Column(db.Boolean, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime)
@@ -166,6 +171,7 @@ class Appointment(db.Model):
     canceled = db.Column(db.Boolean, nullable=True)
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
     status = db.Column(db.Integer, db.ForeignKey('opportunity_status.id'), nullable=True)
+    call_setter = db.Column(db.Integer, db.ForeignKey('sales_agent.id'), nullable=True)
     
 
 class MaxScore(db.Model):
@@ -246,3 +252,121 @@ class PaymentDue(db.Model):
     paid = db.Column(db.Boolean, nullable=False, default=False)
     cancelled = db.Column(db.Boolean, nullable=False, default=False)
 
+class Task(db.Model):
+    __tablename__ = 'tasks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    due_date = db.Column(db.DateTime, nullable=False)
+    completed = db.Column(db.Boolean, nullable=False, default=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    last_updated = db.Column(db.DateTime, nullable=True)
+    opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'), nullable=True)
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime)
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'), nullable=True)
+    appointment_id = db.Column(db.Integer, db.ForeignKey('appointments.id'), nullable=True)
+
+class Win(db.Model):
+    __tablename__ = 'wins'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    win_type = db.Column(db.Integer, db.ForeignKey('win_types.id'), nullable=True)
+    description = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+class WinType(db.Model):
+    __tablename__ = 'win_types'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    
+class Employee(db.Model):
+    __tablename__ = 'employees'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    email = db.Column(db.String(255), nullable=True)
+    phone = db.Column(db.String(255), nullable=True)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+
+class Department(db.Model):
+    __tablename__ = 'departments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    department_key = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    active = db.Column(db.Boolean, nullable=False, default=True)
+
+
+class SalesProjections(db.Model):
+    __tablename__ = 'sales_projections'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    month = db.Column(db.String(50), nullable=False)
+    year = db.Column(db.String(50), nullable=False)
+    sale_price = db.Column(db.Integer, nullable=False)
+    total_call_slots = db.Column(db.Integer, nullable=False)
+    closure_percentage_goal = db.Column(db.Integer, nullable=False)
+    closure_percentage_projected = db.Column(db.Integer, nullable=False)
+    sales_value_projected = db.Column(db.Integer, nullable=False, default=0)
+    sales_value_goal = db.Column(db.Integer, nullable=False, default=0)
+    actual_sales_value = db.Column(db.Integer, nullable=False, default=0)
+    total_calls_made = db.Column(db.Integer, nullable=False, default=0)
+    total_calls_scheduled = db.Column(db.Integer, nullable=False, default=0)
+    total_sales_closed = db.Column(db.Integer, nullable=False, default=0)
+    total_deposits_collected = db.Column(db.Integer, nullable=False, default=0)
+    commission_percentage = db.Column(db.Integer, nullable=False, default=0)
+    sales_agent_id = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
+
+class SalesProjectionConfig(db.Model):
+    __tablename__ = 'sales_projection_config'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    cost_per_lead = db.Column(db.Integer, nullable=False)
+    sale_price = db.Column(db.Integer, nullable=False)
+    show_up_rate_goal = db.Column(db.Integer, nullable=False)
+    show_up_rate_projection = db.Column(db.Integer, nullable=False)
+    appointment_booked_goal = db.Column(db.Integer, nullable=False)
+    appointment_booked_projection = db.Column(db.Integer, nullable=False)
+    month = db.Column(db.String(50), nullable=False)
+    year = db.Column(db.String(50), nullable=False)
+    marketing_spend = db.Column(db.Integer, nullable=True, default=0)
+    marketing_spend_updated_at = db.Column(db.DateTime, nullable=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
+
+class FacebookAdAccount(db.Model):
+    __tablename__ = 'facebook_ad_accounts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    ad_account_id = db.Column(db.String(255), nullable=False)
+    ad_account_name = db.Column(db.String(255), nullable=False)
+    ad_account_access_token = db.Column(db.String(255), nullable=False)
+    ad_account_currency = db.Column(db.String(255), nullable=False)
+    app_id = db.Column(db.String(255), nullable=False)
+    app_secret = db.Column(db.String(255), nullable=False)
+    last_updated = db.Column(db.DateTime, nullable=True)
+
+class OptinCallRecord(db.Model):
+    __tablename__ = 'optin_call_record'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'))
+    call_date = db.Column(db.DateTime, nullable=False)
+    call_duration = db.Column(db.Integer, nullable=False)
+    call_type = db.Column(db.String(255), nullable=False)
+    call_status = db.Column(db.String(255), nullable=False)
+    agent_id = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))

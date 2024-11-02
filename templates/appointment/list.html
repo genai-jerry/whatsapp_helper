@@ -19,6 +19,7 @@ List of Appointments
                 <th>Mentor</th>
                 <th>Appointment Time</th>
                 <th>status</th>
+                <th>Actions</th>
                 <th style="text-align: right;"><a href="#" onclick="loadAppointments(-1)" id="view_setting">View All</a></th>
             </tr>
         </thead>
@@ -40,5 +41,7 @@ List of Appointments
 </style>
 <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
 <script src="{{ url_for('static', filename='js/appointment.js') }}"></script>
-
+{% include 'comment/comment_modals.html' %}
+{% include 'task/create_modal.html' %}
+{% include 'task/list_modal.html' %}
 {% endblock %}

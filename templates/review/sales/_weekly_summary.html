@@ -1,0 +1,40 @@
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Weekly Summary</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Week</th>
+                    <th>Calls Scheduled</th>
+                    <th>No Shows</th>
+                    <th>Cancelled</th>
+                    <th>Rescheduled</th>
+                    <th>Follow Up</th>
+                    <th>Sale</th>
+                    <th>No Sale</th>
+                    <th>Pending</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for week in weekly_summary %}
+                <tr>
+                    <td>
+                        <b>Week {{ week.number }}</b>-
+                        ({{ week.start_date | format_date }} To {{ week.end_date | format_date }})
+                    </td>
+                    <td>{{ week.calls_scheduled }}</td>
+                    <td>{{ week.no_shows }}</td>
+                    <td>{{ week.cancelled }}</td>
+                    <td>{{ week.rescheduled }}</td>
+                    <td>{{ week.follow_up }}</td>
+                    <td>{{ week.sale }}</td>
+                    <td>{{ week.no_sale }}</td>
+                    <td>{{ week.pending }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

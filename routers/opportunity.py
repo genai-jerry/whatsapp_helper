@@ -8,6 +8,7 @@ from store.opportunity_store import *  # Import the store_opportunity function
 from store.sales_store import record_new_sale, get_all_sales
 from store.instance_store import get_senders
 from whatsapp.message_sender import send_template_message
+
 import datetime
 
 # Import your database model and messaging system here
@@ -325,6 +326,8 @@ def update_status_type(opportunity_id, status_type):
         # Extract the status from the request
         data = request.get_json()
         status = data.get('status')
+        agent_id = request.args.get('employee_id', None)
+
         opportunity_data = {
             'status': status,
             'opportunity_id': opportunity_id,
@@ -332,8 +335,8 @@ def update_status_type(opportunity_id, status_type):
         }
         
         # Call the update_opportunity function
-        update_opportunity_status(opportunity_data)
-        
+        update_opportunity_status(opportunity_data, None, agent_id)
+        print('Opportunity status updated successfully')
         return jsonify({'status': 'success', 'message': 'Opportunity status updated successfully'}), 200
     except Exception as e:
         print(str(e))
@@ -389,6 +392,27 @@ def record_sale(opportunity_id):
         
         return get_opportunity_detail(opportunity_id)
         return get_opportunity_detail(opportunity_id)
+    except Exception as e:
+        print(str(e))
+        return error_response(500, str(e))
+    
+@opportunity_blueprint.route('search_opportunities', methods=['POST'])
+@login_required
+def search_partial_opportunities():
+    data = request.get_json()
+    search_query = data.get('query', '')
+    
+    opportunities = search_opportunities(search_query, 'name')
+    
+    return jsonify(opportunities)
+
+@opportunity_blueprint.route('/<int:opportunity_id>/call-setter/<int:call_setter>', methods=['POST'])
+@login_required
+def get_call_setter(opportunity_id, call_setter):
+    try:    
+        print(f'Updating call setter for opportunity {opportunity_id} to {call_setter}')
+        update_call_setter(opportunity_id, call_setter)
+        return jsonify({'status': 'success', 'message': 'Call setter updated successfully'}), 200
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
