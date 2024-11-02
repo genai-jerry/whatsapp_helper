@@ -18,8 +18,11 @@ function listTasks(opportunity_id) {
     }
     // Fetch task data from the server
     fetch(url)
-        .then(response => response.json())
+        .then(
+            response => response.json()
+        )
         .then(tasks => {
+            console.log(tasks);
             tasks.forEach(task => {
                 const dueDate = new Date(task.due_date);
                 const formattedDueDate = dueDate.toLocaleDateString('en-GB', {
