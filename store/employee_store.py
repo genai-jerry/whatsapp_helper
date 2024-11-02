@@ -48,3 +48,21 @@ def get_all_departments():
         return department_list
     except Exception as e:
         print(f"Error fetching departments: {e}")
+
+def get_sales_agent_id_for_user(user_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        query = '''SELECT id FROM sales_agent WHERE user_id = %s'''
+        cursor.execute(query, (user_id,))
+        sales_agent = cursor.fetchone()
+        if sales_agent:
+            return sales_agent[0]
+        else:
+            return None
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()

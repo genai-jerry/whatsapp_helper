@@ -1,7 +1,7 @@
 import calendar
 from db.connection_manager import *
 from datetime import datetime, timedelta
-from store.sales_store import get_sales_agent_id_for_user
+from store.employee_store import get_sales_agent_id_for_user
 
 def get_projection_by_id(projection_id):
     try:

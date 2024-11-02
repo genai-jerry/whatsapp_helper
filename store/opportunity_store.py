@@ -3,7 +3,7 @@ from utils import format_phone_number
 from datetime import datetime, timedelta
 from facebook.fb_ads_manager import handle_opportunity_update
 from typing import Optional
-
+from store.employee_store import get_sales_agent_id_for_user
 opportunities = {}
 
 def get_opportunity_status_id(cursor, opportunity_status_name):
@@ -816,14 +816,14 @@ def list_all_new_leads(assigned = False, agent_id=None, page=1, page_size=10):
         sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated FROM opportunity 
                 WHERE call_status IS NULL'''
         if agent_id:
-            sql += f" AND assigned_to = %s ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
+            sql += f" AND assigned_to = %s ORDER BY register_time DESC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (agent_id, page_size, offset))
         else:
             if assigned:
-                sql += " AND assigned_to IS NOT NULL ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
+                sql += " AND assigned_to IS NOT NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
             else:
-                sql += " AND assigned_to IS NULL ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
+                sql += " AND assigned_to IS NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (page_size, offset))
         results = cursor.fetchall()
@@ -867,14 +867,14 @@ def list_all_leads_for_follow_up(assigned = False, agent_id=None, page=1, page_s
         sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated FROM opportunity 
                 WHERE call_status IN (12, 13)'''
         if agent_id:
-            sql += f" AND assigned_to = %s ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
+            sql += f" AND assigned_to = %s ORDER BY register_time DESC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (agent_id, page_size, offset))
         else:
             if assigned:
-                sql += " AND assigned_to IS NOT NULL ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
+                sql += " AND assigned_to IS NOT NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
             else:
-                sql += " AND assigned_to IS NULL ORDER BY last_updated IS NULL DESC, last_updated ASC LIMIT %s OFFSET %s"
+                sql += " AND assigned_to IS NULL ORDER BY register_time DESC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (page_size, offset))
         results = cursor.fetchall()
@@ -912,19 +912,21 @@ def list_all_leads_for_no_show(assigned = False, agent_id=None, page=1, page_siz
     try:
         connection = create_connection()
         cursor = connection.cursor()
-        sql = '''SELECT o.id, o.name, o.email, o.phone, o.register_time, o.call_status, o.last_updated FROM opportunity o
+        sql = '''SELECT DISTINCT o.id, o.name, o.email, o.phone, o.register_time, o.call_status, 
+                o.last_updated, a.appointment_time
+                FROM opportunity o
                 LEFT JOIN appointments a on a.opportunity_id = o.id
                 WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
                 AND a.status = 1'''
         if agent_id:
-            sql += f" AND o.assigned_to = %s ORDER BY o.last_updated IS NULL DESC, o.last_updated ASC LIMIT %s OFFSET %s"
+            sql += f" AND o.assigned_to = %s ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (agent_id, page_size, offset))
         else:
             if assigned:
-                sql += " AND o.assigned_to IS NOT NULL ORDER BY o.last_updated IS NULL DESC, o.last_updated ASC LIMIT %s OFFSET %s"
+                sql += " AND o.assigned_to IS NOT NULL ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
             else:
-                sql += " AND o.assigned_to IS NULL ORDER BY o.last_updated IS NULL DESC, a.appointment_time ASC LIMIT %s OFFSET %s"
+                sql += " AND o.assigned_to IS NULL ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (page_size, offset))
         results = cursor.fetchall()
@@ -964,10 +966,11 @@ def assign_opportunity_to_agent(opportunity_id, agent_id):
     try:
         connection = create_connection()
         cursor = connection.cursor()
+        sales_agent_id = get_sales_agent_id_for_user(agent_id)
             
         # If not assigned, proceed with assignment
-        sql = "UPDATE opportunity SET assigned_to = %s WHERE id = %s AND assigned_to IS NULL"
-        cursor.execute(sql, (agent_id, opportunity_id))
+        sql = "UPDATE opportunity SET assigned_to = %s, optin_caller = %s WHERE id = %s AND assigned_to IS NULL"
+        cursor.execute(sql, (agent_id, sales_agent_id, opportunity_id))
         updated_count = cursor.rowcount
         print(f'Updated {updated_count} rows')
         if updated_count == 0:

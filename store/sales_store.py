@@ -32,7 +32,7 @@ def get_sales_data(page_number, page_size, opportunity_name):
             WHERE paid=0 and cancelled=0
             GROUP BY sale_id
         ) pd_min ON s.id = pd_min.sale_id
-        LEFT JOIN payment_due pd ON s.id = pd.sale_id AND pd.due_date = pd_min.due_date
+        LEFT JOIN payment_due pd ON s.id = pd.sale_id AND pd.due_date = pd_min.due_date AND pd.paid = 0 AND pd.cancelled = 0
         LEFT JOIN products prd ON s.product = prd.id
         JOIN opportunity o ON s.opportunity_id = o.id
         WHERE o.name LIKE '%{opportunity_name}%'
@@ -1121,24 +1121,6 @@ def get_pipeline(user_id, page=1, per_page=10):
                 'follow_up_date': item[2]
             } for item in pipeline
         ], total_pages
-    finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
-
-def get_sales_agent_id_for_user(user_id):
-    try:
-        connection = create_connection()
-        cursor = connection.cursor()
-
-        query = '''SELECT id FROM sales_agent WHERE user_id = %s'''
-        cursor.execute(query, (user_id,))
-        sales_agent = cursor.fetchone()
-        if sales_agent:
-            return sales_agent[0]
-        else:
-            return None
     finally:
         if cursor:
             cursor.close()

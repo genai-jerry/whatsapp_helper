@@ -2,6 +2,7 @@ class SettingPipeline {
     constructor() {
         this.initializeEventListeners();
         this.initializeStatusSelects();
+        this.initializeAppointmentStatusButtons();
     }
 
     initializeEventListeners() {
@@ -170,6 +171,63 @@ class SettingPipeline {
             console.error('Status update failed:', error);
             // Revert the select to its previous value
             alert('Failed to update status: ' + error.message);
+        }
+    }
+
+    initializeAppointmentStatusButtons() {
+        document.querySelectorAll('.confirm-call').forEach(button => {
+            button.addEventListener('click', (e) => this.confirmAppointment(button));
+        });
+        document.querySelectorAll('.discovery-call-done').forEach(button => {
+            button.addEventListener('click', (e) => this.markDiscoveryCallDone(button));
+        });
+    }
+
+    async confirmAppointment(button) {
+        const appointmentId = $(button).attr('data-appointment-id');
+        try {
+            button.disabled = true;
+            const response = await fetch(`/appointment/${appointmentId}/confirm`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await response.json();
+            if (data.status === 'success') {
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-success');
+                button.classList.add('disabled');
+            } else {
+                throw new Error(data.message || 'Failed to confirm appointment');
+            }
+        } catch (error) {
+            console.error('Confirmation failed:', error);
+        }
+    }
+
+    async markDiscoveryCallDone(button) {
+        const appointmentId = $(button).data('appointment-id');
+        const opportunityId = $(button).data('opportunity-id');
+        try {
+            button.disabled = true;
+            const response = await fetch(`/appointment/status/${opportunityId}/${appointmentId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    status: 10,
+                })
+            });
+            const data = await response.json();
+            if (data.status === 'success') {
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-success');
+                button.classList.add('disabled');
+            }
+        } catch (error) {
+            console.error('Marking discovery call done failed:', error);
         }
     }
 }
