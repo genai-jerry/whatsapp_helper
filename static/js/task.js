@@ -21,8 +21,8 @@ function listTasks(opportunity_id) {
         .then(
             response => response.json()
         )
-        .then(tasks => {
-            console.log(tasks);
+        .then(data => {
+            const tasks = data.tasks;
             tasks.forEach(task => {
                 const dueDate = new Date(task.due_date);
                 const formattedDueDate = dueDate.toLocaleDateString('en-GB', {

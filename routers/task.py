@@ -11,11 +11,11 @@ def get_tasks_api():
     employee_id = request.args.get("employee_id")
     
     if opportunity_id:
-        tasks = get_all_tasks_for_opportunity(opportunity_id, employee_id)
+        tasks, _ = get_all_tasks_for_opportunity(opportunity_id, employee_id)
     else:
-        tasks = get_tasks_due(employee_id); # get_tasks()
-    
-    return tasks
+        tasks, _ = get_tasks_due(employee_id); # get_tasks()
+    print(f"tasks: {tasks}")
+    return jsonify({"tasks": tasks}), 200
 
 @task_blueprint.route('<string:task_id>')
 @login_required
