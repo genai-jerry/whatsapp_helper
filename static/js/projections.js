@@ -64,12 +64,12 @@ function formatIndianRupee(number) {
 }
 
 function calculateMetrics() {
-    const totalCallSlots = parseInt($('#sales_slots_possible').val());
+    const totalCallSlots = parseInt($('#sales_slots_possible').val()) || 0;
     
     // Calculate goal values
-    const bookingRateGoal = parseFloat($('#appointment_booked_goal').val());
-    const showUpRateGoal = parseFloat($('#show_up_rate_goal').val()) / 100;
-    const closeRateGoal = parseFloat($('#close_rate_goal').val()) / 100;
+    const bookingRateGoal = parseFloat($('#appointment_booked_goal').val()) || 0;
+    const showUpRateGoal = parseFloat($('#show_up_rate_goal').val()) / 100 || 0;
+    const closeRateGoal = parseFloat($('#close_rate_goal').val()) / 100 || 0;
     const leadGenerationGoal = Math.round((totalCallSlots *100) / bookingRateGoal);
     const appointmentCountGoal = Math.round(leadGenerationGoal * (bookingRateGoal / 100));
     const attendedCountGoal = Math.round(appointmentCountGoal * showUpRateGoal);
@@ -82,9 +82,9 @@ function calculateMetrics() {
     $('#lead_generation_goal').val(leadGenerationGoal);
 
     // Calculate goal values
-    const bookingRateProjection = parseFloat($('#appointment_booked_projection').val());
-    const showUpRateProjection = parseFloat($('#show_up_rate_projection').val()) / 100;
-    const closeRateProjection = parseFloat($('#close_rate_projection').val()) / 100;
+    const bookingRateProjection = parseFloat($('#appointment_booked_projection').val()) || 0;
+    const showUpRateProjection = parseFloat($('#show_up_rate_projection').val()) / 100 || 0;
+    const closeRateProjection = parseFloat($('#close_rate_projection').val()) / 100 || 0;
     const leadGenerationProjection = Math.round((totalCallSlots *100) / bookingRateProjection);
     const appointmentCountProjection = Math.round(leadGenerationProjection * (bookingRateProjection / 100));
     const attendedCountProjection = Math.round(appointmentCountProjection * showUpRateProjection);
@@ -95,13 +95,13 @@ function calculateMetrics() {
     $('#sales_projected_closure_rate_value').text(salesCountProjection);
     // Update the lead generation goal input field
     $('#lead_generation_projection').val(leadGenerationProjection);
-    const costPerLead = parseFloat($('#costPerLead').val());
-    const averageSaleValue = parseFloat($('#averageSaleValue').val());
+    const costPerLead = parseFloat($('#costPerLead').val()) || 0;
+    const averageSaleValue = parseFloat($('#averageSaleValue').val()) || 0;
     
     const totalLeadCost = leadGenerationGoal * costPerLead;
     const appointmentCost = totalLeadCost / appointmentCountProjection;
     const attendedCost = totalLeadCost / attendedCountProjection;
-    const saleCost = totalLeadCost / salesCountProjection;
+    const saleCost = totalLeadCost / (salesCountProjection > 0 ? salesCountProjection : 1);
 
     $('#projected_lead_cost').text(formatIndianRupee(totalLeadCost.toFixed(2)));
     $('#lead_cost').text(formatIndianRupee(totalLeadCost.toFixed(2)));
@@ -126,7 +126,7 @@ function calculateMetrics() {
     const actualLeadCost = $('#actual_lead_cost').text();
     const actualAppointmentBookedCost = actualLeadCost / actualAppointmentsBooked;
     const actualShowUpRateCost = actualLeadCost / actualShowUps;
-    const actualSalesClosureCost = actualLeadCost / actualSalesClosure;
+    const actualSalesClosureCost = actualLeadCost / (actualSalesClosure > 0 ? actualSalesClosure : 1);
 
     $('#actual_appointment_booked_cost').text(formatIndianRupee(actualAppointmentBookedCost.toFixed(2)));
     $('#actual_show_up_rate_cost').text(formatIndianRupee(actualShowUpRateCost.toFixed(2)));
@@ -135,7 +135,7 @@ function calculateMetrics() {
     
 
     // Calculate and update actual metrics
-    const totalActualRevenue = parseFloat($('#total_actual_revenue').val());
+    const totalActualRevenue = parseFloat($('#total_actual_revenue').val()) || 0;
     const totalActualCost = actualLeadCost;
     const totalActualProfit = totalActualRevenue - totalActualCost;
     const totalActualROI = totalActualCost > 0 ? totalActualProfit / totalActualCost : 0;
