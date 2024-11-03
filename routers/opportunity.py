@@ -326,7 +326,7 @@ def update_status_type(opportunity_id, status_type):
         # Extract the status from the request
         data = request.get_json()
         status = data.get('status')
-        agent_id = request.args.get('employee_id', None)
+        agent_user_id = request.args.get('employee_id', None)
 
         opportunity_data = {
             'status': status,
@@ -335,7 +335,7 @@ def update_status_type(opportunity_id, status_type):
         }
         
         # Call the update_opportunity function
-        update_opportunity_status(opportunity_data, None, agent_id)
+        update_opportunity_status(opportunity_data, None, agent_user_id)
         print('Opportunity status updated successfully')
         return jsonify({'status': 'success', 'message': 'Opportunity status updated successfully'}), 200
     except Exception as e:
@@ -406,12 +406,12 @@ def search_partial_opportunities():
     
     return jsonify(opportunities)
 
-@opportunity_blueprint.route('/<int:opportunity_id>/call-setter/<int:call_setter>', methods=['POST'])
+@opportunity_blueprint.route('/<int:opportunity_id>/call-setter/<int:user_id>', methods=['POST'])
 @login_required
-def get_call_setter(opportunity_id, call_setter):
+def set_call_setter(opportunity_id, user_id):
     try:    
-        print(f'Updating call setter for opportunity {opportunity_id} to {call_setter}')
-        update_call_setter(opportunity_id, call_setter)
+        print(f'Updating call setter for opportunity {opportunity_id} to {user_id}')
+        update_call_setter(opportunity_id, user_id)
         return jsonify({'status': 'success', 'message': 'Call setter updated successfully'}), 200
     except Exception as e:
         print(str(e))

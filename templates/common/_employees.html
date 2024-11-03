@@ -1,6 +1,6 @@
 <select class="form-control" id="employeeSelect">
-    <option value="">All Employees</option>
-    {% with selected_employee_id = selected_employee_id if selected_employee_id else current_user.id %}
+    <option value="0">All Employees</option>
+    {% with selected_employee_id = selected_employee_id if selected_employee_id else -1 %}
     {% for employee in employees %}
         <option value="{{ employee.user_id }}" {% if employee.user_id == selected_employee_id %}selected{% endif %}>{{ employee.name }}</option>
     {% endfor %}

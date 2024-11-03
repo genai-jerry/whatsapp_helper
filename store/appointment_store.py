@@ -478,7 +478,7 @@ def get_initial_discussion_appointment(opportunity_id):
         if cursor:
             cursor.close()
 
-def list_all_appointments_for_confirmation(assigned=False, agent_id=None, page=1, page_size=10):
+def list_all_appointments_for_confirmation(assigned=False, user_id=None, page=1, page_size=10):
     try:
         connection = create_connection()
         cursor = connection.cursor()
@@ -489,11 +489,11 @@ def list_all_appointments_for_confirmation(assigned=False, agent_id=None, page=1
                 WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
                 AND (a.confirmed = 0 OR a.status IS NULL)'''
         if assigned:
-            if agent_id:
+            if user_id:
                 sql += " AND a.call_setter = %s ORDER BY a.appointment_time ASC "
                 offset = (page - 1) * page_size
                 sql += " LIMIT %s OFFSET %s"
-                cursor.execute(sql, (agent_id, page_size, offset))
+                cursor.execute(sql, (user_id, page_size, offset))
             else:
                 sql += " AND a.call_setter IS NOT NULL ORDER BY a.appointment_time ASC "
                 offset = (page - 1) * page_size
@@ -524,9 +524,9 @@ def list_all_appointments_for_confirmation(assigned=False, agent_id=None, page=1
                         AND a.confirmed = 0 AND a.status IS NULL'''
         
         if assigned:
-            if agent_id:
+            if user_id:
                 count_query += " AND a.call_setter = %s"
-                cursor.execute(count_query, (agent_id,))
+                cursor.execute(count_query, (user_id,))
             else:
                 count_query += " AND a.call_setter IS NOT NULL"
                 cursor.execute(count_query)

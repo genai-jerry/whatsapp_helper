@@ -45,6 +45,12 @@
                             <td class="calls-data">{{ update_count.book_count }}</td>
                             {% endfor %}
                         </tr>
+                        <tr></tr>
+                            <td>Sales</td>
+                            {% for update_count in update_counts %}
+                            <td class="calls-data">{{ update_count.sale_count }}</td>
+                            {% endfor %}
+                        </tr>
                     </tbody>
                 </table>
             </div>

@@ -91,8 +91,10 @@ def get_sales_review_data(user_id):
     return context
 
 @review_blueprint.route('call-setting')
-@review_blueprint.route('call-setting/<int:agent_id>')
-def get_call_setting_data(agent_id=None):
+@review_blueprint.route('call-setting/<int:user_id>')
+def get_call_setting_data(user_id=None):
+    if not user_id and user_id != 0:
+        user_id = current_user.id
     employees = get_all_employees()
     assigned_leads_pages = request.args.get('assigned_leads_page', 1, type=int)
     assigned_follow_up_page = request.args.get('assigned_follow_up_page', 1, type=int)
@@ -102,19 +104,19 @@ def get_call_setting_data(agent_id=None):
     pipeline_no_show_page = request.args.get('pipeline_no_show_page', 1, type=int)
     assigned_appointments_page = request.args.get('assigned_appointments_page', 1, type=int)
     pipeline_appointments_page = request.args.get('pipeline_appointments_page', 1, type=int)
-    
-    assigned_leads, assigned_leads_count = list_all_new_leads(assigned=True, agent_id=agent_id, page=assigned_leads_pages, page_size=10)
-    assigned_follow_up, assigned_follow_up_count = list_all_leads_for_follow_up(assigned=True, agent_id=agent_id, page=assigned_follow_up_page, page_size=10)
-    assigned_no_show, assigned_no_show_count = list_all_leads_for_no_show(assigned=True, agent_id=agent_id, page=assigned_no_show_page, page_size=10)
-    assigned_appointments, assigned_appointments_count = list_all_appointments_for_confirmation(assigned=True, agent_id=agent_id, page=assigned_appointments_page, page_size=10)
-    pipeline_leads, pipeline_leads_count = list_all_new_leads(assigned=False, agent_id=None, page=pipeline_leads_pages, page_size=10)
-    pipeline_follow_up, pipeline_follow_up_count = list_all_leads_for_follow_up(assigned=False, agent_id=None, page=pipeline_follow_up_pages, page_size=10)
-    pipeline_no_show, pipeline_no_show_count = list_all_leads_for_no_show(assigned=False, agent_id=None, page=pipeline_no_show_page, page_size=10)
-    pipeline_appointments, pipeline_appointments_count = list_all_appointments_for_confirmation(assigned=False, agent_id=None, page=pipeline_appointments_page, page_size=10)
+    print(f'User ID: {user_id}')
+    assigned_leads, assigned_leads_count = list_all_new_leads(assigned=True, user_id=user_id, page=assigned_leads_pages, page_size=10)
+    assigned_follow_up, assigned_follow_up_count = list_all_leads_for_follow_up(assigned=True, user_id=user_id, page=assigned_follow_up_page, page_size=10)
+    assigned_no_show, assigned_no_show_count = list_all_leads_for_no_show(assigned=True, user_id=user_id, page=assigned_no_show_page, page_size=10)
+    assigned_appointments, assigned_appointments_count = list_all_appointments_for_confirmation(assigned=True, user_id=user_id, page=assigned_appointments_page, page_size=10)
+    pipeline_leads, pipeline_leads_count = list_all_new_leads(assigned=False, user_id=None, page=pipeline_leads_pages, page_size=10)
+    pipeline_follow_up, pipeline_follow_up_count = list_all_leads_for_follow_up(assigned=False, user_id=None, page=pipeline_follow_up_pages, page_size=10)
+    pipeline_no_show, pipeline_no_show_count = list_all_leads_for_no_show(assigned=False, user_id=None, page=pipeline_no_show_page, page_size=10)
+    pipeline_appointments, pipeline_appointments_count = list_all_appointments_for_confirmation(assigned=False, user_id=None, page=pipeline_appointments_page, page_size=10)
     call_statuses = get_all_call_status()
     appointment_statuses = get_all_appointment_status()
 
-    update_counts = get_all_opportunities_updated(since_days=7, agent_id=agent_id)
+    update_counts = get_all_opportunities_updated(since_days=7, agent_user_id=user_id)
     print(f'Update Counts: {update_counts}')
     return render_template('review/call_setting.html', 
                            update_counts=update_counts,
@@ -143,7 +145,7 @@ def get_call_setting_data(agent_id=None):
                            pipeline_appointments_count=pipeline_appointments_count,
                            assigned_appointments_page=assigned_appointments_page,
                            pipeline_appointments_page=pipeline_appointments_page,
-                           selected_employee_id=agent_id,
+                           selected_employee_id=user_id,
                            call_statuses=call_statuses,
                            appointment_statuses=appointment_statuses,
                            page_size=10)
