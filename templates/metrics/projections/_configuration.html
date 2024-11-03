@@ -4,7 +4,7 @@
         <select class="form-control" id="employee" name="employee" required>
             <option selected disabled>Select an employee</option>
             {% for employee in employees %}
-                <option value="{{ employee.id }}">{{ employee.name }}</option>
+                <option value="{{ employee.user_id }}">{{ employee.name }}</option>
             {% endfor %}
         </select>
     </div>
