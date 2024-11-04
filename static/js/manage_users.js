@@ -245,7 +245,43 @@ class UserManager {
         
         return true;
     }
-    
+
+    async addUser() {
+        const name = $('#name').val();
+        const username = $('#username').val();
+        const password = $('#password').val();
+        const confirmPassword = $('#confirm_new_password').val();
+
+        if (password !== confirmPassword) {
+            $('#password').addClass('is-invalid');
+            $('#confirm_new_password').addClass('is-invalid');
+            $('#add-user-feedback').text('Passwords do not match').addClass('invalid-feedback').show();
+            return false;
+        }
+        const response = await fetch('/user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: name,
+                username: username,
+                password: password
+            })
+        });
+        $('#password').removeClass('is-invalid');
+        $('#confirm_new_password').removeClass('is-invalid');
+        if (!response.ok) {
+            $('#add-user-feedback').text('Unable to add user').addClass('invalid-feedback').show();
+            throw new Error('Failed to add user');
+        }
+        // hide modal
+        $('#addUserModal').modal('hide');
+        // clear form
+        $('#name').val('');
+        $('#username').val('');
+        $('#password').val('');
+        $('#add-user-feedback').val('');
+        showToast('Success', 'User added successfully');
+    }
 }
 
 // Initialize when document is ready

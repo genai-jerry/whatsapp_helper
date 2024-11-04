@@ -82,8 +82,9 @@ def list_all_users(page=1, page_size=10):
     try:
         connection = create_connection()
         cursor = connection.cursor()
-        sql = '''SELECT u.id, u.username, u.active
+        sql = '''SELECT u.id, u.name, u.username, u.active
             FROM users u
+            ORDER BY u.name ASC
             LIMIT %s OFFSET %s'''
         cursor.execute(sql, (page_size, (page - 1) * page_size))
         rows = cursor.fetchall()
@@ -91,8 +92,9 @@ def list_all_users(page=1, page_size=10):
         for row in rows:
             users.append({
                 'id': row[0],
-                'username': row[1],
-                'active': row[2],
+                'name': row[1],
+                'username': row[2],
+                'active': row[3],
                 'roles': list_all_roles(row[0]),
                 })
         sql = "SELECT COUNT(*) FROM users"

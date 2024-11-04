@@ -78,13 +78,18 @@ def index():
     return redirect('/dashboard')
 
 @app.route('/user', methods=['POST'])
-@require_api_key
+@login_required
 def create_user():
-    username = request.form['username']
-    password = request.form['password']
-    name = request.form['name']
-    create_new_user(username, password, name)
-    return 'User created successfully', 201
+    try:
+        username = request.json.get('username')
+        password = request.json.get('password')
+        name = request.json.get('name')
+        print(username, password, name)
+        create_new_user(username, password, name)
+        return jsonify({'status': 'success'}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({'status': 'Unable to add user'}), 400
 
 @app.route('/user', methods=['GET'])
 @login_required

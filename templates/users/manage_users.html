@@ -17,6 +17,7 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
+                            <th>Name</th>
                             <th>Username / Email</th>
                             <th>Role</th>
                             <th>Status</th>
@@ -26,6 +27,7 @@
                     <tbody>
                         {% for user in users %}
                         <tr data-user-id="{{ user.id }}" {% if not user.active %}class="table-secondary"{% endif %}>
+                            <td>{{ user.name }}</td>
                             <td>{{ user.username }}</td>
                             <td>
                                 <div class="selected-roles mb-2">
@@ -106,31 +108,29 @@
             </div>
             <div class="modal-body">
                 <form id="addUserForm">
+                    <div id="add-user-feedback"></div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" id="name" required>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">Username</label>
-                        <input type="text" class="form-control" name="username" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Role</label>
-                        <select class="form-select" name="role_id" required>
-                            {% for role in roles %}
-                            <option value="{{ role.id }}">{{ role.name }}</option>
-                            {% endfor %}
-                        </select>
+                        <input type="text" class="form-control" name="username" id="username" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Password</label>
-                        <input type="password" class="form-control" name="password" required>
+                        <input type="password" class="form-control" name="password" id="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" name="confirm_new_password" id="confirm_new_password" required>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveUserBtn">Save User</button>
+                <button type="button" class="btn btn-primary" id="saveUserBtn" onclick="userManager.addUser()">Save User</button>
             </div>
         </div>
     </div>
