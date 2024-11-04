@@ -23,7 +23,7 @@ from flask_migrate import Migrate
 import configparser
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_login import current_user
-from store.user_store import create_new_user, load_user_by_username
+from store.user_store import create_new_user, load_user_by_username, update_user_password
 from utils import require_api_key
 from dateutil.relativedelta import *
 from babel.numbers import format_currency
@@ -113,6 +113,15 @@ def login():
             return jsonify({'status': 'Invalid user name or password'}), 400
     else:
         return jsonify({'status': 'Invalid user name or password'}), 400
+
+@app.route('/user/password', methods=['POST'])
+@login_required
+def modify_password():
+    user_id = request.form['user_id']
+    new_password = request.form['new_password']
+    user = load_user_by_username(user_id)
+    update_user_password(user_id, new_password)
+    return jsonify({'status': 'success'}), 200
 
 @app.route('/logout')
 @login_required

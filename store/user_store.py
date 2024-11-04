@@ -50,3 +50,11 @@ def load_user_by_username(username):
     finally:
         if cursor:
             cursor.close()
+
+def update_user_password(username, new_password):
+    password_hash = generate_password_hash(new_password)
+    connection = create_connection()
+    cursor = connection.cursor()
+    sql = "UPDATE users SET password = %s WHERE username = %s"
+    cursor.execute(sql, (password_hash, username))
+    connection.commit()
