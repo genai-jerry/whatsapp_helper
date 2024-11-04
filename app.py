@@ -23,7 +23,7 @@ from flask_migrate import Migrate
 import configparser
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_login import current_user
-from store.user_store import create_new_user, load_user_by_username, update_user_password
+from store.user_store import *
 from utils import require_api_key
 from dateutil.relativedelta import *
 from babel.numbers import format_currency
@@ -86,6 +86,14 @@ def create_user():
     create_new_user(username, password, name)
     return 'User created successfully', 201
 
+@app.route('/user', methods=['GET'])
+@login_required
+def get_all_users():
+    page = request.args.get('page', 1, type=int)    
+    users, user_count = list_all_users(page)
+    roles = list_all_roles()
+    return render_template('/users/manage_users.html', users=users, user_count=user_count, roles=roles)
+
 @login_manager.user_loader
 def load_user(user_id):
     user = load_user_by_username(user_id)
@@ -117,10 +125,30 @@ def login():
 @app.route('/user/password', methods=['POST'])
 @login_required
 def modify_password():
-    user_id = request.form['user_id']
-    new_password = request.form['new_password']
-    user = load_user_by_username(user_id)
+    user_id = request.json.get('user_id')
+    new_password = request.json.get('new_password')
     update_user_password(user_id, new_password)
+    return jsonify({'status': 'success'}), 200
+
+@app.route('/user/status', methods=['POST'])
+@login_required
+def change_status():
+    user_id = request.json.get('user_id')
+    is_active = request.json.get('active')
+    update_user_status(user_id, is_active)
+    return jsonify({'status': 'success'}), 200
+
+@app.route('/user/role', methods=['POST'])
+@login_required
+def update_user_role():
+    action = request.json.get('action')
+    user_id = request.json.get('user_id')
+    role_id = request.json.get('role_id')
+    print(action, user_id, role_id)
+    if action == 'add':
+        add_role_to_user(user_id, role_id)
+    else:
+        remove_role_from_user(user_id, role_id)
     return jsonify({'status': 'success'}), 200
 
 @app.route('/logout')

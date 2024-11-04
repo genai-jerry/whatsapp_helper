@@ -51,10 +51,106 @@ def load_user_by_username(username):
         if cursor:
             cursor.close()
 
-def update_user_password(username, new_password):
+def update_user_password(user_id, new_password):
     password_hash = generate_password_hash(new_password)
-    connection = create_connection()
-    cursor = connection.cursor()
-    sql = "UPDATE users SET password = %s WHERE username = %s"
-    cursor.execute(sql, (password_hash, username))
-    connection.commit()
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "UPDATE users SET password = %s WHERE id = %s"
+        cursor.execute(sql, (password_hash, user_id))
+        connection.commit()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def update_user_status(user_id, is_active):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "UPDATE users SET active = %s WHERE id = %s"
+        cursor.execute(sql, (is_active, user_id))
+        connection.commit()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def list_all_users(page=1, page_size=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = '''SELECT u.id, u.username, u.active
+            FROM users u
+            LIMIT %s OFFSET %s'''
+        cursor.execute(sql, (page_size, (page - 1) * page_size))
+        rows = cursor.fetchall()
+        users = []
+        for row in rows:
+            users.append({
+                'id': row[0],
+                'username': row[1],
+                'active': row[2],
+                'roles': list_all_roles(row[0]),
+                })
+        sql = "SELECT COUNT(*) FROM users"
+        cursor.execute(sql)
+        total_users = cursor.fetchone()[0]
+        return users, total_users
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def list_all_roles(user_id = None):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "SELECT r.id, r.name FROM roles r"
+        if user_id:
+            sql += ''' WHERE r.id IN (SELECT role_id FROM user_role WHERE user_id = %s)'''
+            cursor.execute(sql, (user_id,))
+        else:
+            cursor.execute(sql)
+        rows = cursor.fetchall()
+        roles = []
+        for row in rows:
+            roles.append({
+                'id': row[0],
+                'name': row[1]
+            })
+        return roles
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def add_role_to_user(user_id, role_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "INSERT INTO user_role (user_id, role_id) VALUES (%s, %s)"
+        cursor.execute(sql, (user_id, role_id))
+        connection.commit()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def remove_role_from_user(user_id, role_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "DELETE FROM user_role WHERE user_id = %s AND role_id = %s"
+        cursor.execute(sql, (user_id, role_id))
+        connection.commit()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
