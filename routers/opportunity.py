@@ -255,11 +255,13 @@ def get_opportunity_detail(opportunity_id):
         company_types = get_all_company_types()  # Replace with your database query
 
         sales = get_all_sales(opportunity_id)
+
+        employees = get_all_employees()
         
         return render_template('opportunity/view.html', opportunity=response_data,
                        call_statuses=call_statuses, opportunity_statuses=opportunity_statuses,
                        sales_agents=sales_agents, challenge_types=challenge_types,
-                       company_types=company_types, sales=sales)
+                       company_types=company_types, sales=sales, employees=employees, selected_employee_id=current_user.id)
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
