@@ -33,7 +33,11 @@ def get_create_task_modal_api():
 @task_blueprint.route('/', methods=['POST'])
 @login_required
 def create_task_api():
-    employee_id = request.form.get("employee_id")
+    selected_employee_id = request.form.get("selected_employee_id")
+    if selected_employee_id == "0":
+        employee_id = None
+    else:
+        employee_id = selected_employee_id
     task_data = {
         "opportunity_id": request.form.get("opportunity_id"),
         "due_date": request.form.get("due_date"),

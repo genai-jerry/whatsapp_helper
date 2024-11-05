@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify
-from flask_login import login_required
+from flask_login import current_user, login_required
+from store.employee_store import get_all_employees
 from utils import require_api_key
 import csv
 from utils import error_response
@@ -50,8 +51,10 @@ def create_new_appointment():
 
 @appointment_blueprint.route('/')
 @login_required
-def show_instances():
-    return render_template('/appointment/list.html', content={})
+def show_appointments():
+    employees = get_all_employees()
+    return render_template('/appointment/list.html', content={},
+                           employees=employees, selected_employee_id=current_user.id)
 
 @appointment_blueprint.route('/list', methods=['GET'])
 @login_required
@@ -63,12 +66,15 @@ def list_appointments():
     app_date = request.args.get('date', default=None, type=str)
     pages, total_items, appointments = retrieve_appointments(page, per_page, 
                                                              max_appointments, app_date)
+    employees = get_all_employees()
     opportunity_statuses = get_all_opportunity_status()
     return jsonify({
         'appointments': appointments, 
         'opportunity_statuses': opportunity_statuses,
+        'employees': employees,
         'page': page,
         'total_pages': pages,
+        'selected_employee_id': current_user.id,
         'total_items': total_items}), 200
 
 @appointment_blueprint.route('/<int:appointment_id>/cancel', methods=['POST'])

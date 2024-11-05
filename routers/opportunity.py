@@ -1,6 +1,7 @@
 """Add the APIs for the opportunites. Use Flask-Restful to create the APIs."""
 from flask import jsonify, Blueprint, redirect, render_template, request, url_for
-from flask_login import login_required
+from flask_login import current_user, login_required
+from store.employee_store import get_all_employees
 from utils import error_response, app_home, require_api_key
 import csv
 from werkzeug.utils import secure_filename
@@ -18,7 +19,9 @@ opportunity_blueprint = Blueprint('opportunity', __name__)
 @login_required
 def load_opportunities():
     tomorrow_date = (datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M')
-    return render_template('opportunity/list.html', content={}, tomorrow=tomorrow_date)
+    employees = get_all_employees()
+    return render_template('opportunity/list.html', content={}, tomorrow=tomorrow_date,
+                           employees=employees, selected_employee_id=current_user.id)
 
 @opportunity_blueprint.route('/create', methods=['POST'])
 @require_api_key
@@ -190,7 +193,7 @@ def list_opportunities():
         call_statuses = get_all_call_status()
         opportunity_statuses = get_all_opportunity_status()
         sales_agents = get_all_sales_agents()
-        
+        employees = get_all_employees()
         return jsonify({
             'items': response_data,
             'page': page,
@@ -198,7 +201,9 @@ def list_opportunities():
             'total_items': total_items,
             'call_statuses': call_statuses,
             'opportunity_statuses': opportunity_statuses,
-            'sales_agents': sales_agents
+            'sales_agents': sales_agents,
+            'employees': employees,
+            'selected_employee_id': current_user.id
         }), 200
     except Exception as e:
         print(str(e))

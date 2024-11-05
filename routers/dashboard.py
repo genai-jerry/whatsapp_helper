@@ -2,7 +2,7 @@ from flask import jsonify, Blueprint, request, render_template
 from flask_login import current_user, login_required
 from store.opportunity_store import generate_report, generate_metrics
 from store.tasks_store import get_tasks_due
-
+from store.employee_store import get_all_employees
 dashboard_blueprint = Blueprint('dashboard', __name__)
 
 @dashboard_blueprint.route('/')
@@ -11,7 +11,9 @@ def report():
     tasks_due_page = request.args.get('tasks_due_page', 1, type=int)
     user_id = current_user.id
     tasks_due, tasks_due_count = get_tasks_due(user_id, tasks_due_page, 10)
-    return render_template('/report/dashboard.html', tasks_due=tasks_due, tasks_due_count=tasks_due_count)
+    employees = get_all_employees()
+    return render_template('/report/dashboard.html', tasks_due=tasks_due, tasks_due_count=tasks_due_count, 
+                           employees=employees, selected_employee_id=current_user.id)
 
 from flask import jsonify
 import json

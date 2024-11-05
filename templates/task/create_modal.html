@@ -14,6 +14,10 @@
             {% include 'common/_searchable_opportunities.html' %}
           </div>
           <div class="mb-3">
+            <label for="taskAssigneeId" class="form-label">Assigned To</label>
+            {% include 'common/_employees.html' %}
+          </div>
+          <div class="mb-3">
             <label for="taskDescription" class="form-label">Task Description</label>
             <textarea class="form-control" id="taskDescription" name="description" rows="3" required></textarea>
           </div>
