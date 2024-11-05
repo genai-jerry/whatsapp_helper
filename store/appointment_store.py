@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from flask_login import current_user
 from utils import format_phone_number
 import pytz
 from db.connection_manager import *
@@ -427,8 +429,8 @@ def update_appointment_status(opportunity_id, appointment_id, status):
         if status == 2:
             opportunity_data = {'opportunity_id': opportunity_id, 'status': status, 
                                 'status_type': 'opportunity_status'}
-            
-            update_opportunity_status(opportunity_data)        
+            agent_user_id = request.args.get('employee_id', current_user.id)
+            update_opportunity_status(opportunity_data, None, agent_user_id)        
         # Return True to indicate success
         return True
 

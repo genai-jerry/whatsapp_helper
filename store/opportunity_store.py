@@ -1,3 +1,4 @@
+from flask_login import current_user
 from db.connection_manager import *
 from utils import format_phone_number
 from datetime import datetime, timedelta
@@ -147,8 +148,7 @@ def update_opportunity_status(opportunity_data, status_columns=None, agent_user_
         elif status_type == "opportunity_status":
             sql = "UPDATE opportunity SET opportunity_status = %s, last_updated = NOW()"
         elif status_type == "agent":
-            sql = "UPDATE opportunity SET assigned_to = %s, optin_caller = %s, opportunity_status = %s, last_updated = NOW()"
-            params.append(sales_agent_id)
+            sql = "UPDATE opportunity SET assigned_to = %s, optin_caller = %s, last_updated = NOW()"
             params.append(sales_agent_id)
         else:
             raise ValueError("Invalid status type")
@@ -193,6 +193,7 @@ def update_opportunity_status(opportunity_data, status_columns=None, agent_user_
             'ad_account': row[6]
         }
         if status_type == "call_status":
+            print(f'Storing optin call record for call status {status} and agent {sales_agent_id}')
             store_optin_call_record({'opportunity_id': opportunity_data['opportunity_id'],
                                      'call_date': datetime.now(),
                                      'call_duration': 0,

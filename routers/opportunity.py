@@ -81,6 +81,7 @@ def video_watched():
 def update_status_value(opportunity_id, status_id):
     try:
         # Prepare the data for the update_opportunity function
+        agent_user_id = request.args.get('employee_id', current_user.id)
         opportunity_data = {
             'status': status_id,
             'id': opportunity_id
@@ -88,7 +89,7 @@ def update_status_value(opportunity_id, status_id):
 
         # Call the update_opportunity function
         print('Updating opportunity status')
-        update_opportunity_status(opportunity_data)
+        update_opportunity_status(opportunity_data, None, agent_user_id)
         
         return jsonify({'status': 'success', 'message': 'Opportunity status updated successfully'}), 200
     except Exception as e:
@@ -331,7 +332,7 @@ def update_status_type(opportunity_id, status_type):
         # Extract the status from the request
         data = request.get_json()
         status = data.get('status')
-        agent_user_id = request.args.get('employee_id', None)
+        agent_user_id = request.args.get('employee_id', current_user.id)
 
         opportunity_data = {
             'status': status,
