@@ -489,7 +489,7 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, page=1,
                 FROM appointments a
                 JOIN opportunity o on o.id = a.opportunity_id
                 WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
-                AND (a.confirmed = 0 OR a.status IS NULL)'''
+                AND (a.confirmed = 0 AND a.status IS NULL)'''
         if assigned:
             if user_id:
                 sql += " AND a.call_setter = %s ORDER BY a.appointment_time ASC "

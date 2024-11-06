@@ -577,7 +577,7 @@ def get_all_call_status():
         connection = create_connection()
         cursor = connection.cursor()
 
-        sql = "SELECT id, name, color_code, text_color FROM lead_call_status"
+        sql = "SELECT id, name, color_code, text_color FROM lead_call_status where active = 1"
         cursor.execute(sql)
         results = cursor.fetchall()
 
@@ -602,7 +602,7 @@ def get_all_opportunity_status():
         connection = create_connection()
         cursor = connection.cursor()
 
-        sql = "SELECT id, name, color_code, text_color FROM opportunity_status"
+        sql = "SELECT id, name, color_code, text_color FROM opportunity_status where active = 1"
         cursor.execute(sql)
         results = cursor.fetchall()
 
@@ -885,14 +885,21 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
         sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated FROM opportunity 
                 WHERE call_status IN (12, 13)'''
         if user_id:
-            sql += f" AND (assigned_to = %s OR optin_caller = %s) ORDER BY register_time DESC LIMIT %s OFFSET %s"
+            sql += f" AND (assigned_to = %s OR optin_caller = %s) "
+            if assigned:
+                sql += "ORDER BY COALESCE(last_updated, register_time) ASC LIMIT %s OFFSET %s"
+            else:
+                sql += "ORDER BY register_time DESC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (user_id, agent_id, page_size, offset))
         else:
             if assigned:
-                sql += " AND (assigned_to IS NOT NULL OR optin_caller IS NOT NULL) ORDER BY register_time ASC LIMIT %s OFFSET %s"
+                sql += " AND (assigned_to IS NOT NULL OR optin_caller IS NOT NULL)"
+                sql += " ORDER BY COALESCE(last_updated, register_time) ASC LIMIT %s OFFSET %s"
             else:
-                sql += " AND assigned_to IS NULL ORDER BY register_time ASC LIMIT %s OFFSET %s"
+                sql += " AND assigned_to IS NULL"
+                sql += " ORDER BY register_time DESC LIMIT %s OFFSET %s"
+            
             offset = (page - 1) * page_size
             cursor.execute(sql, (page_size, offset))
         results = cursor.fetchall()

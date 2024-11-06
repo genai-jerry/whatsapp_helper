@@ -24,6 +24,7 @@ class LeadCallStatus(db.Model):
     name = db.Column(db.String(255), nullable=False)
     color_code = db.Column(db.String(25))
     text_color = db.Column(db.String(25))
+    active = db.Column(db.Boolean, nullable=False, default=True)
 
 class LeadCommunication(db.Model):
     __tablename__ = 'lead_communication'
@@ -102,6 +103,7 @@ class OpportunityStatus(db.Model):
     name = db.Column(db.String(255), nullable=False)
     color_code = db.Column(db.String(25))
     text_color = db.Column(db.String(25))
+    active = db.Column(db.Boolean, nullable=False, default=True)
 
 class SalesAgent(db.Model):
     __tablename__ = 'sales_agent'

@@ -2,12 +2,17 @@
     <h5>Assigned Leads</h5>
 </div>
 <div class="card-body">
-    <div class="row">
+    <div class="row" id="assignedLeadsContainer">
         <!-- Appointments Column -->
-        <div class="col-md-3">
+        <div class="col-md-3" id="appointmentsColumn">
             <div class="card">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">Assigned Appointments ({{ assigned_appointments_count }})</h6>
+                    <div>
+                        <svg class="expand-icon bi bi-arrows-fullscreen" data-column="appointments" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
+                        </svg>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="leads-list" id="appointmentsList">
@@ -46,10 +51,15 @@
             </div>
         </div>
         <!-- New Leads Column -->
-        <div class="col-md-3">
+        <div class="col-md-3" id="newLeadsColumn">
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">Assigned New Leads ({{ assigned_leads_count }})</h6>
+                    <div>
+                        <svg class="expand-icon bi bi-arrows-fullscreen" data-column="newLeads" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
+                        </svg>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="leads-list" id="newLeadsList">
@@ -87,12 +97,16 @@
                 </div>
             </div>
         </div>
-
         <!-- Follow Up Column -->
-        <div class="col-md-3">
+        <div class="col-md-3" id="followUpColumn">
             <div class="card">
-                <div class="card-header bg-warning">
+                <div class="card-header bg-warning d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">Assigned Follow Up ({{ assigned_follow_up_count }})</h6>
+                    <div>
+                        <svg class="expand-icon bi bi-arrows-fullscreen" data-column="followUp" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
+                        </svg>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="leads-list" id="followUpList">
@@ -131,12 +145,16 @@
                 </div>
             </div>
         </div>
-
         <!-- No Shows Column -->
-        <div class="col-md-3">
+        <div class="col-md-3" id="noShowsColumn">
             <div class="card">
-                <div class="card-header bg-danger text-white">
+                <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">Assigned No Shows ({{ assigned_no_show_count }})</h6>
+                    <div>
+                        <svg class="expand-icon bi bi-arrows-fullscreen" data-column="noShows" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
+                        </svg>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="leads-list" id="noShowsList">
@@ -176,6 +194,91 @@
         </div>
     </div>
 </div>
+
+<!-- Add this right before the closing body tag -->
+<style>
+.expand-icon {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.expand-icon:hover {
+    transform: scale(1.1);
+}
+
+.expanded-column {
+    order: -1;
+}
+
+.minimized-column {
+    transition: all 0.3s ease;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const columns = {
+        appointments: document.getElementById('appointmentsColumn'),
+        newLeads: document.getElementById('newLeadsColumn'),
+        followUp: document.getElementById('followUpColumn'),
+        noShows: document.getElementById('noShowsColumn')
+    };
+
+    const expandIcons = document.querySelectorAll('.expand-icon');
+    let currentlyExpanded = null;
+
+    expandIcons.forEach(icon => {
+        icon.addEventListener('click', function() {
+            const columnType = this.dataset.column;
+            const column = columns[columnType];
+
+            if (currentlyExpanded === column) {
+                // Restore all columns to original state
+                resetColumns();
+                currentlyExpanded = null;
+            } else {
+                // Expand clicked column and minimize others
+                expandColumn(column);
+                currentlyExpanded = column;
+            }
+        });
+    });
+
+    function expandColumn(column) {
+        // Reset all columns first
+        resetColumns();
+        
+        // Expand the selected column
+        column.classList.remove('col-md-3');
+        column.classList.add('col-md-9', 'expanded-column');
+        
+        // Minimize other columns
+        Object.values(columns).forEach(col => {
+            if (col !== column) {
+                col.classList.remove('col-md-3');
+                col.classList.add('col-md-3', 'minimized-column');
+            }
+        });
+
+        // Rearrange minimized columns
+        const container = document.getElementById('assignedLeadsContainer');
+        container.style.display = 'flex';
+        container.style.flexWrap = 'wrap';
+    }
+
+    function resetColumns() {
+        Object.values(columns).forEach(column => {
+            column.classList.remove('col-md-9', 'expanded-column', 'minimized-column');
+            column.classList.add('col-md-3');
+        });
+        
+        const container = document.getElementById('assignedLeadsContainer');
+        container.style.display = 'flex';
+        container.style.flexWrap = 'wrap';
+    }
+});
+</script>
+
 {% include "task/list_modal.html" %}
 {% include "task/create_modal.html" %}
 {% include "comment/comment_modals.html" %}
