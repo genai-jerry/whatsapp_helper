@@ -11,9 +11,10 @@ dashboard_blueprint = Blueprint('dashboard', __name__)
 def report():
     tasks_due_page = request.args.get('tasks_due_page', 1, type=int)
     assigned_follow_up_page = request.args.get('assigned_follow_up_page', 1, type=int)
-    assigned_appointments_page = request.args.get('assigned_appointments_page', 1, type=int)
+    assigned_leads_pages = request.args.get('assigned_leads_page', 1, type=int)
+    assigned_follow_up_page = request.args.get('assigned_follow_up_page', 1, type=int)
     assigned_no_show_page = request.args.get('assigned_no_show_page', 1, type=int)
-    assigned_leads_pages = request.args.get('assigned_leads_pages', 1, type=int)
+    assigned_appointments_page = request.args.get('assigned_appointments_page', 1, type=int)
     
     user_id = current_user.id
     tasks_due, tasks_due_count = get_tasks_due(user_id, tasks_due_page, 10)
@@ -36,6 +37,10 @@ def report():
                            assigned_no_show_count=assigned_no_show_count,
                            assigned_leads=assigned_leads,
                            assigned_leads_count=assigned_leads_count,
+                           assigned_leads_page=assigned_leads_pages,
+                           assigned_follow_up_page=assigned_follow_up_page,
+                           assigned_no_show_page=assigned_no_show_page,
+                           assigned_appointments_page=assigned_appointments_page,
                            page_size=10)
 
 from flask import jsonify
