@@ -883,7 +883,7 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
         agent_id = get_sales_agent_id_for_user(user_id)
         # Return all leads that have a call_status of 12, 13, 14
         sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated FROM opportunity 
-                WHERE call_status IN (12, 13)'''
+                WHERE call_status IN (3,12, 13)'''
         if user_id:
             sql += f" AND (assigned_to = %s OR optin_caller = %s) "
             if assigned:
