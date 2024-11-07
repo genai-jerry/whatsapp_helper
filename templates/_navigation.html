@@ -62,7 +62,7 @@
                             Review
                         </a>
                     </li>
-                    {% if current_user.role == "Admin" %}
+                    {% if "Admin" in current_user.roles %}
                     <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="/metrics/projections">
                             Projections
