@@ -103,7 +103,7 @@ def get_all_users():
 def load_user(user_id):
     user = load_user_by_username(user_id)
     if user:
-        return SystemUser(user['id'], user['username'], user['password'], user['role'])
+        return SystemUser(user['id'], user['username'], user['password'], user['roles'])
     else:
         return None
 

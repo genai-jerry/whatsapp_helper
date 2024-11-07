@@ -3,11 +3,11 @@ from flask_login import UserMixin
 from werkzeug.security import check_password_hash
 
 class SystemUser(UserMixin):
-    def __init__(self, id, username, password, role):
+    def __init__(self, id, username, password, roles):
         self.id = id
         self.username = username
         self.password = password
-        self.role = role
+        self.roles = roles
     
     def check_password(self, password):
         password_check = check_password_hash(self.password, password)
@@ -18,5 +18,5 @@ class SystemUser(UserMixin):
         return str(self.username)
     
     @property
-    def get_role(self):
-        return self.role
+    def get_roles(self):
+        return self.roles

@@ -21,17 +21,32 @@ def create_new_user(username, password, name):
         if cursor:
             cursor.close()
 
+def load_roles_by_user_id(user_id):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "SELECT r.name FROM roles r LEFT JOIN user_role ur on ur.role_id = r.id WHERE ur.user_id = %s"
+        cursor.execute(sql, (user_id,))
+        results = cursor.fetchall()
+        roles = []
+        for result in results:
+            roles.append(result[0])
+        return roles
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
 def load_user_by_username(username):
     try:
         print(f'Checking username: {username}')
         connection = create_connection()
         cursor = connection.cursor()
         # Define the SQL query with placeholders
-        sql = '''SELECT u.id, u.username, u.password, u.active, r.name 
+        sql = '''SELECT u.id, u.username, u.password, u.active
             FROM users u
-            LEFT JOIN user_role ur on ur.user_id = u.id
-            LEFT JOIN roles r on ur.role_id = r.id
-            WHERE username = %s AND active = True'''
+            WHERE u.username = %s AND u.active = True'''
         # Execute the query with the provided value
         cursor.execute(sql, (username,))
         result = cursor.fetchone()
@@ -41,7 +56,7 @@ def load_user_by_username(username):
                 'username': result[1],
                 'password': result[2],
                 'active': result[3],
-                'role': result[4]
+                'roles': load_roles_by_user_id(result[0])
             }
             print(f'Returning {user}')
             return user

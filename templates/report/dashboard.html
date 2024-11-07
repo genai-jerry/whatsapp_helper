@@ -6,15 +6,24 @@ Report
 
 {% block content %}
 <div class="container mt-5">
+    {% if "Call_Setter" in current_user.roles %}
+    <div class="card">
+        {% include "review/call-setting/_assigned.html" %}
+        <script src="{{ url_for('static', filename='js/setting_pipeline.js') }}"></script>
+    </div>
+    {% endif %}
     <div class="row">
         <div class="col-md-6">
+            {% if "Admin" in current_user.roles or "Sales" in current_user.roles %}
             {% include "report/sales/_monthly_report.html" %}
-            {% include "task/_tasks_due.html" %}
+            {% endif %}          
+            {% include "task/_tasks_due.html" %}          
         </div>
-        <div class="col-md-6">
-        
+        <div class="col-md-6">      
             <div class="table-responsive">
+                {% if "Admin" in current_user.roles or "Sales" in current_user.roles %}
                 {% include "report/leads/_custom_report.html" %}
+                {% endif %}
             </div>
         </div>
     </div>

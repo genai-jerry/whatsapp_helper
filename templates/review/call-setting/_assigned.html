@@ -37,7 +37,7 @@
                             </tbody>
                         </table>
                         <!-- Add pagination controls -->    
-                        {% with page=assigned_appointments_page %}
+                        {% with page=assigned_appointments_page, page_size=10 %}
                         {% with count=assigned_appointments_count %}
                         {% with page_args='assigned_appointments_page' %}
                         {% include 'review/call-setting/_pagination.html' %}
