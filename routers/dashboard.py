@@ -4,6 +4,7 @@ from store.appointment_store import get_all_appointment_status, list_all_appoint
 from store.opportunity_store import generate_report, generate_metrics, get_all_call_status, list_all_leads_for_follow_up, list_all_leads_for_no_show, list_all_new_leads
 from store.tasks_store import get_tasks_due
 from store.employee_store import get_all_employees
+from datetime import datetime
 dashboard_blueprint = Blueprint('dashboard', __name__)
 
 @dashboard_blueprint.route('/')
@@ -41,6 +42,7 @@ def report():
                            assigned_follow_up_page=assigned_follow_up_page,
                            assigned_no_show_page=assigned_no_show_page,
                            assigned_appointments_page=assigned_appointments_page,
+                           current_date=datetime.now(),
                            page_size=10)
 
 from flask import jsonify
