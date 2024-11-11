@@ -10,14 +10,14 @@ def get_tasks_due(employee_id = None, page=1, per_page=10, assigned_by = None):
                      FROM tasks t
                      LEFT JOIN opportunity o ON t.opportunity_id = o.id
                      LEFT JOIN users u ON t.user_id = u.id
-                     WHERE t.completed = 0 AND t.user_id = %s
+                     WHERE t.completed = 0 
                      '''
             if assigned_by:
-                sql += ''' AND t.created_by = %s ORDER BY t.due_date, o.name ASC    
+                sql += ''' AND t.user_id != %s AND t.created_by = %s ORDER BY t.due_date, o.name ASC    
                      LIMIT %s OFFSET %s'''
                 cursor.execute(sql, (employee_id, assigned_by, per_page, (page-1)*per_page))
             else:
-                sql += ''' ORDER BY t.due_date, o.name ASC    
+                sql += ''' AND t.user_id = %s ORDER BY t.due_date, o.name ASC    
                      LIMIT %s OFFSET %s'''
                 cursor.execute(sql, (employee_id, per_page, (page-1)*per_page))
         else:
@@ -29,9 +29,9 @@ def get_tasks_due(employee_id = None, page=1, per_page=10, assigned_by = None):
                      WHERE t.completed = 0
                      '''
             if assigned_by:
-                sql += ''' AND t.created_by = %s ORDER BY t.due_date, o.name ASC    
+                sql += ''' AND t.user_id != %s AND t.created_by = %s ORDER BY t.due_date, o.name ASC    
                      LIMIT %s OFFSET %s'''
-                cursor.execute(sql, (assigned_by, per_page, (page-1)*per_page))
+                cursor.execute(sql, (assigned_by, assigned_by, per_page, (page-1)*per_page))
             else:
                 sql += ''' ORDER BY t.due_date, o.name ASC    
                      LIMIT %s OFFSET %s'''
@@ -50,17 +50,18 @@ def get_tasks_due(employee_id = None, page=1, per_page=10, assigned_by = None):
             })
 
         if employee_id:
-            sql = '''SELECT COUNT(*) FROM tasks t WHERE t.completed = 0 AND t.user_id = %s'''
+            sql = '''SELECT COUNT(*) FROM tasks t WHERE t.completed = 0 '''
             if assigned_by:
-                sql += ''' AND t.created_by = %s'''
-                cursor.execute(sql, (employee_id, assigned_by))
+                sql += ''' AND t.user_id != %s AND t.created_by = %s'''
+                cursor.execute(sql, (assigned_by, assigned_by))
             else:
+                sql += ''' AND t.user_id = %s'''
                 cursor.execute(sql, (employee_id,))
         else:
             sql = '''SELECT COUNT(*) FROM tasks t WHERE t.completed = 0'''
             if assigned_by:
-                sql += ''' AND t.created_by = %s'''
-                cursor.execute(sql, (assigned_by,))
+                sql += ''' AND t.user_id != %s AND t.created_by = %s'''
+                cursor.execute(sql, (assigned_by, assigned_by))
             else:
                 cursor.execute(sql)
         total_tasks = cursor.fetchone()[0]
@@ -157,7 +158,7 @@ def complete_task(task_id):
         if connection:
             connection.close()
 
-def get_all_tasks_for_opportunity(opportunity_id, employee_id = None, page=1, per_page=10, assigned_by = None):
+def get_all_tasks_for_opportunity(opportunity_id, employee_id = None, page=1, per_page=10):
     try:
         connection = create_connection()
         cursor = connection.cursor()
@@ -169,8 +170,7 @@ def get_all_tasks_for_opportunity(opportunity_id, employee_id = None, page=1, pe
                 WHERE t.opportunity_id = %s'''
         if employee_id:
             sql += ''' AND t.user_id = %s'''
-        if assigned_by:
-            sql += ''' AND t.created_by = %s'''
+        
         sql += ''' ORDER BY t.due_date ASC
                 LIMIT %s OFFSET %s'''
         if employee_id:
@@ -182,13 +182,7 @@ def get_all_tasks_for_opportunity(opportunity_id, employee_id = None, page=1, pe
         sql = '''SELECT COUNT(*) FROM tasks t WHERE t.opportunity_id = %s'''
         if employee_id:
             sql += ''' AND t.user_id = %s'''
-            if assigned_by:
-                sql += ''' AND t.created_by = %s'''
-            cursor.execute(sql, (opportunity_id, employee_id, assigned_by))
-        else:
-            if assigned_by:
-                sql += ''' AND t.created_by = %s'''
-            cursor.execute(sql, (opportunity_id, assigned_by))
+        cursor.execute(sql, (opportunity_id, employee_id))
 
         total_tasks = cursor.fetchone()[0]
         tasks_list = []

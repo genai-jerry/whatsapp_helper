@@ -15,7 +15,7 @@ def get_tasks_api():
     else:
         assigned_by = None
     if opportunity_id:
-        tasks, _ = get_all_tasks_for_opportunity(opportunity_id, employee_id, assigned_by)
+        tasks, _ = get_all_tasks_for_opportunity(opportunity_id, employee_id)
     else:
         tasks, _ = get_tasks_due(employee_id); # get_tasks()
     print(f"tasks: {tasks}")
