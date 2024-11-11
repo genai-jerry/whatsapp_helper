@@ -815,11 +815,18 @@ def get_total_opportunity_count_for_month(month, year):
         connection = create_connection()
         cursor = connection.cursor()
 
-        sql = '''SELECT COUNT(*) FROM opportunity 
-        WHERE MONTHNAME(register_time) = %s AND EXTRACT(YEAR FROM register_time) = %s'''
+        sql = '''SELECT 
+            SUM(CASE WHEN ad_name IS NULL THEN 1 ELSE 0 END) as direct_leads,
+            SUM(CASE WHEN ad_name IS NOT NULL THEN 1 ELSE 0 END) as ad_leads
+        FROM opportunity 
+        WHERE MONTHNAME(last_updated) = %s AND EXTRACT(YEAR FROM last_updated) = %s'''
         cursor.execute(sql, (month, year))
-        count = cursor.fetchone()[0]
-        return count
+        result = cursor.fetchone()
+        return {
+            'direct_leads': result[0] or 0,  # Handle NULL case
+            'ad_leads': result[1] or 0,      # Handle NULL case
+            'total_leads': (result[0] or 0) + (result[1] or 0)
+        }
     finally:
         if cursor:
             cursor.close()

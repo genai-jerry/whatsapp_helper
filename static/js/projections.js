@@ -119,7 +119,8 @@ function calculateMetrics() {
     $('#totalProjectedProfit').text(formatIndianRupee(netProfit.toFixed(2)));
     $('#totalProjectedROI').text(roi.toFixed(2));
 
-    const actualLeads = $('#actual_lead_value').text();
+    const actualLeads = $('#total_lead_value').text();
+    const actualAdLeads = $('#ad_lead_value').text();
     const actualAppointmentsBooked = $('#appointment_booked_count').text();
     const actualShowUps = $('#actual_show_up_rate_value').text();
     const actualSalesClosure = $('#actual_sales_closure_rate_value').text();
@@ -144,7 +145,7 @@ function calculateMetrics() {
     const actualAppointmentBookedRate = (actualAppointmentsBooked / actualLeads) * 100;
     const actualShowUpRate = (actualShowUps / actualAppointmentsBooked) * 100;
     const actualSalesClosureRate = (actualSalesClosure / actualShowUps) * 100;
-    const actualCostPerLead = actualLeadCost / actualLeads;
+    const actualCostPerLead = actualLeadCost / actualAdLeads;
 
     $('#totalActualRevenue').text(formatIndianRupee(totalActualRevenue.toFixed(2)));
     $('#totalActualCost').text(formatIndianRupee(totalActualCost));
@@ -155,7 +156,7 @@ function calculateMetrics() {
     $('#actual_sales_closure_rate').text(actualSalesClosureRate.toFixed(2));
     $('#actual_cost_per_lead').val(formatIndianRupee(actualCostPerLead.toFixed(2)));
     // Apply color-coding for leads
-    setColorBasedOnComparison(actualLeads, leadGenerationProjection, leadGenerationGoal, '#actual_lead_value');
+    setColorBasedOnComparison(actualLeads, leadGenerationProjection, leadGenerationGoal, '#total_lead_value');
     setColorBasedOnComparison(totalLeadCost, actualLeadCost, actualLeadCost, '#actual_lead_cost');
 
     // Apply color-coding for appointments booked

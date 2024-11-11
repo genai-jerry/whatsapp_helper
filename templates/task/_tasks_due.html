@@ -43,7 +43,15 @@
                     <div class="mb-2">
                         <strong>Due Date:</strong> {{ task.due_date | format_date }}
                     </div>
-                    
+                    {% if tasks_type == 'assigned' %}
+                        <div class="mb-2">  
+                            {% if task.completed == 0 %}
+                                <span class="badge bg-warning">Not Completed</span>
+                            {% else %}
+                                <span class="badge bg-success">Completed</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

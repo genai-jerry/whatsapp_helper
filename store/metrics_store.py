@@ -94,17 +94,17 @@ def get_performance_metrics_for_date_range(start_date, end_date, sales_agent_id=
         # Get appointment data
         appointment_sql = '''
             SELECT 
-                COUNT(DISTINCT(a.opportunity_id)) as total_appointments_booked,
-                COUNT(DISTINCT CASE WHEN a.status IS NULL OR a.status IN (2,3,4) 
+                COUNT(DISTINCT CASE WHEN a.created_at BETWEEN %s AND %s 
+                    THEN a.opportunity_id END) as total_appointments_booked,
+                COUNT(DISTINCT CASE WHEN a.status IN (2,3,4) AND a.appointment_time BETWEEN %s AND %s
                     THEN a.opportunity_id END) as total_appointments_attended
             FROM appointments a
-            WHERE a.appointment_time BETWEEN %s AND %s
         '''
         if sales_agent_id:
             appointment_sql += ' AND a.mentor_id = %s'
-            cursor.execute(appointment_sql, (start_date, end_date, sales_agent_id))
+            cursor.execute(appointment_sql, (start_date, end_date, start_date, end_date, sales_agent_id))
         else:
-            cursor.execute(appointment_sql, (start_date, end_date))
+            cursor.execute(appointment_sql, (start_date, end_date, start_date, end_date))
         appointment_data = cursor.fetchone()
 
         # Get sales data
