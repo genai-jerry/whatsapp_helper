@@ -9,9 +9,13 @@ task_blueprint = Blueprint('task', __name__)
 def get_tasks_api():
     opportunity_id = request.args.get("opportunity_id")
     employee_id = request.args.get("employee_id")
-    
+    type = request.args.get("type", "due")
+    if type == "assigned":
+        assigned_by = current_user.id
+    else:
+        assigned_by = None
     if opportunity_id:
-        tasks, _ = get_all_tasks_for_opportunity(opportunity_id, employee_id)
+        tasks, _ = get_all_tasks_for_opportunity(opportunity_id, employee_id, assigned_by)
     else:
         tasks, _ = get_tasks_due(employee_id); # get_tasks()
     print(f"tasks: {tasks}")
@@ -47,7 +51,7 @@ def create_task_api():
     }
     
     new_task = create_task(task_data["user_id"], '', task_data["task_details"], 
-                           task_data["due_date"], task_data["opportunity_id"])
+                           task_data["due_date"], task_data["opportunity_id"], current_user.id)
     return jsonify({"message": "Task created successfully", "task_id": new_task["id"]}), 201
 
 @task_blueprint.route('<string:task_id>/status', methods=['PUT'])

@@ -267,6 +267,7 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     last_updated = db.Column(db.DateTime, nullable=True)
     opportunity_id = db.Column(db.Integer, db.ForeignKey('opportunity.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
 class Comment(db.Model):
     __tablename__ = 'comments'
