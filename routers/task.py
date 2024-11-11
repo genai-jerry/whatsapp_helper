@@ -9,8 +9,8 @@ task_blueprint = Blueprint('task', __name__)
 def get_tasks_api():
     opportunity_id = request.args.get("opportunity_id")
     employee_id = request.args.get("employee_id")
-    type = request.args.get("type", "due")
-    if type == "assigned":
+    tasks_type = request.args.get("tasks_type", "due")
+    if tasks_type == "assigned":
         assigned_by = current_user.id
     else:
         assigned_by = None

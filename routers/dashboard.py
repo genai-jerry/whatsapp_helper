@@ -16,15 +16,14 @@ def report():
     assigned_follow_up_page = request.args.get('assigned_follow_up_page', 1, type=int)
     assigned_no_show_page = request.args.get('assigned_no_show_page', 1, type=int)
     assigned_appointments_page = request.args.get('assigned_appointments_page', 1, type=int)
-    type = request.args.get("type", "due")  
+    tasks_type = request.args.get("tasks_type", "due")  
     user_id = current_user.id
-    if type == "assigned":
+    if tasks_type == "assigned":
         assigned_by = current_user.id
         user_id = None
     else:
         assigned_by = None
     
-    print(f'type: {type}, assigned_by: {assigned_by}')
     tasks_due, tasks_due_count = get_tasks_due(user_id, tasks_due_page, 10, assigned_by)
     assigned_leads, assigned_leads_count = list_all_new_leads(assigned=True, user_id=user_id, page=assigned_leads_pages, page_size=10)
     assigned_follow_up, assigned_follow_up_count = list_all_leads_for_follow_up(assigned=True, user_id=user_id, page=assigned_follow_up_page, page_size=10)
@@ -50,7 +49,7 @@ def report():
                            assigned_no_show_page=assigned_no_show_page,
                            assigned_appointments_page=assigned_appointments_page,
                            current_date=datetime.now(),
-                           type=type,
+                           tasks_type=tasks_type,
                            page_size=10)
 
 from flask import jsonify

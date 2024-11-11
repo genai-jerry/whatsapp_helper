@@ -15,12 +15,10 @@ def get_tasks_due(employee_id = None, page=1, per_page=10, assigned_by = None):
             if assigned_by:
                 sql += ''' AND t.created_by = %s ORDER BY t.due_date, o.name ASC    
                      LIMIT %s OFFSET %s'''
-                print(sql)
                 cursor.execute(sql, (employee_id, assigned_by, per_page, (page-1)*per_page))
             else:
                 sql += ''' ORDER BY t.due_date, o.name ASC    
                      LIMIT %s OFFSET %s'''
-                print(sql)
                 cursor.execute(sql, (employee_id, per_page, (page-1)*per_page))
         else:
             sql = '''SELECT t.id, t.due_date, t.description, t.opportunity_id, o.name as opportunity_name,
@@ -33,12 +31,10 @@ def get_tasks_due(employee_id = None, page=1, per_page=10, assigned_by = None):
             if assigned_by:
                 sql += ''' AND t.created_by = %s ORDER BY t.due_date, o.name ASC    
                      LIMIT %s OFFSET %s'''
-                print(sql)
                 cursor.execute(sql, (assigned_by, per_page, (page-1)*per_page))
             else:
                 sql += ''' ORDER BY t.due_date, o.name ASC    
                      LIMIT %s OFFSET %s'''
-                print(sql)
                 cursor.execute(sql, (per_page, (page-1)*per_page))
 
         tasks = cursor.fetchall()
