@@ -167,6 +167,8 @@ def logout():
 def number_format(value):
     # Convert the value to a float or Decimal to ensure it's a number
     try:
+        if value is None:
+            return 0
         if isinstance(value, (float, Decimal)):
             numeric_value = value
         else:
