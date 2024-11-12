@@ -76,7 +76,7 @@ def store_opportunity(opportunity_data):
         sql_check_email = "SELECT COUNT(*) FROM opportunity WHERE email = %s"
         cursor.execute(sql_check_email, (email,))
         email_exists = cursor.fetchone()[0]
-        
+        current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         if email_exists == 0:
             # Insert the opportunity
             sql_insert = """
@@ -85,13 +85,13 @@ def store_opportunity(opportunity_data):
                 ad_fbp, ad_fbc, video_watched, ad_placement, ad_account)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(sql_insert, (name, email, phone, date, date, opportunity_status, optin_status, sales_agent, comment, campaign, 
+            cursor.execute(sql_insert, (name, email, phone, date, current_datetime, opportunity_status, optin_status, sales_agent, comment, campaign, 
                                         ad_name, ad_id, ad_medium, ad_fbp, ad_fbc, False, ad_placement, ad_account))
             connection.commit()
             print("Opportunity inserted successfully.")
         else:
             print("Email already exists in the table.")
-            current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            
             # Update the opportunity
             sql_update = """
                 UPDATE opportunity 
@@ -819,7 +819,7 @@ def get_total_opportunity_count_for_month(month, year):
             SUM(CASE WHEN ad_name IS NULL THEN 1 ELSE 0 END) as direct_leads,
             SUM(CASE WHEN ad_name IS NOT NULL THEN 1 ELSE 0 END) as ad_leads
         FROM opportunity 
-        WHERE MONTHNAME(last_updated) = %s AND EXTRACT(YEAR FROM last_updated) = %s'''
+        WHERE MONTHNAME(last_register_time) = %s AND EXTRACT(YEAR FROM last_register_time) = %s'''
         cursor.execute(sql, (month, year))
         result = cursor.fetchone()
         return {
