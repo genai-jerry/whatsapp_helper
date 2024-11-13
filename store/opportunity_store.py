@@ -890,7 +890,7 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
         agent_id = get_sales_agent_id_for_user(user_id)
         # Return all leads that have a call_status of 12, 13, 14
         sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated FROM opportunity 
-                WHERE call_status IN (3,12, 13)'''
+                WHERE call_status IN (3,12,13) AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())'''
         if user_id:
             sql += f" AND (assigned_to = %s OR optin_caller = %s) "
             if assigned:
@@ -922,7 +922,7 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
                 'last_updated': row[6],
             })
         
-        count_sql = "SELECT COUNT(*) FROM opportunity WHERE call_status IN (12, 13)"
+        count_sql = "SELECT COUNT(*) FROM opportunity WHERE call_status IN (3, 12, 13)  AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())"
         if user_id:
             count_sql += " AND (assigned_to = %s OR optin_caller = %s)"
             cursor.execute(count_sql, (user_id, agent_id))
@@ -1095,6 +1095,19 @@ def update_call_setter(opportunity_id, user_id):
         sales_agent_id = get_sales_agent_id_for_user(user_id)
         sql = "UPDATE opportunity SET call_setter = %s WHERE id = %s"
         cursor.execute(sql, (sales_agent_id, opportunity_id))
+        connection.commit()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def set_callback_time_for_opportunity(opportunity_id, callback_time):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = "UPDATE opportunity SET callback_time = %s WHERE id = %s"
+        cursor.execute(sql, (callback_time, opportunity_id))
         connection.commit()
     finally:
         if cursor:

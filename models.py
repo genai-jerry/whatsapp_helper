@@ -84,6 +84,7 @@ class Opportunity(db.Model):
     challenge_type = db.Column(db.Integer, db.ForeignKey('challenge_type.id'))
     assigned_to = db.Column(db.Integer, db.ForeignKey('sales_agent.id'), nullable=True)
     last_updated = db.Column(db.DateTime, nullable=True)
+    callback_time = db.Column(db.DateTime, nullable=True)
     last_updated_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
 class CompanyType(db.Model):

@@ -171,3 +171,11 @@ def assign_appointment():
         return jsonify({'status': 'success'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
+
+@review_blueprint.route('call-setting/set-callback-time', methods=['POST'])
+def set_callback_time():
+    opportunity_id = request.json.get('opportunity_id')
+    callback_time = request.json.get('callback_time')
+    print(f'Setting callback time for opportunity {opportunity_id} to {callback_time}')
+    set_callback_time_for_opportunity(opportunity_id, callback_time)
+    return jsonify({'status': 'success'})

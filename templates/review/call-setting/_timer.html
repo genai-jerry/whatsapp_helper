@@ -1,0 +1,137 @@
+<p>
+    <button type="button" id="callback-datetime" 
+    class="btn btn-primary btn-sm task-comment-btn border border-white float-start set-call callback-datetime" 
+    title="Specify Time"
+    data-opportunity-id="{{ lead.id }}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16" data-bs-toggle="tooltip" data-bs-placement="top">
+            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+        </svg>
+    </button>
+</p>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+
+<script>
+$(document).ready(function() {
+    
+    // Initialize the flatpickr calendar
+    flatpickr("#callback-datetime", {
+        dateFormat: "Y-m-d H:i",
+        onClose: function(selectedDates, dateStr, instance) {
+            console.log(dateStr);
+            const opportunityId = $(instance.element).data('opportunity-id');
+            fetch('/review/call-setting/set-callback-time', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    opportunity_id: opportunityId, callback_time: dateStr
+                })
+            }).then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    $(instance.element).parent().find('tr').addClass('bg-success');
+                    showToast('Callback time set successfully', 'success');
+                } else {
+                    showToast('Failed to set callback time', 'error');
+                }
+            });
+        },
+        disableMobile: true // Add this line to disable the dropdown on mobile
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.callback-datetime').forEach(input => {
+        input.addEventListener('change', function(e) {
+            const taskId = this.dataset.taskId;
+            const opportunityId = this.dataset.opportunityId;
+            const callbackTime = this.value;
+
+            const callbackDate = new Date(callbackTime).toISOString();
+
+            fetch('/api/opportunity/set_callback_time', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    task_id: taskId,
+                    opportunity_id: opportunityId,
+                    callback_time: callbackDate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Callback time set successfully', 'success');
+                } else {
+                    showToast('Failed to set callback time', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Error setting callback time', 'error');
+            });
+            });
+        });
+    });
+});
+
+// Helper functions
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showToast(message, type = 'info') {
+    const toastHTML = `
+        <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+    toastContainer.innerHTML = toastHTML;
+    document.body.appendChild(toastContainer);
+    
+    const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+    toast.show();
+    
+    toastContainer.querySelector('.toast').addEventListener('hidden.bs.toast', () => {
+        toastContainer.remove();
+    });
+}
+</script>
+
+<style>
+.callback-timer {
+    margin-top: 10px;
+}
+
+.callback-timer input {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+}
+</style>
+
