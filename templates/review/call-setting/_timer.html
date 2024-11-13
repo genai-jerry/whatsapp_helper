@@ -12,15 +12,23 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.min.js"></script>
 
 <script>
 $(document).ready(function() {
-    
-    // Initialize the flatpickr calendar
+    // Initialize the flatpickr calendar with enhanced time selection
     flatpickr("#callback-datetime", {
         dateFormat: "Y-m-d H:i",
-        onClose: function(selectedDates, dateStr, instance) {
+        enableTime: true, // Enable time selection
+        time_24hr: true, // Use 24 hour time
+        minuteIncrement: 15, // 15-minute intervals
+        defaultHour: 9, // Default to 9 AM
+        minTime: "09:00", // Restrict to business hours
+        maxTime: "21:00",
+        minDate: "today",
+        plugins: [new confirmDatePlugin({})],
+        allowInput: true, // Allow manual input
+        onChange: function(selectedDates, dateStr, instance) {
             console.log(dateStr);
             const opportunityId = $(instance.element).data('opportunity-id');
             fetch('/review/call-setting/set-callback-time', {
@@ -30,7 +38,8 @@ $(document).ready(function() {
                     'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({
-                    opportunity_id: opportunityId, callback_time: dateStr
+                    opportunity_id: opportunityId, 
+                    callback_time: dateStr
                 })
             }).then(response => response.json())
             .then(data => {
@@ -42,44 +51,11 @@ $(document).ready(function() {
                 }
             });
         },
-        disableMobile: true // Add this line to disable the dropdown on mobile
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.callback-datetime').forEach(input => {
-        input.addEventListener('change', function(e) {
-            const taskId = this.dataset.taskId;
-            const opportunityId = this.dataset.opportunityId;
-            const callbackTime = this.value;
-
-            const callbackDate = new Date(callbackTime).toISOString();
-
-            fetch('/api/opportunity/set_callback_time', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({
-                    task_id: taskId,
-                    opportunity_id: opportunityId,
-                    callback_time: callbackDate
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast('Callback time set successfully', 'success');
-                } else {
-                    showToast('Failed to set callback time', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('Error setting callback time', 'error');
-            });
-            });
-        });
+        disableMobile: "true", // Disable mobile dropdown
+        locale: {
+            firstDayOfWeek: 1, // Start week on Monday
+            time_24hr: true
+        }
     });
 });
 
@@ -125,13 +101,55 @@ function showToast(message, type = 'info') {
 </script>
 
 <style>
-.callback-timer {
-    margin-top: 10px;
+.flatpickr-calendar {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.callback-timer input {
+.quickSelect {
+    padding: 10px;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.quickSelect button {
     font-size: 0.875rem;
-    padding: 0.25rem 0.5rem;
+}
+
+.flatpickr-time {
+    border-radius: 0 0 8px 8px;
+    background: #f8f9fa;
+}
+
+.flatpickr-time input:hover,
+.flatpickr-time input:focus {
+    background: #e9ecef;
+}
+
+.numInputWrapper:hover {
+    background: #e9ecef;
+}
+
+.flatpickr-current-month {
+    padding-top: 15px !important;
+}
+
+.flatpickr-time input.flatpickr-hour {
+    font-weight: bold;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+    .flatpickr-calendar {
+        width: 100%;
+        max-width: 350px;
+    }
+    
+    .quickSelect button {
+        padding: 4px 8px;
+        margin: 2px !important;
+    }
 }
 </style>
 
