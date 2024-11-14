@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.page-link').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            e.stopPropagation();
             // Get the closest pipeline-list parent to identify the type
             const pipelineList = this.closest('.pipeline-list');
             const type = pipelineList ? pipelineList.id : '';

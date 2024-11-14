@@ -24,7 +24,7 @@
 
         <!-- Show ellipsis if current page is far from start -->
         {% if page > 3 %}
-            <li class="page-item disabled"><span>...</span></li>
+            <li class="page-item disabled"><span class="page-link">...</span></li>
         {% endif %}
 
         <!-- Current page (if not 1 or last) -->
@@ -40,7 +40,7 @@
 
         <!-- Show ellipsis if current page is far from end -->
         {% if page < total_pages - 2 %}
-            <li class="page-item disabled"><span>...</span></li>
+            <li class="page-item disabled"><span class="page-link">...</span></li>
         {% endif %}
 
         <!-- Last page -->
