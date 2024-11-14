@@ -837,7 +837,7 @@ def list_all_new_leads(assigned = False, user_id=None, page=1, page_size=10):
         cursor = connection.cursor()
 
         agent_id = get_sales_agent_id_for_user(user_id)
-        sql = '''SELECT id, name, email, phone, register_time, call_status, register_time FROM opportunity 
+        sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated, ad_name FROM opportunity 
                 WHERE call_status IS NULL'''
         if user_id:
             sql += f" AND (assigned_to = %s OR optin_caller = %s) ORDER BY register_time DESC LIMIT %s OFFSET %s"
@@ -875,6 +875,7 @@ def list_all_new_leads(assigned = False, user_id=None, page=1, page_size=10):
                 'register_time': row[4],
                 'call_status': row[5],
                 'last_updated': row[6],
+                'ad_name': row[7],
             })
         return opportunities, total_count
     finally:
@@ -889,7 +890,7 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
         cursor = connection.cursor()
         agent_id = get_sales_agent_id_for_user(user_id)
         # Return all leads that have a call_status of 12, 13, 14
-        sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated FROM opportunity 
+        sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated, ad_name FROM opportunity 
                 WHERE call_status IN (3,12,13) AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())'''
         if user_id:
             sql += f" AND (assigned_to = %s OR optin_caller = %s) "
@@ -920,6 +921,7 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
                 'register_time': row[4],
                 'call_status': row[5],
                 'last_updated': row[6],
+                'ad_name': row[7],
             })
         
         count_sql = "SELECT COUNT(*) FROM opportunity WHERE call_status IN (3, 12, 13)  AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())"
@@ -946,7 +948,7 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, page=1, page_size
         cursor = connection.cursor()
         agent_id = get_sales_agent_id_for_user(user_id)
         sql = '''SELECT DISTINCT o.id, o.name, o.email, o.phone, o.register_time, o.call_status, 
-                o.last_updated, a.appointment_time
+                o.last_updated, a.appointment_time, o.ad_name
                 FROM opportunity o
                 LEFT JOIN appointments a on a.opportunity_id = o.id
                 WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
@@ -972,8 +974,9 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, page=1, page_size
                 'phone': row[3],
                 'register_time': row[4],
                 'call_status': row[5],
-                'last_updated': row[7],
+                'last_updated': row[6],
                 'appointment_time': row[7],
+                'ad_name': row[8],
             })
         count_sql = '''SELECT COUNT(*) FROM opportunity o
                     LEFT JOIN appointments a on a.opportunity_id = o.id 

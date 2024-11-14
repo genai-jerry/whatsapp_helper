@@ -485,7 +485,7 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, page=1,
         connection = create_connection()
         cursor = connection.cursor()
         sql = '''SELECT DISTINCT a.id, a.opportunity_id, a.status, a.created_at, a.appointment_time,
-                o.name, o.email, o.phone, a.confirmed
+                o.name, o.email, o.phone, a.confirmed, o.ad_name
                 FROM appointments a
                 JOIN opportunity o on o.id = a.opportunity_id
                 WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
@@ -518,7 +518,8 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, page=1,
                 'opportunity_name': result[5],
                 'opportunity_email': result[6],
                 'opportunity_phone': result[7],
-                'confirmed': result[8]
+                'confirmed': result[8],
+                'ad_name': result[9]
             }
             appointments.append(appointment)
         count_query = '''SELECT COUNT(DISTINCT a.opportunity_id) FROM appointments a 
