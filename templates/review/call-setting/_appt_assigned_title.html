@@ -11,6 +11,7 @@
         {{appointment.appointment_time | format_date}}
     </span>
 </p>
+{% if appointment.ad_name %}
 <p>
     <span class="badge bg-light text-dark" data-bs-toggle="tooltip" data-bs-placement="top" title="{{appointment.ad_name}}">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-megaphone me-1" viewBox="0 0 16 16">
@@ -19,7 +20,7 @@
         {{ appointment.ad_name[:10] + '...' if appointment.ad_name|length > 10 else appointment.ad_name }}
     </span>
 </p>
-
+{% endif %}
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
