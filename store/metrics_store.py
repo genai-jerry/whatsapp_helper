@@ -101,7 +101,7 @@ def get_performance_metrics_for_date_range(start_date, end_date, sales_agent_id=
             FROM appointments a
         '''
         if sales_agent_id:
-            appointment_sql += ' AND a.mentor_id = %s'
+            appointment_sql += ' WHERE a.mentor_id = %s'
             cursor.execute(appointment_sql, (start_date, end_date, start_date, end_date, sales_agent_id))
         else:
             cursor.execute(appointment_sql, (start_date, end_date, start_date, end_date))
