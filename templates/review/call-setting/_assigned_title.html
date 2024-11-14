@@ -24,6 +24,7 @@
     </span>
 </p>
 {% endif %}
+{% if lead.ad_name %}
 <p>
     <span class="badge bg-light text-dark" data-bs-toggle="tooltip" data-bs-placement="top" title="{{lead.ad_name}}">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-megaphone me-1" viewBox="0 0 16 16">
@@ -32,7 +33,7 @@
         {{ lead.ad_name[:10] + '...' if lead.ad_name|length > 10 else lead.ad_name }}
     </span>
 </p>
-
+{% endif %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
