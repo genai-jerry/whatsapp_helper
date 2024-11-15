@@ -141,7 +141,7 @@ def update_opportunity_status(opportunity_data, status_columns=None, agent_user_
         status_type = opportunity_data['status_type']
         params = []
         sales_agent_id = get_sales_agent_id_for_user(agent_user_id, cursor) if agent_user_id else None
-        print(f'Sales agent id {sales_agent_id}')
+        print(f'Sales agent id {sales_agent_id} and status is {status}')
         # Define the SQL query with placeholders
         if status_type == "call_status":
             sql = "UPDATE opportunity SET call_status = %s, last_updated = NOW()"
@@ -316,7 +316,6 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
 
         select_sql += " ORDER BY o.last_register_time desc LIMIT %s OFFSET %s"
 
-        print(f'Count SQL {count_sql}')
         # Count the total number of opportunities
         cursor.execute(count_sql, params)  # Only pass the search term and filter value to the count query
         params.extend([per_page, (page - 1) * per_page])
@@ -324,7 +323,6 @@ def get_opportunities(page, per_page, search_term=None, search_type=None, filter
 
         # Calculate the total number of pages
         total_pages = (total_items + per_page - 1) // per_page
-        print(f'Select SQL {select_sql}')
         # Retrieve the opportunities for the current page
         cursor.execute(select_sql, params)
         results = cursor.fetchall()
@@ -526,7 +524,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
         # Prepare the SQL query with placeholders
         sql = """
         UPDATE opportunity
-        SET name = %s, email = %s, phone = %s, call_status = %s, call_setter = %s, optin_caller = %s,
+        SET name = %s, email = %s, phone = %s, call_status = %s, call_setter = %s, optin_caller = %s, assigned_to = %s,
         comment = %s, gender = %s, company_type = %s, challenge_type = %s, address = %s, same_state = %s, gst = %s
         WHERE id = %s
         """
@@ -539,6 +537,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             opportunity_data['call_status'] if int(opportunity_data['call_status']) > 0 else None,
             #opportunity_data['opportunity_status'] if int(opportunity_data['opportunity_status']) > 0 else None,
             opportunity_data['call_setter'] if int(opportunity_data['call_setter']) > 0 else None,
+            opportunity_data['optin_caller'] if int(opportunity_data['optin_caller']) > 0 else None,
             opportunity_data['optin_caller'] if int(opportunity_data['optin_caller']) > 0 else None,
             opportunity_data['comment'],
             opportunity_data['gender'] if opportunity_data['gender'] != '-1' else None,
@@ -722,7 +721,6 @@ def generate_metrics(start_date, end_date):
         conn = create_connection()
         cursor = conn.cursor()
         end_date = f'{end_date} 23:59:59'
-        print(f'Getting metrics for {start_date} and {end_date}')
         # Define the SQL queries to get the data for the conversion metrics
         load_total_opportunities = 'SELECT COUNT(*) FROM opportunity WHERE register_time BETWEEN %s AND %s'
         load_followup_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where o.call_setter != 4 and o.call_setter is not Null'
@@ -753,7 +751,6 @@ def generate_metrics(start_date, end_date):
         total_leads = metrics['total_leads']
         total_calls_showed_up = call_show_up_followup + call_show_up_self
 
-        print(f'Total Calls Showed {total_calls_showed_up}/ Total Calls Booked {total_calls_booked}')
 
         # Calculate the percentages
         metrics_data = {}
