@@ -886,6 +886,7 @@ def list_all_new_leads(assigned = False, user_id=None, page=1, page_size=10):
 
 def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_size=10):
     try:
+        print(f'assigned: {assigned} and user_id: {user_id}, page: {page}, page_size: {page_size}')
         connection = create_connection()
         cursor = connection.cursor()
         agent_id = get_sales_agent_id_for_user(user_id)
@@ -898,7 +899,7 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
                 sql += "ORDER BY COALESCE(last_updated, register_time) ASC LIMIT %s OFFSET %s"
             else:
                 sql += "ORDER BY register_time DESC LIMIT %s OFFSET %s"
-            offset = (page - 1) * page_size
+            offset = (page - 1) * page_size 
             cursor.execute(sql, (user_id, agent_id, page_size, offset))
         else:
             if assigned:

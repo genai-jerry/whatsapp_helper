@@ -93,10 +93,8 @@ def get_sales_review_data(user_id):
 @review_blueprint.route('call-setting')
 @review_blueprint.route('call-setting/<int:user_id>')
 def get_call_setting_data(user_id=None):
-    if not user_id and user_id != 0:
-        user_id = current_user.id
-
     type = request.args.get('type', None, type=str)
+    print(f'Getting call setting data for type: {type}')
     if type:
         switch = {
             'pipeline_appointments': {
@@ -132,6 +130,7 @@ def get_call_setting_data(user_id=None):
                                 page=request.args.get('assigned_follow_up_page', 1, type=int), page_size=10)
             },
         }
+        
         items = switch[type]['items']
         return items
     else:

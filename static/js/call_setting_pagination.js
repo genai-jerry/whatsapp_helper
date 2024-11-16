@@ -49,19 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         
                         // Update register time
-                        const registerTimeSpan = newRow.querySelector('.bi-clock').closest('.badge');
+                        const registerTimeSpan = newRow.querySelectorAll('.register-time')[0];
                         registerTimeSpan.lastChild.textContent = new Date(lead.register_time).toLocaleDateString();
-                        
-                        // Update last updated time if exists
-                        const lastUpdatedP = newRow.querySelector('.bi-telephone-outbound')?.closest('p');
-                        if (lastUpdatedP) {
-                            if (lead.last_updated) {
-                                lastUpdatedP.querySelector('.badge').lastChild.textContent = 
-                                    new Date(lead.last_updated).toLocaleDateString();
-                            } else {
-                                lastUpdatedP.remove();
-                            }
-                        }
                         
                         // Update ad name if exists
                         const adNameP = newRow.querySelector('.bi-megaphone')?.closest('p');
