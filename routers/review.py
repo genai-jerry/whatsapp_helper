@@ -95,46 +95,71 @@ def get_sales_review_data(user_id):
 def get_call_setting_data(user_id=None):
     type = request.args.get('type', None, type=str)
     print(f'Getting call setting data for type: {type}')
-    if type:
-        switch = {
-            'pipeline_appointments': {
-                'items': list_all_appointments_for_confirmation(assigned=False, user_id=user_id, 
-                                page=request.args.get('pipeline_appointments_page', 1, type=int), page_size=10)
-            },
-            'assigned_appointments': {
-                'items': list_all_appointments_for_confirmation(assigned=True, user_id=user_id, 
-                                page=request.args.get('assigned_appointments_page', 1, type=int), page_size=10)
-            },
-            'pipeline_leads': {
-                'items': list_all_new_leads(assigned=False, user_id=user_id, 
-                                page=request.args.get('pipeline_leads_page', 1, type=int), page_size=10)
-            },
-            'assigned_leads': {
-                'items': list_all_new_leads(assigned=True, user_id=user_id, 
-                                page=request.args.get('assigned_leads_page', 1, type=int), page_size=10)
-            },
-            'pipeline_no_show': {
-                'items': list_all_leads_for_no_show(assigned=False, user_id=user_id, 
-                                page=request.args.get('pipeline_no_show_page', 1, type=int), page_size=10)
-            },
-            'assigned_no_show': {
-                'items': list_all_leads_for_no_show(assigned=True, user_id=user_id, 
-                                page=request.args.get('assigned_no_show_page', 1, type=int), page_size=10)
-            },
-            'pipeline_follow_up': {
-                'items': list_all_leads_for_follow_up(assigned=False, user_id=user_id, 
-                                page=request.args.get('pipeline_follow_up_page', 1, type=int), page_size=10)
-            },
-            'assigned_follow_up': {
-                'items': list_all_leads_for_follow_up(assigned=True, user_id=user_id, 
-                                page=request.args.get('assigned_follow_up_page', 1, type=int), page_size=10)
-            },
-        }
-        
-        items = switch[type]['items']
-        return jsonify({'items': items[0], 'total_count': items[1]}), 200
-    else:
+    
+    if not type:
         return get_call_setting_data_detailed(user_id)
+        
+    match type:
+        case 'pipeline_appointments':
+            items = list_all_appointments_for_confirmation(
+                assigned=False, 
+                user_id=user_id,
+                page=request.args.get('pipeline_appointments_page', 1, type=int),
+                page_size=10
+            )
+        case 'assigned_appointments':
+            items = list_all_appointments_for_confirmation(
+                assigned=True,
+                user_id=user_id,
+                page=request.args.get('assigned_appointments_page', 1, type=int),
+                page_size=10
+            )
+        case 'pipeline_leads':
+            items = list_all_new_leads(
+                assigned=False,
+                user_id=user_id,
+                page=request.args.get('pipeline_leads_page', 1, type=int),
+                page_size=10
+            )
+        case 'assigned_leads':
+            items = list_all_new_leads(
+                assigned=True,
+                user_id=user_id,
+                page=request.args.get('assigned_leads_page', 1, type=int),
+                page_size=10
+            )
+        case 'pipeline_no_show':
+            items = list_all_leads_for_no_show(
+                assigned=False,
+                user_id=user_id,
+                page=request.args.get('pipeline_no_show_page', 1, type=int),
+                page_size=10
+            )
+        case 'assigned_no_show':
+            items = list_all_leads_for_no_show(
+                assigned=True,
+                user_id=user_id,
+                page=request.args.get('assigned_no_show_page', 1, type=int),
+                page_size=10
+            )
+        case 'pipeline_follow_up':
+            items = list_all_leads_for_follow_up(
+                assigned=False,
+                user_id=user_id,
+                page=request.args.get('pipeline_follow_up_page', 1, type=int),
+                page_size=10
+            )
+        case 'assigned_follow_up':
+            items = list_all_leads_for_follow_up(
+                assigned=True,
+                user_id=user_id,
+                page=request.args.get('assigned_follow_up_page', 1, type=int),
+                page_size=10
+            )
+        case _:
+            return jsonify({'error': 'Invalid type'}), 400
+            
+    return jsonify({'items': items[0], 'total_count': items[1]}), 200
 
 def get_call_setting_data_detailed(user_id):
     employees = get_all_employees()

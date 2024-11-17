@@ -3,7 +3,6 @@ from db.connection_manager import *
 from utils import format_phone_number
 from datetime import datetime, timedelta
 from facebook.fb_ads_manager import handle_opportunity_update
-from typing import Optional
 from store.employee_store import get_sales_agent_id_for_user
 opportunities = {}
 
@@ -886,7 +885,7 @@ def list_all_new_leads(assigned = False, user_id=None, page=1, page_size=10):
 
 def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_size=10):
     try:
-        print(f'assigned: {assigned} and user_id: {user_id}, page: {page}, page_size: {page_size}')
+        print(f'Assigned set to: {assigned} and user_id: {user_id}, page: {page}, page_size: {page_size}')
         connection = create_connection()
         cursor = connection.cursor()
         agent_id = get_sales_agent_id_for_user(user_id)

@@ -3,6 +3,18 @@
 window.paginationInitialized = true;
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Add CSS for blur effect
+    const style = document.createElement('style');
+    style.textContent = `
+        .loading-blur {
+            filter: blur(2px);
+            pointer-events: none;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+    `;
+    document.head.appendChild(style);
+
     function updatePagination(pipelineList, totalCount, currentPage, pageSize, pageArgs) {
         const paginationNav = pipelineList.querySelector('nav[aria-label="pagination"]');
         if (!paginationNav) return;
@@ -109,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const pipelineList = this.closest('.pipeline-list');
         const type = pipelineList ? pipelineList.id : '';
         const pipelineTbody = pipelineList ? pipelineList.querySelector('tbody') : null;
+        const cardBody = pipelineList.closest('.card-body');
         
         const page = this.getAttribute('data-page');
         const pageArgs = this.getAttribute('data-page-args');
@@ -122,6 +135,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedEmployeeId) {
             params.append('selected_employee_id', selectedEmployeeId);
         }
+        
+        // Add loading effect
+        cardBody.classList.add('loading-blur');
         
         fetch(`/review/call-setting?${params.toString()}`, {
             method: 'GET',
@@ -159,7 +175,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     pipelineTbody.appendChild(newRow);
                 });
-
+                // Update data-opportunity-id for assign buttons
+                pipelineTbody.querySelectorAll('.assign-btn').forEach(btn => {
+                    btn.setAttribute('data-opportunity-id', json.items[0].id);
+                });
                 // Update pagination
                 updatePagination(pipelineList, json.total_count, parseInt(page), 10, pageArgs);
 
@@ -172,6 +191,12 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error fetching pagination data:', error);
+        })
+        .finally(() => {
+            // Remove loading effect
+            setTimeout(() => {
+                cardBody.classList.remove('loading-blur');
+            }, 300); // Small delay to ensure smooth transition
         });
     }
     
