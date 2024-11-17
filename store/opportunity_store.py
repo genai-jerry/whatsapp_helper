@@ -827,48 +827,74 @@ def get_total_opportunity_count_for_month(month, year):
         if cursor:
             cursor.close()
 
-def list_all_new_leads(assigned = False, user_id=None, page=1, page_size=10):
+def list_all_new_leads(assigned = False, user_id=None, search=None, page=1, page_size=10):
     try:
+        print(f'Assigned set to: {assigned} and user_id: {user_id}, search: {search}, page: {page}, page_size: {page_size}')
         connection = create_connection()
         cursor = connection.cursor()
 
         agent_id = get_sales_agent_id_for_user(user_id)
         sql = '''SELECT id, name, email, phone, last_register_time, call_status, last_updated, ad_name FROM opportunity 
                 WHERE call_status IS NULL AND (callback_time IS NULL or DATE(callback_time) <= CURDATE()) '''
+        sql_params = []
+        if search:
+            sql += " AND (name LIKE %s OR email LIKE %s OR phone LIKE %s)"
+            formatted_search_term = "%" + search + "%"
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
 
         if user_id:
             if assigned:
                 sql += f" AND (assigned_to = %s OR optin_caller = %s) ORDER BY last_register_time DESC LIMIT %s OFFSET %s"
                 offset = (page - 1) * page_size
-                cursor.execute(sql, (user_id, agent_id, page_size, offset))
+                sql_params.append(user_id)
+                sql_params.append(agent_id)
+                sql_params.append(page_size)
+                sql_params.append(offset)
             else:
                 sql += f" AND (assigned_to IS NULL AND optin_caller IS NULL) ORDER BY last_register_time DESC LIMIT %s OFFSET %s"
                 offset = (page - 1) * page_size
-                cursor.execute(sql, (page_size, offset))
+                sql_params.append(page_size)
+                sql_params.append(offset)
         else:
             if assigned:
                 sql += " AND (assigned_to IS NOT NULL OR optin_caller IS NOT NULL) ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                sql_params.append(page_size)
+                sql_params.append(offset)
             else:
                 sql += " AND (assigned_to IS NULL) ORDER BY last_register_time DESC LIMIT %s OFFSET %s"
-            offset = (page - 1) * page_size
-            cursor.execute(sql, (page_size, offset))
+                offset = (page - 1) * page_size
+                sql_params.append(page_size)
+                sql_params.append(offset)
+        cursor.execute(sql, sql_params)
         results = cursor.fetchall()
 
+        sql_params = []
         # Get the total count of opportunities
         count_sql = "SELECT COUNT(*) FROM opportunity WHERE call_status IS NULL AND (callback_time IS NULL or DATE(callback_time) <= CURDATE()) "
+        if search:
+            count_sql += " AND (name LIKE %s OR email LIKE %s OR phone LIKE %s)"
+            formatted_search_term = "%" + search + "%"
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
+
         if user_id:
             if assigned:
                 count_sql += " AND (assigned_to = %s OR optin_caller = %s)"
-                cursor.execute(count_sql, (user_id, agent_id))
+                sql_params.append(user_id)
+                sql_params.append(agent_id)
             else:
                 count_sql += " AND (assigned_to IS NULL AND optin_caller IS NULL)"
-                cursor.execute(count_sql)
         else:
             if assigned:
                 count_sql += " AND (assigned_to IS NOT NULL OR optin_caller IS NOT NULL)"
             else:
                 count_sql += " AND assigned_to IS NULL"
-            cursor.execute(count_sql)
+
+        print(f'Count SQL: {count_sql} with params: {sql_params}')
+        cursor.execute(count_sql, sql_params)
         total_count = cursor.fetchone()[0]
 
         opportunities = []
@@ -890,25 +916,36 @@ def list_all_new_leads(assigned = False, user_id=None, page=1, page_size=10):
         if connection:
             connection.close()
 
-def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_size=10):
+def list_all_leads_for_follow_up(assigned = False, user_id=None, search=None, page=1, page_size=10):
     try:
-        print(f'Assigned set to: {assigned} and user_id: {user_id}, page: {page}, page_size: {page_size}')
+        print(f'Assigned set to: {assigned} and user_id: {user_id}, search: {search}, page: {page}, page_size: {page_size}')
         connection = create_connection()
         cursor = connection.cursor()
         agent_id = get_sales_agent_id_for_user(user_id)
         # Return all leads that have a call_status of 12, 13, 14
         sql = '''SELECT id, name, email, phone, last_register_time, call_status, last_updated, ad_name FROM opportunity 
                 WHERE call_status IN (3,12,13) AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())'''
+        sql_params = []
+        if search:
+            sql += " AND (name LIKE %s OR email LIKE %s OR phone LIKE %s)"
+            formatted_search_term = "%" + search + "%"
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
         if user_id:
             if assigned:
                 sql += f" AND (assigned_to = %s OR optin_caller = %s) "
                 sql += "ORDER BY COALESCE(last_updated, last_register_time) ASC LIMIT %s OFFSET %s"
                 offset = (page - 1) * page_size 
-                cursor.execute(sql, (user_id, agent_id, page_size, offset))
+                sql_params.append(user_id)
+                sql_params.append(agent_id)
+                sql_params.append(page_size)
+                sql_params.append(offset)
             else:
                 sql += " AND (assigned_to IS NULL AND optin_caller IS NULL) ORDER BY last_register_time DESC LIMIT %s OFFSET %s"
                 offset = (page - 1) * page_size
-                cursor.execute(sql, (page_size, offset))
+                sql_params.append(page_size)
+                sql_params.append(offset)
         else:
             if assigned:
                 sql += " AND (assigned_to IS NOT NULL OR optin_caller IS NOT NULL)"
@@ -918,7 +955,9 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
                 sql += " ORDER BY last_register_time DESC LIMIT %s OFFSET %s"
             
             offset = (page - 1) * page_size
-            cursor.execute(sql, (page_size, offset))
+            sql_params.append(page_size)
+            sql_params.append(offset)
+        cursor.execute(sql, sql_params)
         results = cursor.fetchall()
         opportunities = []
         for row in results:
@@ -933,20 +972,27 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
                 'ad_name': row[7],
             })
         
+        sql_params = []
         count_sql = "SELECT COUNT(id) FROM opportunity WHERE call_status IN (3, 12, 13)  AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())"
+        if search:
+            count_sql += " AND (name LIKE %s OR email LIKE %s OR phone LIKE %s)"
+            formatted_search_term = "%" + search + "%"
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
         if user_id:
             if assigned:
                 count_sql += " AND (assigned_to = %s OR optin_caller = %s)"
-                cursor.execute(count_sql, (user_id, agent_id))
+                sql_params.append(user_id)
+                sql_params.append(agent_id)
             else:
                 count_sql += " AND (assigned_to IS NULL AND optin_caller IS NULL)"
-                cursor.execute(count_sql)
         else:
             if assigned:
                 count_sql += " AND assigned_to IS NOT NULL"
             else:
                 count_sql += " AND (assigned_to IS NULL AND optin_caller IS NULL)"
-            cursor.execute(count_sql)
+        cursor.execute(count_sql, sql_params)
         total_count = cursor.fetchone()[0]
         return opportunities, total_count
     finally:
@@ -955,7 +1001,7 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
         if connection:
             connection.close()
 
-def list_all_leads_for_no_show(assigned = False, user_id=None, page=1, page_size=10):
+def list_all_leads_for_no_show(assigned = False, user_id=None, search=None, page=1, page_size=10):
     try:
         connection = create_connection()
         cursor = connection.cursor()
@@ -963,26 +1009,43 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, page=1, page_size
         sql = '''SELECT DISTINCT o.id, o.name, o.email, o.phone, o.last_register_time, o.call_status, 
                 o.last_updated, a.appointment_time, o.ad_name
                 FROM opportunity o
-                LEFT JOIN appointments a on a.opportunity_id = o.id
+                LEFT JOIN (
+                    SELECT opportunity_id, appointment_time, status,
+                    ROW_NUMBER() OVER (PARTITION BY opportunity_id ORDER BY appointment_time DESC) as rn
+                    FROM appointments
+                ) a ON a.opportunity_id = o.id AND a.rn = 1
                 WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
                 AND a.status = 1 AND (o.callback_time IS NULL or DATE(o.callback_time) <= CURDATE())'''
+        sql_params = []
+        if search:
+            sql += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
+            formatted_search_term = "%" + search + "%"
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
         if user_id:
             if assigned:
                 sql += f" AND (o.assigned_to = %s OR o.optin_caller = %s) ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
                 offset = (page - 1) * page_size
-                cursor.execute(sql, (user_id, agent_id, page_size, offset))
+                sql_params.append(user_id)
+                sql_params.append(agent_id)
+                sql_params.append(page_size)
+                sql_params.append(offset)
             else:
                 sql += " AND (o.assigned_to IS NULL AND o.optin_caller IS NULL)"
                 sql += " ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
                 offset = (page - 1) * page_size
-                cursor.execute(sql, (page_size, offset))
+                sql_params.append(page_size)
+                sql_params.append(offset)
         else:
             if assigned:
                 sql += " AND (o.assigned_to IS NOT NULL OR o.optin_caller IS NOT NULL) ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
             else:
                 sql += " AND (o.assigned_to IS NULL AND o.optin_caller IS NULL) ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
-            cursor.execute(sql, (page_size, offset))
+            sql_params.append(page_size)
+            sql_params.append(offset)
+        cursor.execute(sql, sql_params)
         results = cursor.fetchall()
         opportunities = []
         for row in results:
@@ -1001,23 +1064,28 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, page=1, page_size
                 'appointment_time': row[7],
                 'ad_name': row[8],
             })
+        sql_params = []
         count_sql = '''SELECT COUNT(*) FROM opportunity o
-                    LEFT JOIN appointments a on a.opportunity_id = o.id 
+                    LEFT JOIN (
+                        SELECT opportunity_id, appointment_time, status,
+                        ROW_NUMBER() OVER (PARTITION BY opportunity_id ORDER BY appointment_time DESC) as rn
+                        FROM appointments
+                    ) a ON a.opportunity_id = o.id AND a.rn = 1
                     WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
                     AND a.status = 1 AND (o.callback_time IS NULL or DATE(o.callback_time) <= CURDATE())'''
         if user_id:
             if assigned:
                 count_sql += " AND (o.assigned_to = %s OR o.optin_caller = %s)"
-                cursor.execute(count_sql, (user_id, agent_id))
+                sql_params.append(user_id)
+                sql_params.append(agent_id)
             else:
                 count_sql += " AND (o.assigned_to IS NULL AND o.optin_caller IS NULL)"
-                cursor.execute(count_sql)
         else:
             if assigned:
                 count_sql += " AND (o.assigned_to IS NOT NULL OR o.optin_caller IS NOT NULL)"
             else:
                 count_sql += " AND (o.assigned_to IS NULL AND o.optin_caller IS NULL)"
-            cursor.execute(count_sql)
+        cursor.execute(count_sql, sql_params)
         total_count = cursor.fetchone()[0]
         return opportunities, total_count
     finally:

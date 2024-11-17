@@ -15,8 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     document.head.appendChild(style);
 
-    function updatePagination(pipelineList, totalCount, currentPage, pageSize, pageArgs) {
-        const paginationNav = pipelineList.querySelector('nav[aria-label="pagination"]');
+    function updatePagination(paginationNav, totalCount, currentPage, pageSize, pageArgs) {
         if (!paginationNav) return;
 
         const totalPages = Math.ceil(totalCount / pageSize);
@@ -134,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         if (isPipeline || isAssigned ) {
-            handlePipeline(this, isPipeline, leadsList);
+            handlePipeline(this, isPipeline);
         }else if (isPipelineAppointment || isAssignedAppointment) {
             handleAppointment(this, isPipelineAppointment, leadsList);
         }
@@ -163,23 +162,33 @@ document.addEventListener('DOMContentLoaded', function() {
         cardBody.classList.add('loading-blur'); 
 
         if (isPipelineAppointment) {
-            handlePipelineApptPageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody);
+            handlePipelineApptPageClick(page, pageArgs, params, templateRow, cardBody);
         } else {
-            handleAssignedApptPageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody, selectedEmployeeId);
+            handleAssignedApptPageClick(page, pageArgs, params, templateRow, cardBody, selectedEmployeeId);
         }
     }
 
-    function handlePipeline(element, isPipeline, leadsList){
+    let pipelineElements = {};
+    let assignedElements = {};
+
+    function handlePipeline(element, isPipeline){
         const containedList = isPipeline ? element.closest('.pipeline-list') : element.closest('.assigned-list');
         const type = containedList ? containedList.id : '';
-        const leadsTbody = containedList ? containedList.querySelector('tbody') : null;
-        const cardBody = containedList.closest('.card-body');
+
+        
+        if (isPipeline) {
+            if (!pipelineElements[type + '_card_body']) {
+                pipelineElements[type + '_card_body'] = containedList.closest('.card-body');
+            }
+        } else {
+            if (!assignedElements[type + '_card_body']) {
+                assignedElements[type + '_card_body'] = containedList.closest('.card-body');
+            }
+        }
         
         const page = element.getAttribute('data-page');
         const pageArgs = element.getAttribute('data-page-args');
         const selectedEmployeeId = element.getAttribute('data-selected-employee-id');
-        
-        const templateRow = isPipeline ? $('.pipeline-item')[0] : $('.assigned-item')[0];
         
         const params = new URLSearchParams();
         params.append('type', type);
@@ -188,17 +197,20 @@ document.addEventListener('DOMContentLoaded', function() {
             params.append('selected_employee_id', selectedEmployeeId);
         }
         
-        // Add loading effect
-        cardBody.classList.add('loading-blur');
 
         if (isPipeline) {
-            handlePipelinePageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody);
+            pipelineElements[type + '_card_body'].classList.add('loading-blur');
+            handlePipelinePageClick(page, pageArgs, params, pipelineElements[type + '_card_body']);
         } else {
-            handleAssignedPageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody, selectedEmployeeId);
+            assignedElements[type + '_card_body'].classList.add('loading-blur');
+            handleAssignedPageClick(page, pageArgs, params, assignedElements[type + '_card_body'], selectedEmployeeId);
         }
     }
     
-    function handlePipelinePageClick(page, pageArgs, params, pipelineList, templateRow, pipelineTbody, cardBody) {
+
+    function handlePipelinePageClick(page, pageArgs, params, cardBody) {
+        const pipelineTbody = $(cardBody).find('tbody')[0];
+        const templateRow = $(cardBody).find('.pipeline-item')[0];
         fetch(`/review/call-setting?${params.toString()}`, {
             method: 'GET',
             headers: {
@@ -208,8 +220,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(json => {
             if (pipelineTbody) {
-                pipelineTbody.querySelectorAll('tr').forEach(row => {
-                    row.remove();
+                $(pipelineTbody).find('tr').each(function() {
+                    $(this).remove();
                 });
                 
                 json.items.forEach(lead => {
@@ -249,11 +261,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update setter button
                     updateAssignedSetter(newRow, lead);
                     
-                    pipelineTbody.appendChild(newRow);
+                    $(pipelineTbody).append(newRow);
                 });
 
                 // Update pagination
-                updatePagination(pipelineList, json.total_count, parseInt(page), 10, pageArgs);
+                const pageNav = $(cardBody).find('nav')[0];
+                updatePagination(pageNav, json.total_count, parseInt(page), 10, pageArgs);
+                // Get the parent card and update the text value of element with class items_count
+                const parentCard = $(cardBody).closest('.card');
+                const itemsCount = $(parentCard).find('.items_count')[0];
+                itemsCount.textContent = json.total_count;
 
                 // Reinitialize tooltips
                 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -273,7 +290,87 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function handleAssignedPageClick(page, pageArgs, params, assignedList, templateRow, assignedTbody, cardBody, selectedEmployeeId) {
+    function handleAssignedOpportunitySearch(searchInput){
+        console.log(searchInput);
+        const searchValue = $('#assigned_leads_search').val();
+        console.log(searchValue);
+        // Define the sections and their parameters
+        const sections = [
+            {
+                containerId: 'assigned_appt_list',
+                pageArgs: 'assigned_appt_page',
+                templateClass: 'assigned-appt-item',
+                type: 'assigned_appointments'
+            },
+            {
+                containerId: 'assigned_leads',
+                pageArgs: 'assigned_leads_page',
+                templateClass: 'assigned-item',
+                type: 'assigned'
+            },
+            {
+                containerId: 'assigned_follow_up',
+                pageArgs: 'assigned_follow_up_page',
+                templateClass: 'assigned-item',
+                    type: 'assigned'
+            },
+            {
+            containerId: 'assigned_no_show',
+                pageArgs: 'assigned_no_show_page',
+                templateClass: 'assigned-item',
+                type: 'assigned'
+            }
+        ];
+        
+        
+        // Process each section
+        sections.forEach(section => {
+            const container = document.getElementById(section.containerId);
+            if (container) {
+                const selectedEmployeeId = $('#employeeSelect').val();
+            
+                // Create params
+                const params = new URLSearchParams();
+                params.append('type', section.containerId);
+                params.append(section.pageArgs, '1'); // Start at page 1 for search
+                params.append('search', searchValue);
+                // Call handleAssignedPageClick with appropriate parameters
+                if (section.type == 'leads') {
+                    if (!pipelineElements[section.containerId + '_card_body']) {
+                        pipelineElements[section.containerId + '_card_body'] = container.closest('.card-body');
+                    }
+                } else {
+                    if (!assignedElements[section.containerId + '_card_body']) {
+                        assignedElements[section.containerId + '_card_body'] = container.closest('.card-body');
+                    }
+                }
+
+                if (section.type == 'assigned') {
+                    assignedElements[section.containerId + '_card_body'].classList.add('loading-blur');
+                    handleAssignedPageClick(
+                        '1', // page number
+                        section.pageArgs, 
+                        params, 
+                        assignedElements[section.containerId + '_card_body'],
+                        selectedEmployeeId ? selectedEmployeeId : null
+                    );
+                } else {
+                    assignedElements[section.containerId + '_card_body'].classList.add('loading-blur');
+                    handleAssignedApptPageClick(
+                        '1', // page number
+                        section.pageArgs, 
+                        params,
+                        assignedElements[section.containerId + '_card_body'],
+                        selectedEmployeeId ? selectedEmployeeId : null
+                    );
+                }
+            }
+        });
+    }
+
+    function handleAssignedPageClick(page, pageArgs, params, cardBody, selectedEmployeeId) {
+        const assignedTbody = $(cardBody).find('tbody')[0];
+        const templateRow = $(cardBody).find('.assigned-item')[0];
         fetch(`/review/call-setting${selectedEmployeeId ? '/' + selectedEmployeeId : ''}?${params.toString()}`, {
             method: 'GET',
             headers: {
@@ -283,8 +380,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(json => {
             if (assignedTbody) {
-                assignedTbody.querySelectorAll('tr').forEach(row => {
-                    row.remove();
+                $(assignedTbody).find('tr').each(function() {
+                    $(this).remove();
                 });
                 
                 json.items.forEach(opportunity => {
@@ -323,7 +420,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateAssignedAdName(newRow, opportunity);
                     
                     // Update status select
-                    updateAssignedSelectStatus(newRow, opportunity);
+                    if (opportunity.call_status != 8 || pageArgs != 'assigned_no_show_page') {
+                        updateAssignedSelectStatus(newRow, opportunity);
+                    }
                     
                     // Update task list buttons
                     updateAssignedTaskList(newRow, opportunity);
@@ -335,8 +434,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 // Update pagination
-                updatePagination(assignedList, json.total_count, parseInt(page), 10, pageArgs);
-
+                const pageNav = $(cardBody).find('nav[aria-label="pagination"]')[0];
+                updatePagination(pageNav, json.total_count, parseInt(page), 10, pageArgs);
+                // Get the parent card and update the text value of element with class items_count
+                const parentCard = $(cardBody).closest('.card');
+                const itemsCount = $(parentCard).find('.items_count')[0];
+                itemsCount.textContent = json.total_count;
                 // Reinitialize tooltips
                 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
                 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -355,7 +458,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function handlePipelineApptPageClick(page, pageArgs, params, leadsList, templateRow, appointmentsTBody, cardBody){
+    function handlePipelineApptPageClick(page, pageArgs, params, templateRow, cardBody){
+        appointmentsTbody = cardBody.querySelector('tbody');
         fetch(`/review/call-setting?${params.toString()}`, {
             method: 'GET',
             headers: {
@@ -435,7 +539,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function handleAssignedApptPageClick(page, pageArgs, params, assignedList, templateRow, appointmentsTBody, cardBody, selectedEmployeeId){
+    function handleAssignedApptPageClick(page, pageArgs, params, cardBody, selectedEmployeeId){
+        appointmentsTbody = cardBody.querySelector('tbody');
+        templateRow = cardBody.querySelector('.assigned-item')[0];
         fetch(`/review/call-setting${selectedEmployeeId ? '/' + selectedEmployeeId : ''}?${params.toString()}`, {
             method: 'GET',
             headers: {
@@ -645,4 +751,5 @@ document.addEventListener('DOMContentLoaded', function() {
     $('.page-link').each(function() {
         $(this).unbind().click(handlePageClick);
     });
+    $('#assigned_leads_search').unbind().keyup(handleAssignedOpportunitySearch);
 });

@@ -480,7 +480,7 @@ def get_initial_discussion_appointment(opportunity_id):
         if cursor:
             cursor.close()
 
-def list_all_appointments_for_confirmation(assigned=False, user_id=None, page=1, page_size=10):
+def list_all_appointments_for_confirmation(assigned=False, user_id=None, search=None, page=1, page_size=10):
     try:
         print(f'List all appointments for confirmation with assigned: {assigned} and user_id: {user_id}')
         connection = create_connection()
@@ -491,22 +491,34 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, page=1,
                 JOIN opportunity o on o.id = a.opportunity_id
                 WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
                 AND (a.confirmed = 0 AND a.status IS NULL)'''
+        sql_params = []
+        if search:
+            sql += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
+            formatted_search_term = "%" + search + "%"
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
         if assigned:
             if user_id:
                 sql += " AND a.call_setter = %s ORDER BY a.appointment_time ASC "
                 offset = (page - 1) * page_size
                 sql += " LIMIT %s OFFSET %s"
-                cursor.execute(sql, (user_id, page_size, offset))
+                sql_params.append(user_id)
+                sql_params.append(page_size)
+                sql_params.append(offset)
             else:
                 sql += " AND a.call_setter IS NOT NULL ORDER BY a.appointment_time ASC "
                 offset = (page - 1) * page_size
                 sql += " LIMIT %s OFFSET %s"
-                cursor.execute(sql, (page_size, offset))
+                sql_params.append(page_size)
+                sql_params.append(offset)
         else:
             sql += " AND a.call_setter IS NULL ORDER BY a.appointment_time ASC "
             offset = (page - 1) * page_size
             sql += " LIMIT %s OFFSET %s"
-            cursor.execute(sql, (page_size, offset))
+            sql_params.append(page_size)
+            sql_params.append(offset)
+        cursor.execute(sql, sql_params)
         results = cursor.fetchall()
         appointments = []
         for result in results:
@@ -524,21 +536,26 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, page=1,
             }
             appointments.append(appointment)
 
+        sql_params = []
         count_query = '''SELECT COUNT(a.id) FROM appointments a 
                         JOIN opportunity o on o.id = a.opportunity_id
                         WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
                         AND a.confirmed = 0 AND a.status IS NULL'''
-        
+        if search:
+            count_query += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
+            formatted_search_term = "%" + search + "%"
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
         if assigned:
             if user_id:
                 count_query += " AND a.call_setter = %s"
-                cursor.execute(count_query, (user_id,))
+                sql_params.append(user_id)
             else:
                 count_query += " AND a.call_setter IS NOT NULL"
-                cursor.execute(count_query)
         else:
             count_query += " AND a.call_setter IS NULL"
-            cursor.execute(count_query)
+        cursor.execute(count_query, sql_params)
         total_appointments = cursor.fetchone()[0]
 
         return appointments, total_appointments

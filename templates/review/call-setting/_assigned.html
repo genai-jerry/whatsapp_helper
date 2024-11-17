@@ -1,5 +1,12 @@
-<div class="card-header">
-    <h5>Assigned Leads</h5>
+<div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Assigned Leads</h5>
+    <div class="col-3">
+        <input type="text" 
+               id="assigned_leads_search" 
+               class="form-control" 
+               placeholder="Search by name or phone..."
+               aria-label="Search opportunities">
+    </div>
 </div>
 <div class="card-body">
     <div class="row" id="assignedLeadsContainer">
@@ -7,7 +14,7 @@
         <div class="col-md-3" id="appointmentsColumn">
             <div class="card mb-4">
                 <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Assigned Appointments ({{ assigned_appointments_count }})</h6>
+                    <h6 class="mb-0">Assigned Appointments (<span class="items_count">{{ assigned_appointments_count }}</span>)</h6>
                     <div>
                         <svg class="expand-icon bi bi-arrows-fullscreen" data-column="appointments" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
@@ -54,7 +61,7 @@
         <div class="col-md-3" id="newLeadsColumn">
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Assigned New Leads ({{ assigned_leads_count }})</h6>
+                    <h6 class="mb-0">Assigned New Leads (<span class="items_count">{{ assigned_leads_count }}</span>)</h6>
                     <div>
                         <svg class="expand-icon bi bi-arrows-fullscreen" data-column="newLeads" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
@@ -102,7 +109,7 @@
         <div class="col-md-3" id="followUpColumn"> 
             <div class="card mb-4">
                 <div class="card-header bg-warning d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Assigned Follow Up ({{ assigned_follow_up_count }})</h6>
+                    <h6 class="mb-0">Assigned Follow Up (<span class="items_count">{{ assigned_follow_up_count }}</span>)</h6>
                     <div>
                         <svg class="expand-icon bi bi-arrows-fullscreen" data-column="followUp" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
@@ -152,7 +159,7 @@
         <div class="col-md-3" id="noShowsColumn">
             <div class="card mb-4">
                 <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Assigned No Shows ({{ assigned_no_show_count }})</h6>
+                    <h6 class="mb-0">Assigned No Shows (<span class="items_count">{{ assigned_no_show_count }}</span>)</h6>
                     <div>
                         <svg class="expand-icon bi bi-arrows-fullscreen" data-column="noShows" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
@@ -162,6 +169,8 @@
                 <div class="card-body">
                     <div class="leads-list assigned-list" id="assigned_no_show">
                         <!-- Template for each no-show -->
+
+                        {% with page_args='assigned_no_show_page' %}
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -186,7 +195,6 @@
                         <!-- Add pagination controls -->    
                         {% with page=assigned_no_show_page %}
                         {% with count=assigned_no_show_count %}
-                        {% with page_args='assigned_no_show_page' %}
                         {% include 'review/call-setting/_pagination.html' %}
                         {% endwith %}
                         {% endwith %}
