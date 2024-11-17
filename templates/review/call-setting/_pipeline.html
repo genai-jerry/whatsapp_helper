@@ -6,7 +6,7 @@
         <div class="col-md-3">
             <div class="card">
                 <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Appointments ({{ pipeline_appointments_count }})</h6>
+                    <h6 class="mb-0">Appointments (<span class="items_count">{{ pipeline_appointments_count }}</span>)</h6>
                 </div>
                 <div class="card-body">
                     <div class="leads-list pipeline-appt-list" id="pipeline_appointments">
@@ -42,7 +42,7 @@
         <div class="col-md-3">
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">New Leads ({{ pipeline_leads_count }})</h6>
+                    <h6 class="mb-0">New Leads (<span class="items_count">{{ pipeline_leads_count }}</span>)</h6>
                 </div>
                 <div class="card-body">
                     <div class="leads-list pipeline-list" id="pipeline_leads">
@@ -79,7 +79,7 @@
         <div class="col-md-3">
             <div class="card">
                 <div class="card-header bg-warning">
-                    <h6 class="mb-0">Follow Up ({{ pipeline_follow_up_count }})</h6>
+                    <h6 class="mb-0">Follow Up (<span class="items_count">{{ pipeline_follow_up_count }}</span>)</h6>
                 </div>
                 <div class="card-body">
                     <div class="leads-list pipeline-list" id="pipeline_follow_up">
@@ -117,7 +117,7 @@
         <div class="col-md-3">
             <div class="card">
                 <div class="card-header bg-danger text-white">
-                    <h6 class="mb-0">No Shows ({{ pipeline_no_show_count }})</h6>
+                    <h6 class="mb-0">No Shows (<span class="items_count">{{ pipeline_no_show_count }}</span>)</h6>
                 </div>
                 <div class="card-body">
                     <div class="leads-list pipeline-list" id="pipeline_no_show">

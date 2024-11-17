@@ -12,7 +12,10 @@
         <option value="">Select Status</option>
         {% for status in call_statuses %}
             <option value="{{ status.id }}" 
-                    {% if lead.call_status == status.id %}selected{% endif %}
+                    data-selected="{{lead.call_status}}-{{status.id}}-{{page_args}}"
+                    {% if (lead.call_status == status.id and 
+                        (page_args == null or 
+                        (lead.call_status != 8 or page_args != 'assigned_no_show_page'))) %}selected{% endif %}
                     data-bg-color="{{ status.color_code }}"
                     data-text-color="{{ status.text_color }}">
                 {{ status.name }}

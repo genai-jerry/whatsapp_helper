@@ -1,4 +1,3 @@
-{% if (count/page_size) > 1 %}
 <nav aria-label="pagination">
     <ul class="pagination justify-content-center">
         <!-- Previous button -->
@@ -44,15 +43,14 @@
         {% endif %}
 
         <!-- Last page -->
-        {% if total_pages > 1 %}
-            <li class="page-item {% if page == total_pages %}active{% endif %}">
-                <a id="last-page-{{page_args}}" data-page-args="{{page_args}}" data-page="{{total_pages}}"
-                data-selected-employee-id="{{selected_employee_id if selected_employee_id else ''}}" class="page-link" 
-                href="#">
-                    {{ total_pages }}
-                </a>
-            </li>
-        {% endif %}
+        
+        <li class="page-item {% if page == total_pages %}active{% endif %}">
+            <a id="last-page-{{page_args}}" data-page-args="{{page_args}}" data-page="{{total_pages}}"
+            data-selected-employee-id="{{selected_employee_id if selected_employee_id else ''}}" class="page-link" 
+            href="#">
+            {% if total_pages > 1 %}{{ total_pages }}{% endif %}
+            </a>
+        </li>
 
         <!-- Next button -->
         <li class="page-item {% if page == total_pages %}disabled{% endif %}">
@@ -66,5 +64,5 @@
     </ul>
 </nav>
 <script src="{{ url_for('static', filename='js/call_setting_pagination.js') }}"></script>
-{% endif %}
+
 
