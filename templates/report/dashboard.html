@@ -7,10 +7,14 @@ Report
 {% block content %}
 <div class="container mt-5">
     {% if "Call_Setter" in current_user.roles %}
-    <div class="card">
-        {% include "review/call-setting/_assigned.html" %}
-        <script src="{{ url_for('static', filename='js/setting_pipeline.js') }}"></script>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                {% include "review/call-setting/_assigned.html" %}
+            </div>
+        </div>
     </div>
+    <script src="{{ url_for('static', filename='js/setting_pipeline.js') }}"></script>
     {% endif %}
     <div class="row">
         <div class="col-md-6">

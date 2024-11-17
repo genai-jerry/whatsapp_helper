@@ -15,7 +15,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="leads-list" id="appointmentsList">
+                    <div class="leads-list assigned-list" id="assigned_appointments">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -25,11 +25,11 @@
                             </thead>
                             <tbody>
                                 {% for appointment in assigned_appointments %}
-                                <tr class="lead-item">
-                                    <td class="opportunity-name">
+                                <tr class="appt-assigned-item">
+                                    <td>
                                         {% include 'review/call-setting/_appt_assigned_title.html' %}
                                     </td>
-                                    <td class="status">
+                                    <td>
                                         {% include 'review/call-setting/_appt_status_list.html' %}
                                     </td>
                                 </tr>
@@ -62,7 +62,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="leads-list" id="newLeadsList">
+                    <div class="leads-list assigned-list" id="assigned_leads">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -72,11 +72,11 @@
                             </thead>
                             <tbody>
                                 {% for lead in assigned_leads %}
-                                <tr class="lead-item">
-                                    <td class="opportunity-name">
+                                <tr class="assigned-item">
+                                    <td>
                                         {% include 'review/call-setting/_assigned_title.html' %}
                                     </td>
-                                    <td class="status">
+                                    <td>
                                         {% include 'review/call-setting/_status_list.html' %}
                                     </td>
                                 </tr>
@@ -98,7 +98,7 @@
             </div>
         </div>
         <!-- Follow Up Column -->
-        <div class="col-md-3" id="followUpColumn">
+        <div class="col-md-3" id="followUpColumn"> 
             <div class="card">
                 <div class="card-header bg-warning d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">Assigned Follow Up ({{ assigned_follow_up_count }})</h6>
@@ -108,8 +108,8 @@
                         </svg>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="leads-list" id="followUpList">
+                <div class="card-body" id="followUpColumnBody">
+                    <div class="leads-list assigned-list" id="assigned_follow_up">
                         <!-- Template for each follow-up -->
                         <table class="table table-hover">
                             <thead>
@@ -120,11 +120,11 @@
                             </thead>
                             <tbody>
                                 {% for lead in assigned_follow_up %}
-                                <tr class="lead-item">
-                                    <td class="opportunity-name">
+                                <tr class="assigned-item">
+                                    <td>
                                         {% include 'review/call-setting/_assigned_title.html' %}
                                     </td>
-                                    <td class="status">
+                                    <td>
                                         {% include 'review/call-setting/_status_list.html' %}
 
                                         {% include 'review/call-setting/_timer.html' %}
@@ -159,7 +159,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="leads-list" id="noShowsList">
+                    <div class="leads-list assigned-list" id="assigned_no_show">
                         <!-- Template for each no-show -->
                         <table class="table table-hover">
                             <thead>
@@ -170,11 +170,11 @@
                             </thead>
                             <tbody>
                                 {% for lead in assigned_no_show %}
-                                <tr class="lead-item">
-                                    <td class="opportunity-name">
+                                <tr class="assigned-item">
+                                    <td>
                                         {% include 'review/call-setting/_assigned_title.html' %}
                                     </td>
-                                    <td class="status no-shows">
+                                    <td>
                                         {% include 'review/call-setting/_status_list.html' %}
                                     </td>
                                 </tr>

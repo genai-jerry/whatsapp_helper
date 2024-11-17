@@ -117,17 +117,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handlePageClick(e) {
         e.preventDefault();
-        
-        const pipelineList = this.closest('.pipeline-list');
-        const type = pipelineList ? pipelineList.id : '';
-        const pipelineTbody = pipelineList ? pipelineList.querySelector('tbody') : null;
-        const cardBody = pipelineList.closest('.card-body');
+        const leadsList = this.closest('.leads-list');
+        const isPipeline = leadsList.classList.contains('pipeline-list');
+        const containedList = isPipeline ? this.closest('.pipeline-list') : this.closest('.assigned-list');
+        const type = containedList ? containedList.id : '';
+        const leadsTbody = containedList ? containedList.querySelector('tbody') : null;
+        const cardBody = containedList.closest('.card-body');
         
         const page = this.getAttribute('data-page');
         const pageArgs = this.getAttribute('data-page-args');
         const selectedEmployeeId = this.getAttribute('data-selected-employee-id');
         
-        const templateRow = $('.pipeline-item')[0];
+        const templateRow = isPipeline ? $('.pipeline-item')[0] : $('.assigned-item')[0];
         
         const params = new URLSearchParams();
         params.append('type', type);
@@ -138,7 +139,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Add loading effect
         cardBody.classList.add('loading-blur');
-        
+
+        if (isPipeline) {
+            handlePipelinePageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody);
+        } else {
+            handleAssignedPageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody);
+        }
+    }
+    
+    function handlePipelinePageClick(page, pageArgs, params, pipelineList, templateRow, pipelineTbody, cardBody) {
         fetch(`/review/call-setting?${params.toString()}`, {
             method: 'GET',
             headers: {
@@ -153,32 +162,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 json.items.forEach(lead => {
                     const newRow = templateRow.cloneNode(true);
                     
+                    // Update opportunity link and name
                     const opportunityLink = newRow.querySelector('a[href^="/opportunity/"]');
                     opportunityLink.href = `/opportunity/${lead.id}`;
                     opportunityLink.title = lead.name;
                     opportunityLink.textContent = lead.name.length > 15 ? lead.name.substring(0, 15) + '...' : lead.name;
                     
                     const registerTimeSpan = newRow.querySelectorAll('.register-time')[0];
-                    registerTimeSpan.lastChild.textContent = new Date(lead.register_time).toLocaleDateString();
+                    registerTimeSpan.lastChild.textContent = formatDate(lead.register_time);
                     
-                    const adNameP = newRow.querySelector('.bi-megaphone')?.closest('p');
-                    if (adNameP) {
-                        if (lead.ad_name) {
-                            const adNameSpan = adNameP.querySelector('.badge');
-                            adNameSpan.title = lead.ad_name;
-                            adNameSpan.lastChild.textContent = 
-                                lead.ad_name.length > 10 ? lead.ad_name.substring(0, 10) + '...' : lead.ad_name;
+                    // Update last updated time
+                    const lastUpdatedSpan = newRow.querySelector('.bi-telephone-outbound')?.closest('.badge');
+                    if (lastUpdatedSpan) {
+                        if (lead.last_updated) {
+                            const lastUpdatedText = lastUpdatedSpan.childNodes[lastUpdatedSpan.childNodes.length - 1];
+                            lastUpdatedText.textContent = formatDateTime(lead.last_updated);
                         } else {
-                            adNameP.remove();
+                            lastUpdatedSpan.closest('p').remove();
+                        }
+                    }
+                    
+                    // Update ad name
+                    const adNameSpan = newRow.querySelector('.bi-megaphone')?.closest('.badge');
+                    if (adNameSpan) {
+                        if (lead.ad_name) {
+                            adNameSpan.setAttribute('title', lead.ad_name);
+                            const adNameText = adNameSpan.childNodes[adNameSpan.childNodes.length - 1];
+                            adNameText.textContent = lead.ad_name.length > 10 ? lead.ad_name.substring(0, 10) + '...' : lead.ad_name;
+                        } else {
+                            adNameSpan.closest('p').remove();
                         }
                     }
                     
                     pipelineTbody.appendChild(newRow);
                 });
-                // Update data-opportunity-id for assign buttons
-                pipelineTbody.querySelectorAll('.assign-btn').forEach(btn => {
-                    btn.setAttribute('data-opportunity-id', json.items[0].id);
-                });
+
                 // Update pagination
                 updatePagination(pipelineList, json.total_count, parseInt(page), 10, pageArgs);
 
@@ -196,8 +214,101 @@ document.addEventListener('DOMContentLoaded', function() {
             // Remove loading effect
             setTimeout(() => {
                 cardBody.classList.remove('loading-blur');
-            }, 300); // Small delay to ensure smooth transition
+            }, 300);
         });
+    }
+
+    function handleAssignedPageClick(page, pageArgs, params, assignedList, templateRow, assignedTbody, cardBody) {
+        fetch(`/review/call-setting?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(json => {
+            if (assignedTbody) {
+                assignedTbody.innerHTML = '';
+                
+                json.items.forEach(lead => {
+                    const newRow = templateRow.cloneNode(true);
+                    
+                    // Update opportunity link and name
+                    const opportunityLink = newRow.querySelector('a[href^="/opportunity/"]');
+                    opportunityLink.href = `/opportunity/${lead.id}`;
+                    opportunityLink.title = lead.name;
+                    opportunityLink.textContent = lead.name.length > 15 ? lead.name.substring(0, 15) + '...' : lead.name;
+                    
+                    // Update phone number
+                    const phoneLink = newRow.querySelector('a[href^="tel:"]');
+                    phoneLink.href = `tel:${lead.phone}`;
+                    phoneLink.textContent = lead.phone;
+                    
+                    // Update register time
+                    const registerTimeSpan = newRow.querySelector('.bi-clock').closest('.badge');
+                    const registerTimeText = registerTimeSpan.childNodes[registerTimeSpan.childNodes.length - 1];
+                    registerTimeText.textContent = formatDate(lead.register_time);
+                        
+                    // Update last updated time
+                    const lastUpdatedSpan = newRow.querySelector('.bi-telephone-outbound')?.closest('.badge');
+                    if (lastUpdatedSpan) {
+                        if (lead.last_updated) {
+                            const lastUpdatedText = lastUpdatedSpan.childNodes[lastUpdatedSpan.childNodes.length - 1];
+                            lastUpdatedText.textContent = formatDateTime(lead.last_updated);
+                        } else {
+                            lastUpdatedSpan.closest('p').remove();
+                        }
+                    }
+                    
+                    // Update ad name
+                    const adNameSpan = newRow.querySelector('.bi-megaphone')?.closest('.badge');
+                    if (adNameSpan) {
+                        if (lead.ad_name) {
+                            adNameSpan.setAttribute('title', lead.ad_name);
+                            const adNameText = adNameSpan.childNodes[adNameSpan.childNodes.length - 1];
+                            adNameText.textContent = lead.ad_name.length > 10 ? lead.ad_name.substring(0, 10) + '...' : lead.ad_name;
+                        } else {
+                            adNameSpan.closest('p').remove();
+                        }
+                    }
+                    
+                    assignedTbody.appendChild(newRow);
+                });
+
+                // Update pagination
+                updatePagination(assignedList, json.total_count, parseInt(page), 10, pageArgs);
+
+                // Reinitialize tooltips
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching pagination data:', error);
+        })
+        .finally(() => {
+            // Remove loading effect
+            setTimeout(() => {
+                cardBody.classList.remove('loading-blur');
+            }, 300);
+        });
+    }
+    
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${String(date.getDate()).padStart(2, '0')} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+    
+    function formatDateTime(dateString) {
+        const date = new Date(dateString);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${day} ${months[date.getMonth()]} ${date.getFullYear()} ${hours}:${minutes}`;
     }
     
     // Add initial event listeners
