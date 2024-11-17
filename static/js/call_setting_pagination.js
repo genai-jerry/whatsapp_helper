@@ -3,24 +3,119 @@
 window.paginationInitialized = true;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Define the click handler function separately so it can be removed
+    function updatePagination(pipelineList, totalCount, currentPage, pageSize, pageArgs) {
+        const paginationNav = pipelineList.querySelector('nav[aria-label="pagination"]');
+        if (!paginationNav) return;
+
+        const totalPages = Math.ceil(totalCount / pageSize);
+        if (totalPages <= 1) {
+            paginationNav.innerHTML = '';
+            return;
+        }
+
+        const ul = paginationNav.querySelector('ul.pagination');
+        ul.innerHTML = '';
+
+        // Previous button
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${currentPage == 1 ? 'disabled' : ''}`;
+        prevLi.innerHTML = `
+            <a id="previous-page-${pageArgs}" 
+               data-page-args="${pageArgs}" 
+               data-page="${currentPage-1}"
+               class="page-link" 
+               href="#"
+               ${currentPage == 1 ? 'tabindex="-1" aria-disabled="true"' : ''}>
+                Previous
+            </a>`;
+        ul.appendChild(prevLi);
+
+        // First page
+        const firstLi = document.createElement('li');
+        firstLi.className = `page-item ${currentPage == 1 ? 'active' : ''}`;
+        firstLi.innerHTML = `
+            <a id="first-page-${pageArgs}" 
+               data-page-args="${pageArgs}" 
+               data-page="1"
+               class="page-link" 
+               href="#">1</a>`;
+        ul.appendChild(firstLi);
+
+        // Ellipsis if needed
+        if (currentPage > 3) {
+            const ellipsis1 = document.createElement('li');
+            ellipsis1.className = 'page-item disabled';
+            ellipsis1.innerHTML = `<span id="ellipsis1-${pageArgs}" class="page-link">...</span>`;
+            ul.appendChild(ellipsis1);
+        }
+
+        // Current page (if not 1 or last)
+        if (currentPage != 1 && currentPage != totalPages) {
+            const currentLi = document.createElement('li');
+            currentLi.className = 'page-item active';
+            currentLi.innerHTML = `
+                <a id="current-page-${pageArgs}" 
+                   data-page-args="${pageArgs}" 
+                   data-page="${currentPage}"
+                   class="page-link" 
+                   href="#">${currentPage}</a>`;
+            ul.appendChild(currentLi);
+        }
+
+        // Ellipsis if needed
+        if (currentPage < totalPages - 2) {
+            const ellipsis2 = document.createElement('li');
+            ellipsis2.className = 'page-item disabled';
+            ellipsis2.innerHTML = `<span id="ellipsis2-${pageArgs}" class="page-link">...</span>`;
+            ul.appendChild(ellipsis2);
+        }
+
+        // Last page
+        if (totalPages > 1) {
+            const lastLi = document.createElement('li');
+            lastLi.className = `page-item ${currentPage == totalPages ? 'active' : ''}`;
+            lastLi.innerHTML = `
+                <a id="last-page-${pageArgs}" 
+                   data-page-args="${pageArgs}" 
+                   data-page="${totalPages}"
+                   class="page-link" 
+                   href="#">${totalPages}</a>`;
+            ul.appendChild(lastLi);
+        }
+
+        // Next button
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${currentPage == totalPages ? 'disabled' : ''}`;
+        nextLi.innerHTML = `
+            <a id="next-page-${pageArgs}" 
+               data-page-args="${pageArgs}" 
+               data-page="${currentPage+1}"
+               class="page-link" 
+               href="#"
+               ${currentPage == totalPages ? 'tabindex="-1" aria-disabled="true"' : ''}>
+                Next
+            </a>`;
+        ul.appendChild(nextLi);
+
+        // Reattach click handlers to new pagination links
+        ul.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', handlePageClick);
+        });
+    }
+
     function handlePageClick(e) {
         e.preventDefault();
         
-        // Get the closest pipeline-list parent to identify the type
         const pipelineList = this.closest('.pipeline-list');
         const type = pipelineList ? pipelineList.id : '';
         const pipelineTbody = pipelineList ? pipelineList.querySelector('tbody') : null;
         
-        // Get pagination data from clicked element
         const page = this.getAttribute('data-page');
         const pageArgs = this.getAttribute('data-page-args');
         const selectedEmployeeId = this.getAttribute('data-selected-employee-id');
         
-        // Get template row for cloning
         const templateRow = $('.pipeline-item')[0];
         
-        // Prepare the query parameters
         const params = new URLSearchParams();
         params.append('type', type);
         params.append(pageArgs, page);
@@ -28,7 +123,6 @@ document.addEventListener('DOMContentLoaded', function() {
             params.append('selected_employee_id', selectedEmployeeId);
         }
         
-        // Make the AJAX call
         fetch(`/review/call-setting?${params.toString()}`, {
             method: 'GET',
             headers: {
@@ -38,25 +132,19 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(json => {
             if (pipelineTbody) {
-                // Clear existing rows
                 pipelineTbody.innerHTML = '';
                 
                 json.items.forEach(lead => {
-                    // Clone the template row
                     const newRow = templateRow.cloneNode(true);
                     
-                    // Update link attributes and text
                     const opportunityLink = newRow.querySelector('a[href^="/opportunity/"]');
                     opportunityLink.href = `/opportunity/${lead.id}`;
                     opportunityLink.title = lead.name;
                     opportunityLink.textContent = lead.name.length > 15 ? lead.name.substring(0, 15) + '...' : lead.name;
                     
-                    
-                    // Update register time
                     const registerTimeSpan = newRow.querySelectorAll('.register-time')[0];
                     registerTimeSpan.lastChild.textContent = new Date(lead.register_time).toLocaleDateString();
                     
-                    // Update ad name if exists
                     const adNameP = newRow.querySelector('.bi-megaphone')?.closest('p');
                     if (adNameP) {
                         if (lead.ad_name) {
@@ -69,9 +157,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                     
-                    // Append the new row
                     pipelineTbody.appendChild(newRow);
                 });
+
+                // Update pagination
+                updatePagination(pipelineList, json.total_count, parseInt(page), 10, pageArgs);
 
                 // Reinitialize tooltips
                 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -85,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Add new event listeners
+    // Add initial event listeners
     $('.page-link').each(function() {
         $(this).unbind().click(handlePageClick);
     });
