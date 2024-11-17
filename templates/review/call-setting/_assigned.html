@@ -25,7 +25,7 @@
                             </thead>
                             <tbody>
                                 {% for appointment in assigned_appointments %}
-                                <tr class="appt-assigned-item">
+                                <tr class="appt-assigned-item"> 
                                     <td>
                                         {% include 'review/call-setting/_appt_assigned_title.html' %}
                                     </td>
@@ -78,6 +78,7 @@
                                     </td>
                                     <td>
                                         {% include 'review/call-setting/_status_list.html' %}
+                                        {% include 'review/call-setting/_timer.html' %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -176,6 +177,7 @@
                                     </td>
                                     <td>
                                         {% include 'review/call-setting/_status_list.html' %}
+                                        {% include 'review/call-setting/_timer.html' %}
                                     </td>
                                 </tr>
                                 {% endfor %}

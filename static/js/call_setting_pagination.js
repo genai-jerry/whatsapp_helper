@@ -157,7 +157,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(json => {
             if (pipelineTbody) {
-                pipelineTbody.innerHTML = '';
+                pipelineTbody.querySelectorAll('tr').forEach(row => {
+                    row.remove();
+                });
                 
                 json.items.forEach(lead => {
                     const newRow = templateRow.cloneNode(true);
@@ -228,11 +230,13 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(json => {
             if (assignedTbody) {
-                assignedTbody.innerHTML = '';
+                assignedTbody.querySelectorAll('tr').forEach(row => {
+                    row.remove();
+                });
                 
                 json.items.forEach(lead => {
                     const newRow = templateRow.cloneNode(true);
-                    
+                    newRow.style.backgroundColor = 'white';
                     // Update opportunity link and name
                     const opportunityLink = newRow.querySelector('a[href^="/opportunity/"]');
                     opportunityLink.href = `/opportunity/${lead.id}`;
@@ -261,16 +265,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     
                     // Update ad name
-                    const adNameSpan = newRow.querySelector('.bi-megaphone')?.closest('.badge');
-                    if (adNameSpan) {
-                        if (lead.ad_name) {
-                            adNameSpan.setAttribute('title', lead.ad_name);
-                            const adNameText = adNameSpan.childNodes[adNameSpan.childNodes.length - 1];
-                            adNameText.textContent = lead.ad_name.length > 10 ? lead.ad_name.substring(0, 10) + '...' : lead.ad_name;
-                        } else {
-                            adNameSpan.closest('p').remove();
-                        }
-                    }
+                    updateAssignedAdName(newRow, lead);
+                    
+                    // Update status select
+                    updateAssignedSelectStatus(newRow, lead);
+                    
+                    // Update task list buttons
+                    updateAssignedTaskList(newRow, lead);
                     
                     assignedTbody.appendChild(newRow);
                 });
@@ -293,6 +294,67 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 cardBody.classList.remove('loading-blur');
             }, 300);
+        });
+    }
+    
+    function updateAssignedAdName(newRow, lead) {
+        // Update ad name
+        const adNameSpan = newRow.querySelector('.bi-megaphone')?.closest('.badge');
+        if (adNameSpan) {
+            if (lead.ad_name) {
+                adNameSpan.setAttribute('title', lead.ad_name);
+                const adNameText = adNameSpan.childNodes[adNameSpan.childNodes.length - 1];
+                adNameText.textContent = lead.ad_name.length > 10 ? lead.ad_name.substring(0, 10) + '...' : lead.ad_name;
+            } else {
+                adNameSpan.closest('p').remove();
+            }
+        }
+    }
+
+    function updateAssignedSelectStatus(newRow, lead) {
+        // Update status select
+        const statusSelect = newRow.querySelector('.status-select');
+        if (statusSelect) {
+            statusSelect.setAttribute('data-opportunity-id', lead.id);
+            if (lead.call_status) {
+                const selectedOption = statusSelect.querySelector(`option[value="${lead.call_status}"]`);
+                if (selectedOption) {
+                    selectedOption.selected = true;
+                    const bgColor = selectedOption.getAttribute('data-bg-color');
+                    const textColor = selectedOption.getAttribute('data-text-color');
+                    statusSelect.style.backgroundColor = bgColor;
+                    statusSelect.style.color = textColor;
+                }
+            }
+            // Add change event listener to connect with SettingPipeline
+            statusSelect.addEventListener('change', (e) => {
+                window.settingPipeline.handleStatusChange(e);
+            });
+        }
+    }
+
+    function updateAssignedTaskList(newRow, lead) {
+        // Update task elements based on _list_tasks.html structure
+        const taskListButtons = newRow.querySelectorAll('.task-comment-btn');
+        taskListButtons.forEach(button => {
+            if (button.hasAttribute('onclick')) {
+                const onclickAttr = button.getAttribute('onclick');
+                if (onclickAttr.includes('listTasks')) {
+                    button.setAttribute('onclick', `listTasks(${lead.id}, '${lead.name}')`);
+                } else if (onclickAttr.includes('showCreateTaskModal')) {
+                    button.setAttribute('onclick', `showCreateTaskModal(${lead.id}, '${lead.name}')`);
+                } else if (onclickAttr.includes('listComments')) {
+                    button.setAttribute('onclick', `listComments(${lead.id}, '${lead.name}')`);
+                } else if (onclickAttr.includes('showCreateCommentModal')) {
+                    button.setAttribute('onclick', `showCreateCommentModal(${lead.id}, '${lead.name}')`);
+                }
+            }
+            
+            // Reinitialize tooltip for each button
+            const buttonTooltip = button.querySelector('[data-bs-toggle="tooltip"]');
+            if (buttonTooltip) {
+                new bootstrap.Tooltip(buttonTooltip);
+            }
         });
     }
     
