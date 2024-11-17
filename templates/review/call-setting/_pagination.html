@@ -3,7 +3,7 @@
     <ul class="pagination justify-content-center">
         <!-- Previous button -->
         <li class="page-item {% if page == 1 %}disabled{% endif %}">
-            <a data-page-args="{{page_args}}" 
+            <a id="previous-page-{{page_args}}" data-page-args="{{page_args}}" 
                 data-page="{{page-1}}"
                 data-selected-employee-id="{{selected_employee_id if selected_employee_id else ''}}" class="page-link" 
             href="#"
@@ -11,26 +11,26 @@
                 Previous
             </a>
         </li>
-
+        
         <!-- Page numbers -->
         {% set total_pages = ((count + page_size - 1) // page_size) %}
         
         <!-- First page -->
         <li class="page-item {% if page == 1 %}active{% endif %}">
-            <a data-page-args="{{page_args}}" data-page="1"
+            <a id="first-page-{{page_args}}" data-page-args="{{page_args}}" data-page="1"
                 data-selected-employee-id="{{selected_employee_id if selected_employee_id else ''}}" class="page-link" 
             href="#">1</a>
         </li>
 
         <!-- Show ellipsis if current page is far from start -->
         {% if page > 3 %}
-            <li class="page-item disabled"><span class="page-link">...</span></li>
+            <li class="page-item disabled"><span id="ellipsis1-{{page_args}}" class="page-link">...</span></li>
         {% endif %}
 
         <!-- Current page (if not 1 or last) -->
         {% if page != 1 and page != total_pages %}
             <li class="page-item active">
-                <a data-page-args="{{page_args}}" data-page="{{page}}"
+                <a id="current-page-{{page_args}}" data-page-args="{{page_args}}" data-page="{{page}}"
                 data-selected-employee-id="{{selected_employee_id if selected_employee_id else ''}}" class="page-link" 
                 href="#"">
                     {{ page }}
@@ -40,13 +40,13 @@
 
         <!-- Show ellipsis if current page is far from end -->
         {% if page < total_pages - 2 %}
-            <li class="page-item disabled"><span class="page-link">...</span></li>
+            <li class="page-item disabled"><span id="ellipsis2-{{page_args}}" class="page-link">...</span></li>
         {% endif %}
 
         <!-- Last page -->
         {% if total_pages > 1 %}
             <li class="page-item {% if page == total_pages %}active{% endif %}">
-                <a data-page-args="{{page_args}}" data-page="{{total_pages}}"
+                <a id="last-page-{{page_args}}" data-page-args="{{page_args}}" data-page="{{total_pages}}"
                 data-selected-employee-id="{{selected_employee_id if selected_employee_id else ''}}" class="page-link" 
                 href="#">
                     {{ total_pages }}
@@ -56,7 +56,7 @@
 
         <!-- Next button -->
         <li class="page-item {% if page == total_pages %}disabled{% endif %}">
-            <a data-page-args="{{page_args}}" data-page="{{page+1}}"
+            <a id="next-page-{{page_args}}" data-page-args="{{page_args}}" data-page="{{page+1}}"
                 data-selected-employee-id="{{selected_employee_id if selected_employee_id else ''}}" class="page-link" 
             href="#"
             {% if page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>

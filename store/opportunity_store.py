@@ -968,6 +968,9 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, page=1, page_size
         results = cursor.fetchall()
         opportunities = []
         for row in results:
+            optin_call_records = []
+            if assigned:
+                optin_call_records = get_optin_call_records_for_opportunity(cursor, row[0])
             opportunities.append({
                 'id': row[0],
                 'name': row[1],
@@ -976,6 +979,7 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, page=1, page_size
                 'register_time': row[4],
                 'call_status': row[5],
                 'last_updated': row[6],
+                'optin_call_records': optin_call_records,
                 'appointment_time': row[7],
                 'ad_name': row[8],
             })
@@ -1118,3 +1122,11 @@ def set_callback_time_for_opportunity(opportunity_id, callback_time):
             cursor.close()
         if connection:
             connection.close()
+
+def get_optin_call_records_for_opportunity(cursor, opportunity_id):
+    sql = """SELECT call_date, call_status, agent_id 
+             FROM optin_call_record 
+             WHERE opportunity_id = %s 
+             ORDER BY call_date DESC"""
+    cursor.execute(sql, (opportunity_id,))
+    return cursor.fetchall()

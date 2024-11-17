@@ -132,7 +132,7 @@ def get_call_setting_data(user_id=None):
         }
         
         items = switch[type]['items']
-        return items
+        return jsonify({'items': items[0], 'total_count': items[1]}), 200
     else:
         return get_call_setting_data_detailed(user_id)
 
