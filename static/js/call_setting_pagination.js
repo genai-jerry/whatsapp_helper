@@ -263,10 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     $(pipelineTbody).append(newRow);
                 });
-                // Update data-opportunity-id for assign buttons
-                pipelineTbody.querySelectorAll('.assign-btn').forEach(btn => {
-                    btn.setAttribute('data-opportunity-id', json.items[0].id);
-                });
+
                 // Update pagination
                 const pageNav = $(cardBody).find('nav')[0];
                 updatePagination(pageNav, json.total_count, parseInt(page), 10, pageArgs);
