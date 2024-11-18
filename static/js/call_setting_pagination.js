@@ -118,15 +118,66 @@ document.addEventListener('DOMContentLoaded', function() {
     function handlePageClick(e) {
         e.preventDefault();
         const leadsList = this.closest('.leads-list');
-        const isPipeline = leadsList.classList.contains('pipeline-list');
-        const containedList = isPipeline ? this.closest('.pipeline-list') : this.closest('.assigned-list');
+        let isPipelineAppointment = false;
+        let isPipeline = false;
+        let isAssigned = false;
+        let isAssignedAppointment = false;
+
+        isPipeline = leadsList.classList.contains('pipeline-list');
+        if (!isPipeline) {
+            isAssigned = leadsList.classList.contains('assigned-list');
+            if (!isAssigned) {
+               isPipelineAppointment = leadsList.classList.contains('pipeline-appt-list');
+               if (!isPipelineAppointment) {
+                   isAssignedAppointment = leadsList.classList.contains('assigned-appt-list');
+               }
+            }
+        }
+        if (isPipeline || isAssigned ) {
+            handlePipeline(this, isPipeline, leadsList);
+        }else if (isPipelineAppointment || isAssignedAppointment) {
+            handleAppointment(this, isPipelineAppointment, leadsList);
+        }
+    }
+
+    function handleAppointment(element, isPipelineAppointment, leadsList){
+        const containedList = isPipelineAppointment ? element.closest('.pipeline-appt-list') : element.closest('.assigned-appt-list');
         const type = containedList ? containedList.id : '';
         const leadsTbody = containedList ? containedList.querySelector('tbody') : null;
         const cardBody = containedList.closest('.card-body');
         
-        const page = this.getAttribute('data-page');
-        const pageArgs = this.getAttribute('data-page-args');
-        const selectedEmployeeId = this.getAttribute('data-selected-employee-id');
+        const page = element.getAttribute('data-page');
+        const pageArgs = element.getAttribute('data-page-args');
+        const selectedEmployeeId = element.getAttribute('data-selected-employee-id');
+        
+        const templateRow = isPipelineAppointment ? $('.pipeline-appt-item')[0] : $('.assigned-appt-item')[0];
+        
+        const params = new URLSearchParams();
+        params.append('type', type);
+        params.append(pageArgs, page);
+        if (selectedEmployeeId) {
+            params.append('selected_employee_id', selectedEmployeeId);
+        }
+        
+        // Add loading effect
+        cardBody.classList.add('loading-blur');
+
+        if (isPipelineAppointment) {
+            handlePipelineApptPageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody);
+        } else {
+            handleAssignedApptPageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody);
+        }
+    }
+
+    function handlePipeline(element, isPipeline, leadsList){
+        const containedList = isPipeline ? element.closest('.pipeline-list') : element.closest('.assigned-list');
+        const type = containedList ? containedList.id : '';
+        const leadsTbody = containedList ? containedList.querySelector('tbody') : null;
+        const cardBody = containedList.closest('.card-body');
+        
+        const page = element.getAttribute('data-page');
+        const pageArgs = element.getAttribute('data-page-args');
+        const selectedEmployeeId = element.getAttribute('data-selected-employee-id');
         
         const templateRow = isPipeline ? $('.pipeline-item')[0] : $('.assigned-item')[0];
         
@@ -272,6 +323,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Update task list buttons
                     updateAssignedTaskList(newRow, lead);
+
+                    // Update timer
+                    updateAssignedTimer(newRow, lead);
+
+                    // Update setter button
+                    updateAssignedSetter(newRow, lead);
                     
                     assignedTbody.appendChild(newRow);
                 });
@@ -296,7 +353,124 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 300);
         });
     }
+
+    function handlePipelineApptPageClick(page, pageArgs, params, leadsList, templateRow, appointmentsTBody, cardBody){
+        fetch(`/review/call-setting?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(json => {
+            if (appointmentsTBody) {
+                // Clear existing appointments
+                appointmentsTBody.querySelectorAll('tr').forEach(row => {
+                    row.remove();
+                });
+                
+                json.items.forEach(appointment => {
+                    const templateItem = templateRow.cloneNode(true);
+
+                    // Update opportunity link and name
+                    const opportunityLink = templateItem.querySelector('a[href^="/opportunity/"]');
+                    opportunityLink.href = `/opportunity/${appointment.opportunity_id}`;
+                    opportunityLink.title = appointment.opportunity_name;
+                    opportunityLink.textContent = appointment.opportunity_name.length > 15 ? 
+                        appointment.opportunity_name.substring(0, 15) + '...' : 
+                        appointment.opportunity_name;
+
+                    // Update appointment time
+                    const appointmentTimeSpan = templateItem.querySelector('.bi-calendar')?.closest('.badge');
+                    if (appointmentTimeSpan) {
+                        const timeText = appointmentTimeSpan.childNodes[appointmentTimeSpan.childNodes.length - 1];
+                        timeText.textContent = formatDateTime(appointment.appointment_time);
+                    }
+
+                    // Update ad name if exists
+                    const adNameSpan = templateItem.querySelector('.bi-megaphone')?.closest('.badge');
+                    if (adNameSpan) {
+                        if (appointment.ad_name) {
+                            adNameSpan.setAttribute('title', appointment.ad_name);
+                            const adNameText = adNameSpan.childNodes[adNameSpan.childNodes.length - 1];
+                            adNameText.textContent = appointment.ad_name.length > 10 ? 
+                                appointment.ad_name.substring(0, 10) + '...' : 
+                                appointment.ad_name;
+                        } else {
+                            adNameSpan.remove();
+                        }
+                    }
+
+                    // Update assign button
+                    const assignButton = templateItem.querySelector('.assign-appt-btn');
+                    if (assignButton) {
+                        assignButton.setAttribute('data-appointment-id', appointment.appointment_id);
+                    }
+
+                    appointmentsTBody.appendChild(templateItem);
+                });
+
+                // Update pagination
+                updatePagination(leadsList, json.total_count, parseInt(page), 10, pageArgs);
+
+                // Reinitialize tooltips
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching appointment pagination data:', error);
+        })
+        .finally(() => {
+            // Remove loading effect
+            setTimeout(() => {
+                cardBody.classList.remove('loading-blur');
+            }, 300);
+        });
+    }
+
+    function updateAssignedSetter(newRow, lead) {
+        // Update setter button
+        const setterButton = newRow.querySelector('.set-call');
+        if (setterButton) {
+            setterButton.setAttribute('onclick', `assignCallSetter('${lead.id}')`);
+            setterButton.setAttribute('title', 'Assign Setter');
+            setterButton.classList.add('disabled');
+            
+            // Make sure SVG icon has tooltip
+            const svgIcon = setterButton.querySelector('.bi-check-lg');
+            if (svgIcon) {
+            svgIcon.setAttribute('data-bs-toggle', 'tooltip');
+            svgIcon.setAttribute('data-bs-placement', 'top');
+        }
+        
+        // Initialize tooltip
+        const tooltip = setterButton.querySelector('[data-bs-toggle="tooltip"]');
+            if (tooltip) {
+                new bootstrap.Tooltip(tooltip);
+            }
+        }
+    }
     
+    function updateAssignedTimer(newRow, lead) {
+        // Update timer
+        const timerButton = newRow.querySelector('.callback-datetime');
+        if (timerButton) {
+            // Update button attributes
+            timerButton.id = `callback-datetime-${lead.id}`;
+            timerButton.setAttribute('data-opportunity-id', lead.id);
+            timerButton.setAttribute('title', 'Specify Time');
+            
+            // Make sure SVG icon has tooltip
+            const svgIcon = timerButton.querySelector('svg');
+            if (svgIcon) {
+                svgIcon.setAttribute('data-bs-toggle', 'tooltip');
+                svgIcon.setAttribute('data-bs-placement', 'top');
+            }
+            initCallbackDatetime(timerButton);
+        }
+    }
+
     function updateAssignedAdName(newRow, lead) {
         // Update ad name
         const adNameSpan = newRow.querySelector('.bi-megaphone')?.closest('.badge');

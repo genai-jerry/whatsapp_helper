@@ -240,12 +240,27 @@ function assignCallSetter(opportunity_id) {
             headers: {
                 'Content-Type': 'application/json',
                 },
+        }).then(response => response.json())
+        .then(data => {
+            console.log(data);
+            if (data.status === 'success') {
+                showSuccessToast('Call setter updated successfully');
+            } else {
+                showErrorToast('Failed to update call setter');
+            }
         });
     } catch (error) {
         console.error('Assignment failed:', error);
     }
 }
 
+function showSuccessToast(message) {
+    showToast(message, 'success');
+}
+
+function showErrorToast(message) {
+    showToast(message, 'error');
+}   
 // Initialize when document is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.settingPipeline = new SettingPipeline();

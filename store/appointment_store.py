@@ -522,7 +522,7 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, page=1,
                 'ad_name': result[9]
             }
             appointments.append(appointment)
-        count_query = '''SELECT COUNT(DISTINCT a.opportunity_id) FROM appointments a 
+        count_query = '''SELECT COUNT(a.id) FROM appointments a 
                         WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
                         AND a.confirmed = 0 AND a.status IS NULL'''
         
