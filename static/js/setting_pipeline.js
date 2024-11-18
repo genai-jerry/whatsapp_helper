@@ -176,11 +176,19 @@ class SettingPipeline {
 
     initializeAppointmentStatusButtons() {
         document.querySelectorAll('.confirm-call').forEach(button => {
-            button.addEventListener('click', (e) => this.confirmAppointment(button));
+            this.addConfirmCallHandler(button);
         });
         document.querySelectorAll('.discovery-call-done').forEach(button => {
-            button.addEventListener('click', (e) => this.markDiscoveryCallDone(button));
+            this.addDiscoveryCallDoneHandler(button);
         });
+    }
+
+    addConfirmCallHandler(button) {
+        button.addEventListener('click', (e) => this.confirmAppointment(button));
+    }
+
+    addDiscoveryCallDoneHandler(button) {
+        button.addEventListener('click', (e) => this.markDiscoveryCallDone(button));
     }
 
     async confirmAppointment(button) {

@@ -246,6 +246,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             adNameSpan.closest('p').remove();
                         }
                     }
+                    // Update setter button
+                    updateAssignedSetter(newRow, lead);
                     
                     pipelineTbody.appendChild(newRow);
                 });
@@ -285,50 +287,52 @@ document.addEventListener('DOMContentLoaded', function() {
                     row.remove();
                 });
                 
-                json.items.forEach(lead => {
+                json.items.forEach(appointment => {
                     const newRow = templateRow.cloneNode(true);
                     newRow.style.backgroundColor = 'white';
                     // Update opportunity link and name
                     const opportunityLink = newRow.querySelector('a[href^="/opportunity/"]');
-                    opportunityLink.href = `/opportunity/${lead.id}`;
-                    opportunityLink.title = lead.name;
-                    opportunityLink.textContent = lead.name.length > 15 ? lead.name.substring(0, 15) + '...' : lead.name;
+                    opportunityLink.href = `/opportunity/${appointment.opportunity_id}`;
+                    opportunityLink.title = appointment.opportunity_name;
+                    opportunityLink.textContent = appointment.opportunity_name.length > 15 ? 
+                        appointment.opportunity_name.substring(0, 15) + '...' : 
+                        appointment.opportunity_name;
                     
                     // Update phone number
                     const phoneLink = newRow.querySelector('a[href^="tel:"]');
-                    phoneLink.href = `tel:${lead.phone}`;
-                    phoneLink.textContent = lead.phone;
+                    phoneLink.href = `tel:${appointment.opportunity_phone}`;
+                    phoneLink.textContent = appointment.opportunity_phone;
                     
                     // Update register time
                     const registerTimeSpan = newRow.querySelector('.bi-clock').closest('.badge');
                     const registerTimeText = registerTimeSpan.childNodes[registerTimeSpan.childNodes.length - 1];
-                    registerTimeText.textContent = formatDate(lead.register_time);
+                    registerTimeText.textContent = formatDate(appointment.created_at);
                         
                     // Update last updated time
                     const lastUpdatedSpan = newRow.querySelector('.bi-telephone-outbound')?.closest('.badge');
                     if (lastUpdatedSpan) {
-                        if (lead.last_updated) {
+                        if (appointment.last_updated) {
                             const lastUpdatedText = lastUpdatedSpan.childNodes[lastUpdatedSpan.childNodes.length - 1];
-                            lastUpdatedText.textContent = formatDateTime(lead.last_updated);
+                            lastUpdatedText.textContent = formatDateTime(appointment.last_updated);
                         } else {
                             lastUpdatedSpan.closest('p').remove();
                         }
                     }
                     
                     // Update ad name
-                    updateAssignedAdName(newRow, lead);
+                    updateAssignedAdName(newRow, appointment);
                     
                     // Update status select
-                    updateAssignedSelectStatus(newRow, lead);
+                    updateAssignedSelectStatus(newRow, appointment);
                     
                     // Update task list buttons
-                    updateAssignedTaskList(newRow, lead);
+                    updateAssignedTaskList(newRow, appointment);
 
                     // Update timer
-                    updateAssignedTimer(newRow, lead);
+                    updateAssignedTimer(newRow, appointment);
 
                     // Update setter button
-                    updateAssignedSetter(newRow, lead);
+                    updateAssignedSetter(newRow, appointment);
                     
                     assignedTbody.appendChild(newRow);
                 });
@@ -405,6 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const assignButton = templateItem.querySelector('.assign-appt-btn');
                     if (assignButton) {
                         assignButton.setAttribute('data-appointment-id', appointment.appointment_id);
+                        window.settingPipeline.addAssignAppointmentHandler(assignButton);
                     }
 
                     appointmentsTBody.appendChild(templateItem);
@@ -422,6 +427,92 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error fetching appointment pagination data:', error);
         })
         .finally(() => {
+            // Remove loading effect
+            setTimeout(() => {
+                cardBody.classList.remove('loading-blur');
+            }, 300);
+        });
+    }
+
+    function handleAssignedApptPageClick(page, pageArgs, params, assignedList, templateRow, appointmentsTBody, cardBody){
+        fetch(`/review/call-setting?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(json => {
+            if (appointmentsTBody) {
+                // Clear existing appointments
+                appointmentsTBody.querySelectorAll('tr').forEach(row => {
+                    row.remove();
+                });
+                json.items.forEach(appointment => {
+                    const newRow = templateRow.cloneNode(true);
+
+                    // Update appointment title
+                    const titleLink = newRow.querySelector('a[href^="/opportunity/"]');
+                    if (titleLink) {
+                        titleLink.href = `/opportunity/${appointment.opportunity_id}`;
+                        titleLink.textContent = appointment.opportunity_name;
+                    }
+
+                    // Update phone number
+                    const phoneButton = newRow.querySelector('a[href^="tel:"]');
+                    if (phoneButton) {
+                        phoneButton.href = `tel:${appointment.opportunity_phone}`;
+                        phoneButton.textContent = appointment.opportunity_phone;
+                    }
+
+                    // Update appointment time
+                    const appointmentTimeBadge = newRow.querySelector('.bi-calendar-event')?.closest('.badge');
+                    if (appointmentTimeBadge) {
+                        appointmentTimeBadge.textContent = formatDate(appointment.appointment_time);
+                    }
+
+                    // Update ad name
+                    const adNameBadge = newRow.querySelector('.bi-megaphone')?.closest('.badge');
+                    if (adNameBadge) {
+                        adNameBadge.textContent = appointment.ad_name.length > 10 ? 
+                            appointment.ad_name.substring(0, 10) + '...' : 
+                            appointment.ad_name;
+                        adNameBadge.setAttribute('title', appointment.ad_name);
+                    }
+
+                    // Update status buttons
+                    const confirmButton = newRow.querySelector('.confirm-call');
+                    if (confirmButton) {
+                        confirmButton.id = `confirm-call-${appointment.appointment_id}`;
+                        confirmButton.setAttribute('data-appointment-id', appointment.appointment_id);
+                        confirmButton.classList.toggle('btn-success', appointment.confirmed);
+                        confirmButton.classList.toggle('btn-primary', !appointment.confirmed);
+                        confirmButton.disabled = appointment.confirmed;
+                        window.settingPipeline.addConfirmCallHandler(confirmButton);
+                    }
+
+                    const discoveryButton = newRow.querySelector('.discovery-call-done');
+                    if (discoveryButton) {
+                        discoveryButton.setAttribute('data-appointment-id', appointment.appointment_id);
+                        discoveryButton.setAttribute('data-opportunity-id', appointment.opportunity_id);
+                        discoveryButton.classList.remove('btn-success');
+                        discoveryButton.classList.add('btn-primary');
+                        window.settingPipeline.addDiscoveryCallDoneHandler(discoveryButton);
+                    }
+
+                    // Update task list
+                    updateAssignedTaskList(newRow, {'id': appointment.opportunity_id, 'name': appointment.opportunity_name});
+
+                    updatePagination(assignedList, json.total_count, parseInt(page), 10, pageArgs);
+
+                    appointmentsTBody.appendChild(newRow);
+                });
+
+                // Reinitialize tooltips
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+            }
+        }).finally(() => {
             // Remove loading effect
             setTimeout(() => {
                 cardBody.classList.remove('loading-blur');
