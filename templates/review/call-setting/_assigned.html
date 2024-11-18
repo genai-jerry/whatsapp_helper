@@ -217,6 +217,23 @@
 .minimized-column {
     transition: all 0.3s ease;
 }
+
+.leads-list {
+    max-height: 400px;  /* Adjust this value as needed */
+    overflow-y: auto;
+}
+
+.table {
+    margin-bottom: 0;  /* Remove bottom margin to prevent double scrollbars */
+}
+
+/* Optional: Keep the header fixed while scrolling */
+.table thead {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1;
+}
 </style>
 
 <script>
