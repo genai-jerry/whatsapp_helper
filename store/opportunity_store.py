@@ -839,9 +839,14 @@ def list_all_new_leads(assigned = False, user_id=None, page=1, page_size=10):
         sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated, ad_name FROM opportunity 
                 WHERE call_status IS NULL'''
         if user_id:
-            sql += f" AND (assigned_to = %s OR optin_caller = %s) ORDER BY register_time DESC LIMIT %s OFFSET %s"
-            offset = (page - 1) * page_size
-            cursor.execute(sql, (user_id, agent_id, page_size, offset))
+            if assigned:
+                sql += f" AND (assigned_to = %s OR optin_caller = %s) ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                offset = (page - 1) * page_size
+                cursor.execute(sql, (user_id, agent_id, page_size, offset))
+            else:
+                sql += f" AND (assigned_to IS NULL AND optin_caller IS NULL) ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                offset = (page - 1) * page_size
+                cursor.execute(sql, (page_size, offset))
         else:
             if assigned:
                 sql += " AND (assigned_to IS NOT NULL OR optin_caller IS NOT NULL) ORDER BY register_time DESC LIMIT %s OFFSET %s"
@@ -854,8 +859,12 @@ def list_all_new_leads(assigned = False, user_id=None, page=1, page_size=10):
         # Get the total count of opportunities
         count_sql = "SELECT COUNT(*) FROM opportunity WHERE call_status IS NULL"
         if user_id:
-            count_sql += " AND (assigned_to = %s OR optin_caller = %s)"
-            cursor.execute(count_sql, (user_id, agent_id))
+            if assigned:
+                count_sql += " AND (assigned_to = %s OR optin_caller = %s)"
+                cursor.execute(count_sql, (user_id, agent_id))
+            else:
+                count_sql += " AND (assigned_to IS NULL AND optin_caller IS NULL)"
+                cursor.execute(count_sql)
         else:
             if assigned:
                 count_sql += " AND (assigned_to IS NOT NULL OR optin_caller IS NOT NULL)"
@@ -924,15 +933,19 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
                 'ad_name': row[7],
             })
         
-        count_sql = "SELECT COUNT(*) FROM opportunity WHERE call_status IN (3, 12, 13)  AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())"
+        count_sql = "SELECT COUNT(id) FROM opportunity WHERE call_status IN (3, 12, 13)  AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())"
         if user_id:
-            count_sql += " AND (assigned_to = %s OR optin_caller = %s)"
-            cursor.execute(count_sql, (user_id, agent_id))
+            if assigned:
+                count_sql += " AND (assigned_to = %s OR optin_caller = %s)"
+                cursor.execute(count_sql, (user_id, agent_id))
+            else:
+                count_sql += " AND (assigned_to IS NULL AND optin_caller IS NULL)"
+                cursor.execute(count_sql)
         else:
             if assigned:
                 count_sql += " AND assigned_to IS NOT NULL"
             else:
-                count_sql += " AND assigned_to IS NULL"
+                count_sql += " AND (assigned_to IS NULL AND optin_caller IS NULL)"
             cursor.execute(count_sql)
         total_count = cursor.fetchone()[0]
         return opportunities, total_count
@@ -954,14 +967,20 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, page=1, page_size
                 WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
                 AND a.status = 1'''
         if user_id:
-            sql += f" AND (o.assigned_to = %s OR o.optin_caller = %s) ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
-            offset = (page - 1) * page_size
-            cursor.execute(sql, (user_id, agent_id, page_size, offset))
+            if assigned:
+                sql += f" AND (o.assigned_to = %s OR o.optin_caller = %s) ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
+                offset = (page - 1) * page_size
+                cursor.execute(sql, (user_id, agent_id, page_size, offset))
+            else:
+                sql += " AND (o.assigned_to IS NULL AND o.optin_caller IS NULL)"
+                sql += " ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
+                offset = (page - 1) * page_size
+                cursor.execute(sql, (page_size, offset))
         else:
             if assigned:
                 sql += " AND (o.assigned_to IS NOT NULL OR o.optin_caller IS NOT NULL) ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
             else:
-                sql += " AND o.assigned_to IS NULL ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
+                sql += " AND (o.assigned_to IS NULL AND o.optin_caller IS NULL) ORDER BY a.appointment_time DESC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (page_size, offset))
         results = cursor.fetchall()
@@ -987,13 +1006,17 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, page=1, page_size
                     WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
                     AND a.status = 1'''
         if user_id:
-            count_sql += " AND (o.assigned_to = %s OR o.optin_caller = %s)"
-            cursor.execute(count_sql, (user_id, agent_id))
+            if assigned:
+                count_sql += " AND (o.assigned_to = %s OR o.optin_caller = %s)"
+                cursor.execute(count_sql, (user_id, agent_id))
+            else:
+                count_sql += " AND (o.assigned_to IS NULL AND o.optin_caller IS NULL)"
+                cursor.execute(count_sql)
         else:
             if assigned:
-                count_sql += " AND o.assigned_to IS NOT NULL"
+                count_sql += " AND (o.assigned_to IS NOT NULL OR o.optin_caller IS NOT NULL)"
             else:
-                count_sql += " AND o.assigned_to IS NULL"
+                count_sql += " AND (o.assigned_to IS NULL AND o.optin_caller IS NULL)"
             cursor.execute(count_sql)
         total_count = cursor.fetchone()[0]
         return opportunities, total_count

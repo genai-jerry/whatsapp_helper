@@ -95,7 +95,11 @@ def get_sales_review_data(user_id):
 def get_call_setting_data(user_id=None):
     type = request.args.get('type', None, type=str)
     print(f'Getting call setting data for type: {type}')
+    if not user_id:
+        user_id = current_user.id
     
+    if user_id == 0:
+        user_id = None
     if not type:
         return get_call_setting_data_detailed(user_id)
         
@@ -184,7 +188,7 @@ def get_call_setting_data_detailed(user_id):
     appointment_statuses = get_all_appointment_status()
 
     update_counts = get_all_opportunities_updated(since_days=7, agent_user_id=user_id)
-    print(f'Update Counts: {update_counts}')
+    print(f'Pipeline Appointments Count: {pipeline_appointments}')
     return render_template('review/call_setting.html', 
                         update_counts=update_counts,
                         employees=employees,

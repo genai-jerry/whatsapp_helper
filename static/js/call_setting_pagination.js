@@ -160,12 +160,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Add loading effect
-        cardBody.classList.add('loading-blur');
+        cardBody.classList.add('loading-blur'); 
 
         if (isPipelineAppointment) {
             handlePipelineApptPageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody);
         } else {
-            handleAssignedApptPageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody);
+            handleAssignedApptPageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody, selectedEmployeeId);
         }
     }
 
@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isPipeline) {
             handlePipelinePageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody);
         } else {
-            handleAssignedPageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody);
+            handleAssignedPageClick(page, pageArgs, params, leadsList, templateRow, leadsTbody, cardBody, selectedEmployeeId);
         }
     }
     
@@ -273,8 +273,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function handleAssignedPageClick(page, pageArgs, params, assignedList, templateRow, assignedTbody, cardBody) {
-        fetch(`/review/call-setting?${params.toString()}`, {
+    function handleAssignedPageClick(page, pageArgs, params, assignedList, templateRow, assignedTbody, cardBody, selectedEmployeeId) {
+        fetch(`/review/call-setting${selectedEmployeeId ? '/' + selectedEmployeeId : ''}?${params.toString()}`, {
             method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -287,52 +287,49 @@ document.addEventListener('DOMContentLoaded', function() {
                     row.remove();
                 });
                 
-                json.items.forEach(appointment => {
+                json.items.forEach(opportunity => {
                     const newRow = templateRow.cloneNode(true);
                     newRow.style.backgroundColor = 'white';
                     // Update opportunity link and name
                     const opportunityLink = newRow.querySelector('a[href^="/opportunity/"]');
-                    opportunityLink.href = `/opportunity/${appointment.opportunity_id}`;
-                    opportunityLink.title = appointment.opportunity_name;
-                    opportunityLink.textContent = appointment.opportunity_name.length > 15 ? 
-                        appointment.opportunity_name.substring(0, 15) + '...' : 
-                        appointment.opportunity_name;
+                    opportunityLink.href = `/opportunity/${opportunity.id}`;
+                    opportunityLink.title = opportunity.name;
+                    opportunityLink.textContent = opportunity.name.length > 15 ? 
+                        opportunity.name.substring(0, 15) + '...' : 
+                        opportunity.name;
                     
                     // Update phone number
                     const phoneLink = newRow.querySelector('a[href^="tel:"]');
-                    phoneLink.href = `tel:${appointment.opportunity_phone}`;
-                    phoneLink.textContent = appointment.opportunity_phone;
+                    phoneLink.href = `tel:${opportunity.phone}`;
+                    phoneLink.textContent = opportunity.phone;
                     
                     // Update register time
                     const registerTimeSpan = newRow.querySelector('.bi-clock').closest('.badge');
                     const registerTimeText = registerTimeSpan.childNodes[registerTimeSpan.childNodes.length - 1];
-                    registerTimeText.textContent = formatDate(appointment.created_at);
+                    registerTimeText.textContent = formatDate(opportunity.created_at);
                         
                     // Update last updated time
                     const lastUpdatedSpan = newRow.querySelector('.bi-telephone-outbound')?.closest('.badge');
                     if (lastUpdatedSpan) {
-                        if (appointment.last_updated) {
+                        if (opportunity.last_updated) {
                             const lastUpdatedText = lastUpdatedSpan.childNodes[lastUpdatedSpan.childNodes.length - 1];
-                            lastUpdatedText.textContent = formatDateTime(appointment.last_updated);
+                            lastUpdatedText.textContent = formatDateTime(opportunity.last_updated);
                         } else {
                             lastUpdatedSpan.closest('p').remove();
                         }
                     }
                     
                     // Update ad name
-                    updateAssignedAdName(newRow, appointment);
+                    updateAssignedAdName(newRow, opportunity);
                     
                     // Update status select
-                    updateAssignedSelectStatus(newRow, appointment);
+                    updateAssignedSelectStatus(newRow, opportunity);
                     
                     // Update task list buttons
-                    updateAssignedTaskList(newRow, appointment);
+                    updateAssignedTaskList(newRow, opportunity);
 
                     // Update timer
-                    updateAssignedTimer(newRow, appointment);
-
-                    // Update setter button
-                    updateAssignedSetter(newRow, appointment);
+                    updateAssignedTimer(newRow, opportunity);
                     
                     assignedTbody.appendChild(newRow);
                 });
@@ -409,7 +406,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     const assignButton = templateItem.querySelector('.assign-appt-btn');
                     if (assignButton) {
                         assignButton.setAttribute('data-appointment-id', appointment.appointment_id);
-                        window.settingPipeline.addAssignAppointmentHandler(assignButton);
+                        assignButton.setAttribute('title', 'Assign');
+                        assignButton.classList.remove('btn-success');
+                        assignButton.classList.add('btn-outline-primary');
+                        assignButton.textContent = 'Assign';
+                        assignButton.onclick = () => window.settingPipeline.addAssignAppointmentHandler(assignButton);
                     }
 
                     appointmentsTBody.appendChild(templateItem);
@@ -434,8 +435,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function handleAssignedApptPageClick(page, pageArgs, params, assignedList, templateRow, appointmentsTBody, cardBody){
-        fetch(`/review/call-setting?${params.toString()}`, {
+    function handleAssignedApptPageClick(page, pageArgs, params, assignedList, templateRow, appointmentsTBody, cardBody, selectedEmployeeId){
+        fetch(`/review/call-setting${selectedEmployeeId ? '/' + selectedEmployeeId : ''}?${params.toString()}`, {
             method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -488,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         confirmButton.classList.toggle('btn-success', appointment.confirmed);
                         confirmButton.classList.toggle('btn-primary', !appointment.confirmed);
                         confirmButton.disabled = appointment.confirmed;
-                        window.settingPipeline.addConfirmCallHandler(confirmButton);
+                        confirmButton.onclick = () => window.settingPipeline.addConfirmCallHandler(confirmButton);
                     }
 
                     const discoveryButton = newRow.querySelector('.discovery-call-done');
@@ -497,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         discoveryButton.setAttribute('data-opportunity-id', appointment.opportunity_id);
                         discoveryButton.classList.remove('btn-success');
                         discoveryButton.classList.add('btn-primary');
-                        window.settingPipeline.addDiscoveryCallDoneHandler(discoveryButton);
+                        discoveryButton.onclick = () => window.settingPipeline.addDiscoveryCallDoneHandler(discoveryButton);
                     }
 
                     // Update task list
@@ -526,6 +527,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (setterButton) {
             setterButton.setAttribute('onclick', `assignCallSetter('${lead.id}')`);
             setterButton.setAttribute('title', 'Assign Setter');
+            setterButton.classList.add('btn-outline-primary');
+            setterButton.textContent = 'Assign';
             setterButton.classList.add('disabled');
             
             // Make sure SVG icon has tooltip

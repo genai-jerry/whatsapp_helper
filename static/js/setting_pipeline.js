@@ -66,6 +66,14 @@ class SettingPipeline {
     async assignCallSetterToAppointment(event) {
         try {
             const button = event.target;
+            await this.addAssignAppointmentHandler(button);
+        } catch (error) {
+            console.error('Assignment failed:', error);
+        }
+    }
+    
+    async addAssignAppointmentHandler(button) {
+        try {
             const appointmentId = button.dataset.appointmentId;
             const employee_id = $('#employeeSelect').val();
             const response = await fetch(`/review/call-setting/assign-appointment`, {
@@ -90,7 +98,7 @@ class SettingPipeline {
             console.error('Assignment failed:', error);
         }
     }
-   
+
     initializeStatusSelects() {
         document.querySelectorAll('.status-select').forEach(select => {
             // Set initial styling
