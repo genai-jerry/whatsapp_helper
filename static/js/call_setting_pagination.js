@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update register time
                     const registerTimeSpan = newRow.querySelector('.bi-clock').closest('.badge');
                     const registerTimeText = registerTimeSpan.childNodes[registerTimeSpan.childNodes.length - 1];
-                    registerTimeText.textContent = formatDate(opportunity.created_at);
+                    registerTimeText.textContent = formatDate(opportunity.register_time);
                         
                     // Update last updated time
                     const lastUpdatedSpan = newRow.querySelector('.bi-telephone-outbound')?.closest('.badge');

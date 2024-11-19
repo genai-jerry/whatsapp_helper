@@ -836,22 +836,22 @@ def list_all_new_leads(assigned = False, user_id=None, page=1, page_size=10):
         cursor = connection.cursor()
 
         agent_id = get_sales_agent_id_for_user(user_id)
-        sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated, ad_name FROM opportunity 
+        sql = '''SELECT id, name, email, phone, last_register_time, call_status, last_updated, ad_name FROM opportunity 
                 WHERE call_status IS NULL AND (callback_time IS NULL or DATE(callback_time) <= CURDATE()) '''
         if user_id:
             if assigned:
-                sql += f" AND (assigned_to = %s OR optin_caller = %s) ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                sql += f" AND (assigned_to = %s OR optin_caller = %s) ORDER BY last_register_time DESC LIMIT %s OFFSET %s"
                 offset = (page - 1) * page_size
                 cursor.execute(sql, (user_id, agent_id, page_size, offset))
             else:
-                sql += f" AND (assigned_to IS NULL AND optin_caller IS NULL) ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                sql += f" AND (assigned_to IS NULL AND optin_caller IS NULL) ORDER BY last_register_time DESC LIMIT %s OFFSET %s"
                 offset = (page - 1) * page_size
                 cursor.execute(sql, (page_size, offset))
         else:
             if assigned:
                 sql += " AND (assigned_to IS NOT NULL OR optin_caller IS NOT NULL) ORDER BY register_time DESC LIMIT %s OFFSET %s"
             else:
-                sql += " AND (assigned_to IS NULL) ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                sql += " AND (assigned_to IS NULL) ORDER BY last_register_time DESC LIMIT %s OFFSET %s"
             offset = (page - 1) * page_size
             cursor.execute(sql, (page_size, offset))
         results = cursor.fetchall()
@@ -899,25 +899,25 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, page=1, page_si
         cursor = connection.cursor()
         agent_id = get_sales_agent_id_for_user(user_id)
         # Return all leads that have a call_status of 12, 13, 14
-        sql = '''SELECT id, name, email, phone, register_time, call_status, last_updated, ad_name FROM opportunity 
+        sql = '''SELECT id, name, email, phone, last_register_time, call_status, last_updated, ad_name FROM opportunity 
                 WHERE call_status IN (3,12,13) AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())'''
         if user_id:
             if assigned:
                 sql += f" AND (assigned_to = %s OR optin_caller = %s) "
-                sql += "ORDER BY COALESCE(last_updated, register_time) ASC LIMIT %s OFFSET %s"
+                sql += "ORDER BY COALESCE(last_updated, last_register_time) ASC LIMIT %s OFFSET %s"
                 offset = (page - 1) * page_size 
                 cursor.execute(sql, (user_id, agent_id, page_size, offset))
             else:
-                sql += " AND (assigned_to IS NULL AND optin_caller IS NULL) ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                sql += " AND (assigned_to IS NULL AND optin_caller IS NULL) ORDER BY last_register_time DESC LIMIT %s OFFSET %s"
                 offset = (page - 1) * page_size
                 cursor.execute(sql, (page_size, offset))
         else:
             if assigned:
                 sql += " AND (assigned_to IS NOT NULL OR optin_caller IS NOT NULL)"
-                sql += " ORDER BY COALESCE(last_updated, register_time) ASC LIMIT %s OFFSET %s"
+                sql += " ORDER BY COALESCE(last_updated, last_register_time) ASC LIMIT %s OFFSET %s"
             else:
                 sql += " AND (assigned_to IS NULL AND optin_caller IS NULL)"
-                sql += " ORDER BY register_time DESC LIMIT %s OFFSET %s"
+                sql += " ORDER BY last_register_time DESC LIMIT %s OFFSET %s"
             
             offset = (page - 1) * page_size
             cursor.execute(sql, (page_size, offset))
@@ -962,7 +962,7 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, page=1, page_size
         connection = create_connection()
         cursor = connection.cursor()
         agent_id = get_sales_agent_id_for_user(user_id)
-        sql = '''SELECT DISTINCT o.id, o.name, o.email, o.phone, o.register_time, o.call_status, 
+        sql = '''SELECT DISTINCT o.id, o.name, o.email, o.phone, o.last_register_time, o.call_status, 
                 o.last_updated, a.appointment_time, o.ad_name
                 FROM opportunity o
                 LEFT JOIN appointments a on a.opportunity_id = o.id
