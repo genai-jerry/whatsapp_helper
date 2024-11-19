@@ -7,7 +7,7 @@ Report
 {% block content %}
 <div class="container mt-5">
     {% if "Call_Setter" in current_user.roles %}
-    <div class="row">
+    <div class="row mb-4">
         <div class="col-md-12">
             <div class="card">
                 {% include "review/call-setting/_assigned.html" %}
@@ -16,7 +16,7 @@ Report
     </div>
     <script src="{{ url_for('static', filename='js/setting_pipeline.js') }}"></script>
     {% endif %}
-    <div class="row">
+    <div class="row mb-4">
         <div class="col-md-6">
             {% if "Admin" in current_user.roles or "Sales" in current_user.roles %}
             {% include "report/sales/_monthly_report.html" %}
