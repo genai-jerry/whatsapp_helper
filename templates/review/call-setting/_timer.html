@@ -17,7 +17,12 @@
 <script>
 $(document).ready(function() {
     // Initialize the flatpickr calendar with enhanced time selection
-    flatpickr("#callback-datetime", {
+    initCallbackDatetime($('.callback-datetime'));
+    
+});
+
+function initCallbackDatetime(element) {
+    flatpickr(element, {
         dateFormat: "Y-m-d H:i",
         enableTime: true, // Enable time selection
         time_24hr: true, // Use 24 hour time
@@ -29,35 +34,35 @@ $(document).ready(function() {
         plugins: [new confirmDatePlugin({})],
         allowInput: true, // Allow manual input
         onChange: function(selectedDates, dateStr, instance) {
-            console.log(dateStr);
-            const opportunityId = $(instance.element).data('opportunity-id');
-            fetch('/review/call-setting/set-callback-time', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({
-                    opportunity_id: opportunityId, 
-                    callback_time: dateStr
-                })
-            }).then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    $(instance.element).parent().find('tr').addClass('bg-success');
-                    showToast('Callback time set successfully', 'success');
-                } else {
-                    showToast('Failed to set callback time', 'error');
-                }
-            });
-        },
-        disableMobile: "true", // Disable mobile dropdown
-        locale: {
-            firstDayOfWeek: 1, // Start week on Monday
+        console.log(dateStr);
+        const opportunityId = $(instance.element).data('opportunity-id');
+        fetch('/review/call-setting/set-callback-time', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                opportunity_id: opportunityId, 
+                callback_time: dateStr
+            })
+        }).then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                $(instance.element).parent().find('tr').addClass('bg-success');
+                showToast('Callback time set successfully', 'success');
+            } else {
+                showToast('Failed to set callback time', 'error');
+            }
+        });
+    },
+    disableMobile: "true", // Disable mobile dropdown
+    locale: {
+        firstDayOfWeek: 1, // Start week on Monday
             time_24hr: true
         }
     });
-});
+}
 
 // Helper functions
 function getCookie(name) {

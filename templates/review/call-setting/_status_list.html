@@ -2,10 +2,12 @@
 <select class="form-select form-select-sm status-select" 
             data-opportunity-id="{{ lead.id }}"
             style="background-color: {% if lead.call_status %}
+
                     {{ call_statuses[lead.call_status-1].color_code if call_statuses[lead.call_status-1] else '#000000' }}
                 {% endif %};
                 color: {% if lead.call_status %}
                     {{ call_statuses[lead.call_status-1].text_color if call_statuses[lead.call_status-1] else '#000000' }}
+
                 {% endif %};">
         <option value="">Select Status</option>
         {% for status in call_statuses %}

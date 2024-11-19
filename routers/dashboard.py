@@ -18,6 +18,7 @@ def report():
     assigned_appointments_page = request.args.get('assigned_appointments_page', 1, type=int)
     tasks_type = request.args.get("tasks_type", "due")  
     user_id = current_user.id
+    print(f'User Id: {user_id}')
     if tasks_type == "assigned":
         assigned_by = current_user.id
         user_id = None

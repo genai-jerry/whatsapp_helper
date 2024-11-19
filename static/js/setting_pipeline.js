@@ -66,6 +66,14 @@ class SettingPipeline {
     async assignCallSetterToAppointment(event) {
         try {
             const button = event.target;
+            await this.addAssignAppointmentHandler(button);
+        } catch (error) {
+            console.error('Assignment failed:', error);
+        }
+    }
+    
+    async addAssignAppointmentHandler(button) {
+        try {
             const appointmentId = button.dataset.appointmentId;
             const employee_id = $('#employeeSelect').val();
             const response = await fetch(`/review/call-setting/assign-appointment`, {
@@ -90,7 +98,7 @@ class SettingPipeline {
             console.error('Assignment failed:', error);
         }
     }
-   
+
     initializeStatusSelects() {
         document.querySelectorAll('.status-select').forEach(select => {
             // Set initial styling
@@ -176,11 +184,19 @@ class SettingPipeline {
 
     initializeAppointmentStatusButtons() {
         document.querySelectorAll('.confirm-call').forEach(button => {
-            button.addEventListener('click', (e) => this.confirmAppointment(button));
+            this.addConfirmCallHandler(button);
         });
         document.querySelectorAll('.discovery-call-done').forEach(button => {
-            button.addEventListener('click', (e) => this.markDiscoveryCallDone(button));
+            this.addDiscoveryCallDoneHandler(button);
         });
+    }
+
+    addConfirmCallHandler(button) {
+        button.addEventListener('click', (e) => this.confirmAppointment(button));
+    }
+
+    addDiscoveryCallDoneHandler(button) {
+        button.addEventListener('click', (e) => this.markDiscoveryCallDone(button));
     }
 
     async confirmAppointment(button) {
@@ -240,12 +256,27 @@ function assignCallSetter(opportunity_id) {
             headers: {
                 'Content-Type': 'application/json',
                 },
+        }).then(response => response.json())
+        .then(data => {
+            console.log(data);
+            if (data.status === 'success') {
+                showSuccessToast('Call setter updated successfully');
+            } else {
+                showErrorToast('Failed to update call setter');
+            }
         });
     } catch (error) {
         console.error('Assignment failed:', error);
     }
 }
 
+function showSuccessToast(message) {
+    showToast(message, 'success');
+}
+
+function showErrorToast(message) {
+    showToast(message, 'error');
+}   
 // Initialize when document is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.settingPipeline = new SettingPipeline();

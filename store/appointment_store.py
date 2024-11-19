@@ -482,9 +482,10 @@ def get_initial_discussion_appointment(opportunity_id):
 
 def list_all_appointments_for_confirmation(assigned=False, user_id=None, page=1, page_size=10):
     try:
+        print(f'List all appointments for confirmation with assigned: {assigned} and user_id: {user_id}')
         connection = create_connection()
         cursor = connection.cursor()
-        sql = '''SELECT DISTINCT a.id, a.opportunity_id, a.status, a.created_at, a.appointment_time,
+        sql = '''SELECT a.id, a.opportunity_id, a.status, a.created_at, a.appointment_time,
                 o.name, o.email, o.phone, a.confirmed, o.ad_name
                 FROM appointments a
                 JOIN opportunity o on o.id = a.opportunity_id
@@ -522,7 +523,9 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, page=1,
                 'ad_name': result[9]
             }
             appointments.append(appointment)
-        count_query = '''SELECT COUNT(DISTINCT a.opportunity_id) FROM appointments a 
+
+        count_query = '''SELECT COUNT(a.id) FROM appointments a 
+                        JOIN opportunity o on o.id = a.opportunity_id
                         WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
                         AND a.confirmed = 0 AND a.status IS NULL'''
         

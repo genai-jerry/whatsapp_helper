@@ -93,8 +93,79 @@ def get_sales_review_data(user_id):
 @review_blueprint.route('call-setting')
 @review_blueprint.route('call-setting/<int:user_id>')
 def get_call_setting_data(user_id=None):
-    if not user_id and user_id != 0:
+    type = request.args.get('type', None, type=str)
+    print(f'Getting call setting data for type: {type}')
+    if not user_id:
         user_id = current_user.id
+    
+    if user_id == 0:
+        user_id = None
+    if not type:
+        return get_call_setting_data_detailed(user_id)
+        
+    match type:
+        case 'pipeline_appointments':
+            items = list_all_appointments_for_confirmation(
+                assigned=False, 
+                user_id=user_id,
+                page=request.args.get('pipeline_appointments_page', 1, type=int),
+                page_size=10
+            )
+        case 'assigned_appointments':
+            items = list_all_appointments_for_confirmation(
+                assigned=True,
+                user_id=user_id,
+                page=request.args.get('assigned_appointments_page', 1, type=int),
+                page_size=10
+            )
+        case 'pipeline_leads':
+            items = list_all_new_leads(
+                assigned=False,
+                user_id=user_id,
+                page=request.args.get('pipeline_leads_page', 1, type=int),
+                page_size=10
+            )
+        case 'assigned_leads':
+            items = list_all_new_leads(
+                assigned=True,
+                user_id=user_id,
+                page=request.args.get('assigned_leads_page', 1, type=int),
+                page_size=10
+            )
+        case 'pipeline_no_show':
+            items = list_all_leads_for_no_show(
+                assigned=False,
+                user_id=user_id,
+                page=request.args.get('pipeline_no_show_page', 1, type=int),
+                page_size=10
+            )
+        case 'assigned_no_show':
+            items = list_all_leads_for_no_show(
+                assigned=True,
+                user_id=user_id,
+                page=request.args.get('assigned_no_show_page', 1, type=int),
+                page_size=10
+            )
+        case 'pipeline_follow_up':
+            items = list_all_leads_for_follow_up(
+                assigned=False,
+                user_id=user_id,
+                page=request.args.get('pipeline_follow_up_page', 1, type=int),
+                page_size=10
+            )
+        case 'assigned_follow_up':
+            items = list_all_leads_for_follow_up(
+                assigned=True,
+                user_id=user_id,
+                page=request.args.get('assigned_follow_up_page', 1, type=int),
+                page_size=10
+            )
+        case _:
+            return jsonify({'error': 'Invalid type'}), 400
+            
+    return jsonify({'items': items[0], 'total_count': items[1]}), 200
+
+def get_call_setting_data_detailed(user_id):
     employees = get_all_employees()
     assigned_leads_pages = request.args.get('assigned_leads_page', 1, type=int)
     assigned_follow_up_page = request.args.get('assigned_follow_up_page', 1, type=int)
@@ -117,38 +188,39 @@ def get_call_setting_data(user_id=None):
     appointment_statuses = get_all_appointment_status()
 
     update_counts = get_all_opportunities_updated(since_days=7, agent_user_id=user_id)
-    print(f'Update Counts: {update_counts}')
+    print(f'Pipeline Appointments Count: {pipeline_appointments}')
     return render_template('review/call_setting.html', 
-                           update_counts=update_counts,
-                           employees=employees,
-                           assigned_leads=assigned_leads,
-                           assigned_follow_up=assigned_follow_up,
-                           assigned_no_show=assigned_no_show,
-                           pipeline_leads=pipeline_leads,
-                           pipeline_follow_up=pipeline_follow_up,
-                           pipeline_no_show=pipeline_no_show,
-                           assigned_leads_page=assigned_leads_pages,
-                           assigned_follow_up_page=assigned_follow_up_page,
-                           assigned_no_show_page=assigned_no_show_page,
-                           pipeline_leads_page=pipeline_leads_pages,
-                           pipeline_follow_up_page=pipeline_follow_up_pages,
-                           pipeline_no_show_page=pipeline_no_show_page,
-                           assigned_appointments=assigned_appointments,
-                           pipeline_appointments=pipeline_appointments,
-                           assigned_leads_count=assigned_leads_count,
-                           assigned_follow_up_count=assigned_follow_up_count,
-                           assigned_no_show_count=assigned_no_show_count,
-                           pipeline_leads_count=pipeline_leads_count,
-                           pipeline_follow_up_count=pipeline_follow_up_count,
-                           pipeline_no_show_count=pipeline_no_show_count,
-                           assigned_appointments_count=assigned_appointments_count,
-                           pipeline_appointments_count=pipeline_appointments_count,
-                           assigned_appointments_page=assigned_appointments_page,
-                           pipeline_appointments_page=pipeline_appointments_page,
-                           selected_employee_id=user_id,
-                           call_statuses=call_statuses,
-                           appointment_statuses=appointment_statuses,
-                           page_size=10)
+                        update_counts=update_counts,
+                        employees=employees,
+                        assigned_leads=assigned_leads,
+                        assigned_follow_up=assigned_follow_up,
+                        assigned_no_show=assigned_no_show,
+                        pipeline_leads=pipeline_leads,
+                        pipeline_follow_up=pipeline_follow_up,
+                        pipeline_no_show=pipeline_no_show,
+                        assigned_leads_page=assigned_leads_pages,
+                        assigned_follow_up_page=assigned_follow_up_page,
+                        assigned_no_show_page=assigned_no_show_page,
+                        pipeline_leads_page=pipeline_leads_pages,
+                        pipeline_follow_up_page=pipeline_follow_up_pages,
+                        pipeline_no_show_page=pipeline_no_show_page,
+                        assigned_appointments=assigned_appointments,
+                        pipeline_appointments=pipeline_appointments,
+                        assigned_leads_count=assigned_leads_count,
+                        assigned_follow_up_count=assigned_follow_up_count,
+                        assigned_no_show_count=assigned_no_show_count,
+                        pipeline_leads_count=pipeline_leads_count,
+                        pipeline_follow_up_count=pipeline_follow_up_count,
+                        pipeline_no_show_count=pipeline_no_show_count,
+                        assigned_appointments_count=assigned_appointments_count,
+                        pipeline_appointments_count=pipeline_appointments_count,
+                        assigned_appointments_page=assigned_appointments_page,
+                        pipeline_appointments_page=pipeline_appointments_page,
+                        selected_employee_id=user_id,
+                        call_statuses=call_statuses,
+                        appointment_statuses=appointment_statuses,
+                        page_size=10)
+
 
 @review_blueprint.route('call-setting/assign-lead', methods=['POST'])
 def assign_lead():

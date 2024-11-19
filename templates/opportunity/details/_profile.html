@@ -98,12 +98,11 @@
         <div class="col-md-4">
             <div class="form-group">
                 <label for="callStatus">Opt-in Call Status:</label>
-                <select class="form-control" id="callStatus" name="call_status">
-                    <option value="-1">Select a Call Status</option>
+                <label class="form-control">
                     {% for status in call_statuses %}
-                        <option value="{{ status.id }}" {% if opportunity.call_status == status.id %}selected="selected"{% endif %}>{{ status.name }}</option>
+                        {% if opportunity.call_status == status.id %} {{ status.name }} {% endif %}
                     {% endfor %}
-                </select>
+                </label>
             </div>
         </div>
         <div class="col-md-4">
