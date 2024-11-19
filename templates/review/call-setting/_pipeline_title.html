@@ -1,6 +1,6 @@
-
 <td class="opportunity-name">
     <a class="opportunity-name-link" href="/opportunity/{{ lead.id }}">{{ lead.name }}</a>
+
     <p>
         <span class="badge bg-light text-dark">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock me-1" viewBox="0 0 16 16">
@@ -10,7 +10,6 @@
             <span class="register-time">{{lead.register_time | format_date}}</span>
         </span>
     </p>
-    
     <p>
         <span class="badge bg-light text-dark" data-bs-toggle="tooltip" data-bs-placement="top" title="{{lead.ad_name}}">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-megaphone me-1" viewBox="0 0 16 16">
@@ -19,11 +18,8 @@
             <span class="ad-name">{% if lead.ad_name %}{{ lead.ad_name[:10] + '...' if lead.ad_name|length > 10 else lead.ad_name }}{% endif %}</span>
         </span>
     </p>
-    
 </td>
 <td class="phone-number"><button class="btn btn-sm btn-outline-primary assign-btn" data-opportunity-id="{{ lead.id }}">Assign</button></td>
-
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
