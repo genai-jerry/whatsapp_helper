@@ -143,7 +143,3 @@ function updateCommentsList(comments) {
         commentsList.appendChild(commentElement);
     });
 }
-
-function updatePagination(currentPage, totalComments, perPage) {
-    // Implement pagination UI update logic here
-}

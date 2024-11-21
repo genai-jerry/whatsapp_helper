@@ -19,27 +19,7 @@
 </p>
 
 <br>
-<!--
-<p>
-<select class="form-select form-select-sm status-select" 
-            data-appointment-id="{{ appointment.appointment_id }}"
-            style="background-color: {% if appointment.status %}
-                    {{ appointment_statuses[appointment.status-1].color_code }}
-                {% endif %};
-                color: {% if appointment.status %}
-                    {{ appointment_statuses[appointment.status-1].text_color }}
-                {% endif %};">
-        <option value="">Select Status</option>
-        {% for status in appointment_statuses %}
-            <option value="{{ status.id }}" 
-                    {% if appointment.status == status.id %}selected{% endif %}
-                    data-bg-color="{{ status.color_code }}"
-                    data-text-color="{{ status.text_color }}">
-                {{ status.name }}
-            </option>
-        {% endfor %}
-</select>
-</p>-->
+
 <p>
     {% with id = appointment.opportunity_id, name = appointment.opportunity_name %}
         {% include "common/_list_tasks.html" %}

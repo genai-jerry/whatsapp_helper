@@ -40,6 +40,21 @@ function formatDate(date) {
     return date.toLocaleDateString(undefined, options);
 }
 
+function formatDateWithMonth(dateString) {
+    const date = new Date(dateString);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${String(date.getDate()).padStart(2, '0')} ${months[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function formatDateTime(dateString) {
+    const date = new Date(dateString);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day} ${months[date.getMonth()]} ${date.getFullYear()} ${hours}:${minutes}`;
+}
+
 
 function getOptionColor(selectedValue, options, colorKey) {
     var selectedOption = options.find(function(option) {
@@ -47,6 +62,14 @@ function getOptionColor(selectedValue, options, colorKey) {
     });
     return selectedOption ? selectedOption[colorKey] : null;
 }
+
+function showSuccessToast(message) {
+    showToast(message, 'success');
+}
+
+function showErrorToast(message) {
+    showToast(message, 'error');
+}   
 
 function task_comment_actions(opportunity_id, opportunity_name){
     let icons = '<div class="btn-group" role="group" aria-label="Task and Comment Actions">' +
