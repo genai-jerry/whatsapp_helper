@@ -1,7 +1,8 @@
 class LeadPipeline {
     constructor() {
         this.pipelineElements = {};
-        this.pipelineAppointments = {};
+        this.rowElement = {};
+        this.navElement = {};
         this.initializeEventListeners();
     }
 
@@ -61,42 +62,52 @@ class LeadPipeline {
     }
 
     async handlePipeline(element_id, param_args = null) {
-        const element = $(`#${element_id}`)[0];
-        const containedList = element.closest('.pipeline-list');
-        const type = containedList ? containedList.id : '';
-        
-        if (!this.pipelineElements[type + '_card_body']) {
-            this.pipelineElements[type + '_card_body'] = containedList.closest('.card-body');
-        }
-        
-        const selectedEmployeeId = element.getAttribute('data-selected-employee-id');
-        
+        if (!this.pipelineElements[element_id]) {
+            const element = $(`#${element_id}`)[0];
+            const containedList = element.closest('.pipeline-list');
+            this.pipelineElements[element_id] = containedList.closest('.card');
+            this.rowElement[element_id] = $(element).find('.pipeline-item')[0];
+            this.navElement[element_id] = $(element).find('.pagination')[0];
+        }   
+
+        const selectedEmployeeId = document.getElementById('employeeSelect').value;
+
         const params = new URLSearchParams();
-        params.append('type', type);
-        if (selectedEmployeeId) {
-            params.append('selected_employee_id', selectedEmployeeId);
-        }
+        params.append('type', element_id);
+
         if(param_args){
             Object.keys(param_args).forEach(key => {
                 params.append(key, param_args[key]);
             });
         }
+        if (selectedEmployeeId) {
+            params.append('selected_employee_id', selectedEmployeeId);
+        }
 
-        this.pipelineElements[type + '_card_body'].classList.add('loading-blur');
         return new Promise((resolve, reject) => {
-            this.loadLeads(params, this.pipelineElements[type + '_card_body'])
+            const card = this.pipelineElements[element_id];
+            const templateRow = this.rowElement[element_id].cloneNode(true);
+            card.classList.add('loading-blur');
+            const tableBody = $(card).find('tbody')[0];
+            tableBody.appendChild(templateRow);
+            this.loadLeads(params, card, tableBody, templateRow, selectedEmployeeId)
                 .then(totalCount => {
-                    resolve(totalCount);
+                    const newNavElement = this.navElement[element_id].cloneNode(true);
+                    $(card).find('.pagination')[0].replaceWith(newNavElement);
+                    resolve([totalCount, card]);
+                    card.classList.remove('loading-blur');
                 })
                 .catch(error => {
                     reject(error);
+                }).finally(() => {
+                    setTimeout(() => {
+                        card.classList.remove('loading-blur');
+                    }, 300);
                 });
         });
     }
 
-    async loadLeads(params, cardBody) {
-        const pipelineTbody = $(cardBody).find('tbody')[0];
-        const templateRow = $(cardBody).find('.pipeline-item')[0];
+    async loadLeads(params, card, pipelineTbody, templateRow, selectedEmployeeId) {
         return new Promise((resolve, reject) => {
             fetch(`/review/call-setting?${params.toString()}`, {
                 method: 'GET',
@@ -106,7 +117,7 @@ class LeadPipeline {
             })
             .then(response => response.json())
             .then(json => {
-                return this.refreshLeads(json, cardBody, pipelineTbody, templateRow);
+                return this.refreshLeads(json, card, pipelineTbody, templateRow);
             })
             .then(totalCount => {
                 resolve(totalCount);
@@ -115,16 +126,10 @@ class LeadPipeline {
                 console.error('Error fetching pagination data:', error);
                 reject(error);
             })
-            .finally(() => {
-            // Remove loading effect
-            setTimeout(() => {
-                cardBody.classList.remove('loading-blur');
-                }, 300);
-            });
         });
     }
 
-    async refreshLeads(json, cardBody, pipelineTbody, templateRow) {
+    async refreshLeads(json, card, pipelineTbody, templateRow) {
         return new Promise((resolve, reject) => {
             if (pipelineTbody) {
             $(pipelineTbody).find('tr').each(function() {
@@ -172,7 +177,7 @@ class LeadPipeline {
                 });
 
                 // Get the parent card and update the text value of element with class items_count
-                const parentCard = $(cardBody).closest('.card');
+                const parentCard = $(card).closest('.card');
                 const itemsCount = $(parentCard).find('.items_count')[0];
                 itemsCount.textContent = json.total_count;
 

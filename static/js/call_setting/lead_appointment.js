@@ -1,6 +1,8 @@
 class LeadAppointment {
     constructor(){
         this.pipelineAppointments = {};
+        this.rowElement = {};
+        this.navElement = {};
         this.initializeEventListeners();
     }
 
@@ -50,43 +52,52 @@ class LeadAppointment {
     }
 
     async handleAppointment(element_id, param_args = null){
-        const element = $(`#${element_id}`)[0];
-        const containedList = element.closest('.pipeline-appt-list');
-        const cardBody = containedList.closest('.card-body');
-        if (!this.pipelineAppointments['card_body']) {
-            this.pipelineAppointments['card_body'] = containedList.closest('.card-body');
-        }
+        if (!this.pipelineAppointments[element_id]) {
+            const element = $(`#${element_id}`)[0];
+            const containedList = element.closest('.pipeline-appt-list');
+            this.pipelineAppointments[element_id] = containedList.closest('.card');
+            this.rowElement[element_id] = $(element).find('.pipeline-appt-item')[0];
+            this.navElement[element_id] = $(element).find('.pagination')[0];
+        }   
 
-        const selectedEmployeeId = element.getAttribute('data-selected-employee-id');
-        
+        const selectedEmployeeId = document.getElementById('employeeSelect').value;
+
         const params = new URLSearchParams();
-        params.append('type', 'pipeline_appointments');
-        if (selectedEmployeeId) {
-            params.append('selected_employee_id', selectedEmployeeId);
-        }
+        params.append('type', element_id);
+
         if(param_args){
             Object.keys(param_args).forEach(key => {
                 params.append(key, param_args[key]);
             });
         }
-        
-        // Add loading effect
-        this.pipelineAppointments['card_body'].classList.add('loading-blur'); 
+        if (selectedEmployeeId) {
+            params.append('selected_employee_id', selectedEmployeeId);
+        }
 
         return new Promise((resolve, reject) => {
-            this.loadAppointments(params, cardBody)
+            const card = this.pipelineAppointments[element_id];
+            const templateRow = this.rowElement[element_id].cloneNode(true);
+            card.classList.add('loading-blur');
+            const tableBody = $(card).find('tbody')[0];
+            tableBody.appendChild(templateRow);
+            this.loadAppointments(params, card, tableBody, templateRow, selectedEmployeeId)
                 .then(totalCount => {
-                    resolve(totalCount);
+                    const newNavElement = this.navElement[element_id].cloneNode(true);
+                    $(card).find('.pagination')[0].replaceWith(newNavElement);
+                    resolve([totalCount, card]);
+                    card.classList.remove('loading-blur');
                 })
                 .catch(error => {
                     reject(error);
-                });
+                }).finally(() => {
+                    setTimeout(() => {
+                        card.classList.remove('loading-blur');
+                    }, 300);
+                });;
         });
     }
 
-    async loadAppointments(params, cardBody){
-        const appointmentsTBody = $(cardBody).find('tbody')[0];
-        const templateRow = $(cardBody).find('.pipeline-appt-item')[0];
+    async loadAppointments(params, card, appointmentsTbody, templateRow, selectedEmployeeId){
         return new Promise((resolve, reject) => {
         fetch(`/review/call-setting?${params.toString()}`, {
             method: 'GET',
@@ -96,7 +107,7 @@ class LeadAppointment {
             })
             .then(response => response.json())
             .then(json => {
-                return this.refreshAppointments(json, appointmentsTBody, templateRow);
+                return this.refreshAppointments(json, card, appointmentsTbody, templateRow);
             })
             .then(totalCount => {
                 resolve(totalCount);
@@ -105,16 +116,10 @@ class LeadAppointment {
                 console.error('Error fetching appointment pagination data:', error);
                 reject(error);
             })
-            .finally(() => {
-                // Remove loading effect
-            setTimeout(() => {
-                cardBody.classList.remove('loading-blur');
-                }, 300);
-            });
         });
     }
 
-    async refreshAppointments(json, appointmentsTBody, templateRow){
+    async refreshAppointments(json, card, appointmentsTBody, templateRow){
         return new Promise((resolve, reject) => {
             if (appointmentsTBody) {
                 // Clear existing appointments
@@ -167,7 +172,10 @@ class LeadAppointment {
 
                     appointmentsTBody.appendChild(templateItem);
                 });
-
+                // Get the parent card and update the text value of element with class items_count
+                const parentCard = $(card).closest('.card');
+                const itemsCount = $(parentCard).find('.items_count')[0];
+                itemsCount.textContent = json.total_count;
                 // Reinitialize tooltips
                 const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
                 tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));

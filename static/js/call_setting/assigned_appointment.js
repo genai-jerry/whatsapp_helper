@@ -119,7 +119,7 @@ class AssignedAppointment {
         });
     }
 
-    async loadAssignedAppointments(params, cardBody, appointmentsTBody, templateRow, selectedEmployeeId){
+    async loadAssignedAppointments(params, card, appointmentsTBody, templateRow, selectedEmployeeId){
         return new Promise((resolve, reject) => {
             fetch(`/review/call-setting${selectedEmployeeId ? '/' + selectedEmployeeId : ''}?${params.toString()}`, {
                 method: 'GET',
@@ -129,7 +129,7 @@ class AssignedAppointment {
             })
             .then(response => response.json())
             .then(json => {
-                return this.refreshAppointments(json, appointmentsTBody, templateRow);
+                return this.refreshAppointments(json, card, appointmentsTBody, templateRow);
             })
             .then(totalCount => {
                 resolve(totalCount);
@@ -147,7 +147,7 @@ class AssignedAppointment {
         });
     }
 
-    async refreshAppointments(json, appointmentsTBody, templateRow){
+    async refreshAppointments(json, card, appointmentsTBody, templateRow){
         return new Promise((resolve, reject) => {
             if (appointmentsTBody) {
                 // Clear existing appointments
@@ -212,6 +212,10 @@ class AssignedAppointment {
                     appointmentsTBody.appendChild(newRow);
                 });
             }
+            // Get the parent card and update the text value of element with class items_count
+            const parentCard = $(card).closest('.card');
+            const itemsCount = $(parentCard).find('.items_count')[0];
+            itemsCount.textContent = json.total_count;
             // Reinitialize tooltips
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
