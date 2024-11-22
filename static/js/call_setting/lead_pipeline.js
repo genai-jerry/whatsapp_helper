@@ -60,7 +60,8 @@ class LeadPipeline {
         }
     }
 
-    async handlePipeline(element) {
+    async handlePipeline(element_id, param_args = null) {
+        const element = $(`#${element_id}`)[0];
         const containedList = element.closest('.pipeline-list');
         const type = containedList ? containedList.id : '';
         
@@ -68,105 +69,121 @@ class LeadPipeline {
             this.pipelineElements[type + '_card_body'] = containedList.closest('.card-body');
         }
         
-        const page = element.getAttribute('data-page');
-        const pageArgs = element.getAttribute('data-page-args');
         const selectedEmployeeId = element.getAttribute('data-selected-employee-id');
         
         const params = new URLSearchParams();
         params.append('type', type);
-        params.append(pageArgs, page);
         if (selectedEmployeeId) {
             params.append('selected_employee_id', selectedEmployeeId);
         }
+        if(param_args){
+            Object.keys(param_args).forEach(key => {
+                params.append(key, param_args[key]);
+            });
+        }
 
         this.pipelineElements[type + '_card_body'].classList.add('loading-blur');
-        this.handlePipelinePageClick(page, pageArgs, params, this.pipelineElements[type + '_card_body']);
-    }
-
-    async handlePipelinePageClick(page, pageArgs, params, cardBody) {
-        const pipelineTbody = $(cardBody).find('tbody')[0];
-        const templateRow = $(cardBody).find('.pipeline-item')[0];
-        fetch(`/review/call-setting?${params.toString()}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(json => {
-            this.refreshLeads(json, cardBody, pipelineTbody, templateRow, page, pageArgs);
-        })
-        .catch(error => {
-            console.error('Error fetching pagination data:', error);
-        })
-        .finally(() => {
-            // Remove loading effect
-            setTimeout(() => {
-                cardBody.classList.remove('loading-blur');
-            }, 300);
+        return new Promise((resolve, reject) => {
+            this.loadLeads(params, this.pipelineElements[type + '_card_body'])
+                .then(totalCount => {
+                    resolve(totalCount);
+                })
+                .catch(error => {
+                    reject(error);
+                });
         });
     }
 
-    refreshLeads(json, cardBody, pipelineTbody, templateRow, page, pageArgs) {
-        if (pipelineTbody) {
+    async loadLeads(params, cardBody) {
+        const pipelineTbody = $(cardBody).find('tbody')[0];
+        const templateRow = $(cardBody).find('.pipeline-item')[0];
+        return new Promise((resolve, reject) => {
+            fetch(`/review/call-setting?${params.toString()}`, {
+                method: 'GET',
+            headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(json => {
+                return this.refreshLeads(json, cardBody, pipelineTbody, templateRow);
+            })
+            .then(totalCount => {
+                resolve(totalCount);
+            })
+            .catch(error => {
+                console.error('Error fetching pagination data:', error);
+                reject(error);
+            })
+            .finally(() => {
+            // Remove loading effect
+            setTimeout(() => {
+                cardBody.classList.remove('loading-blur');
+                }, 300);
+            });
+        });
+    }
+
+    async refreshLeads(json, cardBody, pipelineTbody, templateRow) {
+        return new Promise((resolve, reject) => {
+            if (pipelineTbody) {
             $(pipelineTbody).find('tr').each(function() {
                 $(this).remove();
-            });
-            
-            json.items.forEach(lead => {
-                const newRow = templateRow.cloneNode(true);
+                });
                 
-                // Update opportunity link and name
-                const opportunityLink = newRow.querySelector('a[href^="/opportunity/"]');
-                opportunityLink.href = `/opportunity/${lead.id}`;
-                opportunityLink.title = lead.name;
-                opportunityLink.textContent = lead.name.length > 15 ? lead.name.substring(0, 15) + '...' : lead.name;
-                
-                const registerTimeSpan = newRow.querySelectorAll('.register-time')[0];
-                registerTimeSpan.lastChild.textContent = formatDateWithMonth(lead.register_time);
-                
-                // Update last updated time
-                const lastUpdatedSpan = newRow.querySelector('.bi-telephone-outbound')?.closest('.badge');
-                if (lastUpdatedSpan) {
-                    if (lead.last_updated) {
-                        const lastUpdatedText = lastUpdatedSpan.childNodes[lastUpdatedSpan.childNodes.length - 1];
-                        lastUpdatedText.textContent = formatDateTime(lead.last_updated);
-                    } else {
-                        lastUpdatedSpan.closest('p').remove();
+                json.items.forEach(lead => {
+                    const newRow = templateRow.cloneNode(true);
+                    
+                    // Update opportunity link and name
+                    const opportunityLink = newRow.querySelector('a[href^="/opportunity/"]');
+                    opportunityLink.href = `/opportunity/${lead.id}`;
+                    opportunityLink.title = lead.name;
+                    opportunityLink.textContent = lead.name.length > 15 ? lead.name.substring(0, 15) + '...' : lead.name;
+                    
+                    const registerTimeSpan = newRow.querySelectorAll('.register-time')[0];
+                    registerTimeSpan.lastChild.textContent = formatDateWithMonth(lead.register_time);
+                    
+                    // Update last updated time
+                    const lastUpdatedSpan = newRow.querySelector('.bi-telephone-outbound')?.closest('.badge');
+                    if (lastUpdatedSpan) {
+                        if (lead.last_updated) {
+                            const lastUpdatedText = lastUpdatedSpan.childNodes[lastUpdatedSpan.childNodes.length - 1];
+                            lastUpdatedText.textContent = formatDateTime(lead.last_updated);
+                        } else {
+                            lastUpdatedSpan.closest('p').remove();
+                        }
                     }
-                }
-                
-                // Update ad name
-                const adNameSpan = newRow.querySelector('.bi-megaphone')?.closest('.badge');
-                if (adNameSpan) {
-                    if (lead.ad_name) {
-                        adNameSpan.setAttribute('title', lead.ad_name);
-                        const adNameText = adNameSpan.childNodes[adNameSpan.childNodes.length - 1];
-                        adNameText.textContent = lead.ad_name.length > 10 ? lead.ad_name.substring(0, 10) + '...' : lead.ad_name;
-                    } else {
-                        adNameSpan.closest('p').remove();
+                    
+                    // Update ad name
+                    const adNameSpan = newRow.querySelector('.bi-megaphone')?.closest('.badge');
+                    if (adNameSpan) {
+                        if (lead.ad_name) {
+                            adNameSpan.setAttribute('title', lead.ad_name);
+                            const adNameText = adNameSpan.childNodes[adNameSpan.childNodes.length - 1];
+                            adNameText.textContent = lead.ad_name.length > 10 ? lead.ad_name.substring(0, 10) + '...' : lead.ad_name;
+                        } else {
+                            adNameSpan.closest('p').remove();
+                        }
                     }
-                }
-                // Update setter button
-                this.updateAssignSetter(newRow, lead);
-                
-                $(pipelineTbody).append(newRow);
-            });
+                    // Update setter button
+                    this.updateAssignSetter(newRow, lead);
+                    
+                    $(pipelineTbody).append(newRow);
+                });
 
-            // Update pagination
-            const pageNav = $(cardBody).find('nav')[0];
-            window.callSettingPagination.updatePagination(pageNav, json.total_count, parseInt(page), 10, pageArgs);
-            // Get the parent card and update the text value of element with class items_count
-            const parentCard = $(cardBody).closest('.card');
-            const itemsCount = $(parentCard).find('.items_count')[0];
-            itemsCount.textContent = json.total_count;
+                // Get the parent card and update the text value of element with class items_count
+                const parentCard = $(cardBody).closest('.card');
+                const itemsCount = $(parentCard).find('.items_count')[0];
+                itemsCount.textContent = json.total_count;
 
-            // Reinitialize tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl)
-            });
-        }
+                // Reinitialize tooltips
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                });
+            }
+            resolve(json.total_count);
+        });
     }
 
     updateAssignSetter(newRow, lead) {

@@ -1,6 +1,8 @@
 class AssignedLead {
     constructor() {
         this.assignedElements = {};
+        this.rowElement = {}
+        this.navElement = {}
         this.initializeStatusSelects();
     }
 
@@ -25,123 +27,144 @@ class AssignedLead {
         });
     }
 
-    async handleAssigned(element) {
-        const containedList = element.closest('.assigned-list');
-        const type = containedList ? containedList.id : '';
+    async handleAssigned(element_id, param_args = null) {
         
-        if (!this.assignedElements[type + '_card_body']) {
-            this.assignedElements[type + '_card_body'] = containedList.closest('.card-body');
+        if (!this.assignedElements[element_id]) {
+            const element = $(`#${element_id}`)[0];
+            const containedList = element.closest('.assigned-list');
+            this.assignedElements[element_id] = containedList.closest('.card');
+            this.rowElement[element_id] = $(element).find('.assigned-item')[0];
+            this.navElement[element_id] = $(element).find('.pagination')[0];
         }   
-        
-        const page = element.getAttribute('data-page');
-        const pageArgs = element.getAttribute('data-page-args');
-        const selectedEmployeeId = element.getAttribute('data-selected-employee-id');
+
+        const selectedEmployeeId = document.getElementById('employeeSelect').value;
         
         const params = new URLSearchParams();
-        params.append('type', type);
-        params.append(pageArgs, page);
+        params.append('type', element_id);
+
+        if(param_args){
+            Object.keys(param_args).forEach(key => {
+                params.append(key, param_args[key]);
+            });
+        }
         if (selectedEmployeeId) {
             params.append('selected_employee_id', selectedEmployeeId);
         }
 
-        this.assignedElements[type + '_card_body'].classList.add('loading-blur');
-        this.handleAssignedPageClick(page, pageArgs, params, this.assignedElements[type + '_card_body'], selectedEmployeeId);
-    }
-
-    async handleAssignedPageClick(page, pageArgs, params, cardBody, selectedEmployeeId) {
-        const assignedTbody = $(cardBody).find('tbody')[0];
-        const templateRow = $(cardBody).find('.assigned-item')[0];
-        fetch(`/review/call-setting${selectedEmployeeId ? '/' + selectedEmployeeId : ''}?${params.toString()}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(json => {
-            this.refreshLeads(json, cardBody, assignedTbody, templateRow, page, pageArgs);
-        })
-        .catch(error => {
-            console.error('Error fetching pagination data:', error);
-        })
-        .finally(() => {
-            // Remove loading effect
-            setTimeout(() => {
-                cardBody.classList.remove('loading-blur');
-            }, 300);
+        return new Promise((resolve, reject) => {
+            const card = this.assignedElements[element_id];
+            const templateRow = this.rowElement[element_id].cloneNode(true);
+            card.classList.add('loading-blur');
+            const tableBody = $(card).find('tbody')[0];
+            tableBody.appendChild(templateRow);
+            this.loadAssignedLeads(params, card, tableBody, templateRow, selectedEmployeeId)
+                .then(totalCount => {
+                    const newNavElement = this.navElement[element_id].cloneNode(true);
+                    $(card).find('.pagination')[0].replaceWith(newNavElement);
+                    resolve([totalCount, card]);
+                    card.classList.remove('loading-blur');
+                })
+                .catch(error => {
+                    reject(error);
+                }).finally(() => {
+                    setTimeout(() => {
+                        card.classList.remove('loading-blur');
+                    }, 300);
+                });;
         });
     }
 
-    refreshLeads(json, cardBody, assignedTbody, templateRow, page, pageArgs){
-        if (assignedTbody) {
-            $(assignedTbody).find('tr').each(function() {
-                $(this).remove();
-            });
+    async loadAssignedLeads(params, cardBody, assignedTbody, templateRow, selectedEmployeeId) {
+        return new Promise((resolve, reject) => {
+            fetch(`/review/call-setting${selectedEmployeeId ? '/' + selectedEmployeeId : ''}?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(json => {
+                return this.refreshLeads(json, cardBody, assignedTbody, templateRow, params.get('type'));
+            })
+            .then(totalCount => {
+                resolve(totalCount);
+            })
+            .catch(error => {
+                console.error('Error fetching pagination data:', error);
+                reject(error);
+            })
             
-            json.items.forEach(opportunity => {
-                const newRow = templateRow.cloneNode(true);
-                newRow.style.backgroundColor = 'white';
-                // Update opportunity link and name
-                const opportunityLink = newRow.querySelector('a[href^="/opportunity/"]');
-                opportunityLink.href = `/opportunity/${opportunity.id}`;
-                opportunityLink.title = opportunity.name;
-                opportunityLink.textContent = opportunity.name.length > 15 ? 
+        });
+    }
+
+    async refreshLeads(json, cardBody, assignedTbody, templateRow, type){
+        return new Promise((resolve, reject) => {
+            if (assignedTbody) {
+                $(assignedTbody).find('tr').each(function() {
+                    $(this).remove();
+                });
+                
+                json.items.forEach(opportunity => {
+                    const newRow = templateRow.cloneNode(true);
+                    newRow.style.backgroundColor = 'white';
+                    // Update opportunity link and name
+                    const opportunityLink = newRow.querySelector('a[href^="/opportunity/"]');
+                    opportunityLink.href = `/opportunity/${opportunity.id}`;
+                    opportunityLink.title = opportunity.name;
+                    opportunityLink.textContent = opportunity.name.length > 15 ? 
                     opportunity.name.substring(0, 15) + '...' : 
                     opportunity.name;
                 
-                // Update phone number
-                const phoneLink = newRow.querySelector('a[href^="tel:"]');
-                phoneLink.href = `tel:${opportunity.phone}`;
-                phoneLink.textContent = opportunity.phone;
-                
-                // Update register time
-                const registerTimeSpan = newRow.querySelector('.bi-clock').closest('.badge');
-                const registerTimeText = registerTimeSpan.childNodes[registerTimeSpan.childNodes.length - 1];
-                registerTimeText.textContent = formatDateWithMonth(opportunity.register_time);
+                    // Update phone number
+                    const phoneLink = newRow.querySelector('a[href^="tel:"]');
+                    phoneLink.href = `tel:${opportunity.phone}`;
+                    phoneLink.textContent = opportunity.phone;
                     
-                // Update last updated time
-                const lastUpdatedSpan = newRow.querySelector('.bi-telephone-outbound')?.closest('.badge');
-                if (lastUpdatedSpan) {
-                    if (opportunity.last_updated) {
+                    // Update register time
+                    const registerTimeSpan = newRow.querySelector('.bi-clock').closest('.badge');
+                    const registerTimeText = registerTimeSpan.childNodes[registerTimeSpan.childNodes.length - 1];
+                    registerTimeText.textContent = formatDateWithMonth(opportunity.register_time);
+                    
+                    // Update last updated time
+                    const lastUpdatedSpan = newRow.querySelector('.bi-telephone-outbound')?.closest('.badge');
+                    if (lastUpdatedSpan) {
+                        if (opportunity.last_updated) {
                         const lastUpdatedText = lastUpdatedSpan.childNodes[lastUpdatedSpan.childNodes.length - 1];
                         lastUpdatedText.textContent = formatDateTime(opportunity.last_updated);
                     } else {
                         lastUpdatedSpan.closest('p').remove();
+                        }
                     }
-                }
-                
-                // Update ad name
-                this.updateAssignedAdName(newRow, opportunity);
-                
-                // Update status select
-                if (opportunity.call_status != 8 || pageArgs != 'assigned_no_show_page') {
-                    this.updateAssignedSelectStatus(newRow, opportunity);
-                }
-                
-                // Update task list buttons
-                window.taskList.updateAssignedTaskList(newRow, opportunity);
 
-                // Update timer
-                this.updateAssignedTimer(newRow, opportunity);
-                
-                assignedTbody.appendChild(newRow);
-            });
+                    // Update ad name
+                    this.updateAssignedAdName(newRow, opportunity);
+                    
+                    // Update status select
+                    if (opportunity.call_status != 8 || type != 'assigned_no_show') {
+                        this.updateAssignedSelectStatus(newRow, opportunity);
+                    }
+                        
+                    // Update task list buttons
+                    window.taskList.updateAssignedTaskList(newRow, opportunity);
 
-            // Update pagination
-            const pageNav = $(cardBody).find('nav[aria-label="pagination"]')[0];
-            if (pageNav) {
-                window.callSettingPagination.updatePagination(pageNav, json.total_count, parseInt(page), 10, pageArgs);
+                    // Update timer
+                    this.updateAssignedTimer(newRow, opportunity);
+                        
+                    assignedTbody.appendChild(newRow);
+                });
+
+                // Get the parent card and update the text value of element with class items_count
+                const parentCard = $(cardBody).closest('.card');
+                const itemsCount = $(parentCard).find('.items_count')[0];
+                itemsCount.textContent = json.total_count;
+                // Reinitialize tooltips
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                });
+                resolve(json.total_count);
             }
-            // Get the parent card and update the text value of element with class items_count
-            const parentCard = $(cardBody).closest('.card');
-            const itemsCount = $(parentCard).find('.items_count')[0];
-            itemsCount.textContent = json.total_count;
-            // Reinitialize tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl)
-            });
-        }
+        });
     }
 
     updateAssignedAdName(newRow, lead) {

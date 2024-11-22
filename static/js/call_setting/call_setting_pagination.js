@@ -21,13 +21,12 @@ class CallSettingPagination {
 
     updatePagination(paginationNav, totalCount, currentPage, pageSize, pageArgs) {
         if (!paginationNav) return;
-
         const totalPages = Math.ceil(totalCount / pageSize);
         if (totalPages <= 1) {
-            paginationNav.innerHTML = '';
+            $(paginationNav).hide();
             return;
         }
-
+        $(paginationNav).show();
         const ul = paginationNav.querySelector('ul.pagination');
         ul.innerHTML = '';
 
@@ -131,74 +130,39 @@ class CallSettingPagination {
                }
             }
         }
-        
+        const element_id = leadsList.id;
+        const page = e.target.getAttribute('data-page');
+        const pageArgs = e.target.getAttribute('data-page-args');
+        const params = {};
+        params[pageArgs] = page;
         if (isPipeline) {
-            window.leadPipeline.handlePipeline(e.target);
+            window.leadPipeline.handlePipeline(element_id, params).then(([totalCount, card]) => {
+                this.handleResponse(card, page, pageArgs, totalCount);
+            });
         }
         if (isAssigned) {
-            window.assignedLead.handleAssigned(e.target);
+            window.assignedLead.handleAssigned(element_id, params).then(([totalCount, card]) => {
+                this.handleResponse(card, page, pageArgs, totalCount);
+            });
         }
         if (isAssignedAppointment) {
-            window.assignedAppointment.handleAppointment(e.target);
+            window.assignedAppointment.handleAppointment(element_id, params).then(([totalCount, card]) => {
+                this.handleResponse(card, page, pageArgs, totalCount);
+            });
         }
         if (isPipelineAppointment) {
-            window.leadAppointment.handleAppointment(e.target);
+            window.leadAppointment.handleAppointment(element_id, params).then(([totalCount, card]) => {
+                this.handleResponse(card, page, pageArgs, totalCount);
+            });
         }
     }
 
-
-    handleAssignedOpportunitySearch(searchInput) {
-        const searchValue = $('#assigned_leads_search').val();
-        
-        const sections = [
-            {
-                containerId: 'assigned_appointments',
-                pageArgs: 'assigned_appointments_page',
-                templateClass: 'assigned-appt-item'
-            },
-            {
-                containerId: 'assigned_leads',
-                pageArgs: 'assigned_leads_page',
-                templateClass: 'assigned-item'
-            },
-            {
-                containerId: 'assigned_follow_up',
-                pageArgs: 'assigned_follow_up_page',
-                templateClass: 'assigned-item'
-            },
-            {
-                containerId: 'assigned_no_show',
-                pageArgs: 'assigned_no_show_page',
-                templateClass: 'assigned-item'
-            }
-        ];
-
-        sections.forEach(section => {
-            const container = document.getElementById(section.containerId);
-            if (container) {
-                const leadsList = container;
-                const tbody = container.querySelector('tbody');
-                const cardBody = container.closest('.card-body');
-                const templateRow = $(`.${section.templateClass}`)[0];
-                
-                const params = new URLSearchParams();
-                params.append('type', section.containerId);
-                params.append(section.pageArgs, '1');
-                params.append('search', searchValue);
-                
-                this.handleAssignedPageClick(
-                    '1',
-                    section.pageArgs, 
-                    params,
-                    leadsList,
-                    templateRow,
-                    tbody,
-                    cardBody,
-                    null,
-                    searchValue
-                );
-            }
-        });
+    handleResponse(card, page, pageArgs, totalCount) {
+        const pageNav = $(card).find('nav[aria-label="pagination"]')[0];
+        // Update pagination
+        if (pageNav) {
+            this.updatePagination(pageNav, totalCount, parseInt(page), 10, pageArgs);
+        }
     }
 
     initializeEventListeners() {

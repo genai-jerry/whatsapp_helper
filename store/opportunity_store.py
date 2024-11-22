@@ -1073,6 +1073,12 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, search=None, page
                     ) a ON a.opportunity_id = o.id AND a.rn = 1
                     WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
                     AND a.status = 1 AND (o.callback_time IS NULL or DATE(o.callback_time) <= CURDATE())'''
+        if search:
+            count_sql += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
+            formatted_search_term = "%" + search + "%"
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
+            sql_params.append(formatted_search_term)
         if user_id:
             if assigned:
                 count_sql += " AND (o.assigned_to = %s OR o.optin_caller = %s)"

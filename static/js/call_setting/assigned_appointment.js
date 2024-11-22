@@ -1,6 +1,8 @@
 class AssignedAppointment {
     constructor() {
         this.assignedAppointments = {};
+        this.rowElement = {}
+        this.navElement = {}
         this.initializeAppointmentStatusButtons();
     }
     initializeAppointmentStatusButtons() {
@@ -68,120 +70,153 @@ class AssignedAppointment {
         }
     }
 
-    async handleAppointment(element){
-        const containedList = element.closest('.assigned-appt-list');
+    async handleAppointment(element_id, param_args = null){
         if (!this.assignedAppointments['card_body']) {
+            const element = $(`#${element_id}`)[0];
+            const containedList = element.closest('.assigned-appt-list');
             this.assignedAppointments['card_body'] = containedList.closest('.card-body');
+            this.rowElement[element_id] = $(element).find('.assigned-appt-item')[0];
+            this.navElement[element_id] = $(element).find('.pagination')[0];
         }   
 
-        const page = element.getAttribute('data-page');
-        const pageArgs = element.getAttribute('data-page-args');
-        const selectedEmployeeId = element.getAttribute('data-selected-employee-id');
-
+        const selectedEmployeeId = document.getElementById('employeeSelect').value;
+        
         const params = new URLSearchParams();
-        params.append(pageArgs, page);
-        params.append('type', 'assigned_appointments');
+        params.append('type', element_id);
+
+        if(param_args){
+            Object.keys(param_args).forEach(key => {
+                params.append(key, param_args[key]);
+            });
+        }
         if (selectedEmployeeId) {
             params.append('selected_employee_id', selectedEmployeeId);
         }
-        
-        // Add loading effect
-        this.assignedAppointments['card_body'].classList.add('loading-blur'); 
 
-        await this.handleAssignedApptPageClick(page, pageArgs, params, this.assignedAppointments['card_body'], selectedEmployeeId);
-    }
-
-    async handleAssignedApptPageClick(page, pageArgs, params, cardBody, selectedEmployeeId){
-        const appointmentsTBody = $(cardBody).find('tbody')[0];
-        const templateRow = $(cardBody).find('.assigned-appt-item')[0];
-        fetch(`/review/call-setting${selectedEmployeeId ? '/' + selectedEmployeeId : ''}?${params.toString()}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(json => {
-            this.refreshAppointments(json, cardBody, appointmentsTBody, templateRow, page, pageArgs);
-        }).finally(() => {
-            // Remove loading effect
-            setTimeout(() => {
-                cardBody.classList.remove('loading-blur');
-            }, 300);
+        return new Promise((resolve, reject) => {
+            const card = this.assignedAppointments['card_body'];
+            const templateRow = this.rowElement[element_id].cloneNode(true);
+            card.classList.add('loading-blur');
+            const tableBody = $(card).find('tbody')[0];
+            tableBody.appendChild(templateRow);
+            this.loadAssignedAppointments(params, card, 
+                tableBody, 
+                templateRow, 
+                selectedEmployeeId)
+                .then(totalCount => {
+                    const newNavElement = this.navElement[element_id].cloneNode(true);
+                    $(card).find('.pagination')[0].replaceWith(newNavElement);
+                    resolve([totalCount, card]);
+                    card.classList.remove('loading-blur');
+                })
+                .catch(error => {
+                    reject(error);
+                }).finally(() => {
+                    setTimeout(() => {
+                        card.classList.remove('loading-blur');
+                    }, 300);
+                });
         });
     }
 
-    refreshAppointments(json, cardBody, appointmentsTBody, templateRow, page, pageArgs){
-        if (appointmentsTBody) {
-            // Clear existing appointments
-            appointmentsTBody.querySelectorAll('tr').forEach(row => {
-                row.remove();
+    async loadAssignedAppointments(params, cardBody, appointmentsTBody, templateRow, selectedEmployeeId){
+        return new Promise((resolve, reject) => {
+            fetch(`/review/call-setting${selectedEmployeeId ? '/' + selectedEmployeeId : ''}?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(json => {
+                return this.refreshAppointments(json, appointmentsTBody, templateRow);
+            })
+            .then(totalCount => {
+                resolve(totalCount);
+            })
+            .catch(error => {
+                console.error('Error fetching pagination data:', error);
+                reject(error);
+            })
+            .finally(() => {
+                // Remove loading effect
+                setTimeout(() => {
+                    cardBody.classList.remove('loading-blur');
+                }, 300);
             });
-            json.items.forEach(appointment => {
-                const newRow = templateRow.cloneNode(true);
+        });
+    }
 
-                // Update appointment title
-                const titleLink = newRow.querySelector('a[href^="/opportunity/"]');
-                if (titleLink) {
-                    titleLink.href = `/opportunity/${appointment.opportunity_id}`;
-                    titleLink.textContent = appointment.opportunity_name;
-                }
+    async refreshAppointments(json, appointmentsTBody, templateRow){
+        return new Promise((resolve, reject) => {
+            if (appointmentsTBody) {
+                // Clear existing appointments
+                appointmentsTBody.querySelectorAll('tr').forEach(row => {
+                    row.remove();
+                });
+                json.items.forEach(appointment => {
+                    const newRow = templateRow.cloneNode(true);
 
-                // Update phone number
-                const phoneButton = newRow.querySelector('a[href^="tel:"]');
-                if (phoneButton) {
-                    phoneButton.href = `tel:${appointment.opportunity_phone}`;
-                    phoneButton.textContent = appointment.opportunity_phone;
-                }
+                    // Update appointment title
+                    const titleLink = newRow.querySelector('a[href^="/opportunity/"]');
+                    if (titleLink) {
+                        titleLink.href = `/opportunity/${appointment.opportunity_id}`;
+                        titleLink.textContent = appointment.opportunity_name;
+                    }
 
-                // Update appointment time
-                const appointmentTimeBadge = newRow.querySelector('.bi-calendar-event')?.closest('.badge');
-                if (appointmentTimeBadge) {
-                    appointmentTimeBadge.textContent = formatDateWithMonth(appointment.appointment_time);
-                }
+                    // Update phone number
+                    const phoneButton = newRow.querySelector('a[href^="tel:"]');
+                    if (phoneButton) {
+                        phoneButton.href = `tel:${appointment.opportunity_phone}`;
+                        phoneButton.textContent = appointment.opportunity_phone;
+                    }
 
-                // Update ad name
-                const adNameBadge = newRow.querySelector('.bi-megaphone')?.closest('.badge');
-                if (adNameBadge) {
-                    adNameBadge.textContent = appointment.ad_name.length > 10 ? 
-                        appointment.ad_name.substring(0, 10) + '...' : 
-                        appointment.ad_name;
-                    adNameBadge.setAttribute('title', appointment.ad_name);
-                }
+                    // Update appointment time
+                    const appointmentTimeBadge = newRow.querySelector('.bi-calendar-event')?.closest('.badge');
+                    if (appointmentTimeBadge) {
+                        appointmentTimeBadge.textContent = formatDateWithMonth(appointment.appointment_time);
+                    }
 
-                // Update status buttons
-                const confirmButton = newRow.querySelector('.confirm-call');
-                if (confirmButton) {
-                    confirmButton.id = `confirm-call-${appointment.appointment_id}`;
-                    confirmButton.setAttribute('data-appointment-id', appointment.appointment_id);
-                    confirmButton.classList.toggle('btn-success', appointment.confirmed);
-                    confirmButton.classList.toggle('btn-primary', !appointment.confirmed);
-                    confirmButton.disabled = appointment.confirmed;
-                    confirmButton.onclick = () => window.settingPipeline.addConfirmCallHandler(confirmButton);
-                }
+                    // Update ad name
+                    const adNameBadge = newRow.querySelector('.bi-megaphone')?.closest('.badge');
+                    if (adNameBadge) {
+                        adNameBadge.textContent = appointment.ad_name.length > 10 ? 
+                            appointment.ad_name.substring(0, 10) + '...' : 
+                            appointment.ad_name;
+                        adNameBadge.setAttribute('title', appointment.ad_name);
+                    }
 
-                const discoveryButton = newRow.querySelector('.discovery-call-done');
-                if (discoveryButton) {
-                    discoveryButton.setAttribute('data-appointment-id', appointment.appointment_id);
-                    discoveryButton.setAttribute('data-opportunity-id', appointment.opportunity_id);
-                    discoveryButton.classList.remove('btn-success');
-                    discoveryButton.classList.add('btn-primary');
-                    discoveryButton.onclick = () => window.settingPipeline.addDiscoveryCallDoneHandler(discoveryButton);
-                }
+                    // Update status buttons
+                    const confirmButton = newRow.querySelector('.confirm-call');
+                    if (confirmButton) {
+                        confirmButton.id = `confirm-call-${appointment.appointment_id}`;
+                        confirmButton.setAttribute('data-appointment-id', appointment.appointment_id);
+                        confirmButton.classList.toggle('btn-success', appointment.confirmed);
+                        confirmButton.classList.toggle('btn-primary', !appointment.confirmed);
+                        confirmButton.disabled = appointment.confirmed;
+                        confirmButton.onclick = () => window.settingPipeline.addConfirmCallHandler(confirmButton);
+                    }
 
-                // Update task list
-                window.taskList.updateAssignedTaskList(newRow, {'id': appointment.opportunity_id, 'name': appointment.opportunity_name});
+                    const discoveryButton = newRow.querySelector('.discovery-call-done');
+                    if (discoveryButton) {
+                        discoveryButton.setAttribute('data-appointment-id', appointment.appointment_id);
+                        discoveryButton.setAttribute('data-opportunity-id', appointment.opportunity_id);
+                        discoveryButton.classList.remove('btn-success');
+                        discoveryButton.classList.add('btn-primary');
+                        discoveryButton.onclick = () => window.settingPipeline.addDiscoveryCallDoneHandler(discoveryButton);
+                    }
 
-                const pageNav = $(cardBody).find('nav[aria-label="pagination"]')[0];
-                window.callSettingPagination.updatePagination(pageNav, json.total_count, parseInt(page), 10, pageArgs);
+                    // Update task list
+                    window.taskList.updateAssignedTaskList(newRow, {'id': appointment.opportunity_id, 'name': appointment.opportunity_name});
 
-                appointmentsTBody.appendChild(newRow);
-            });
-
+                    appointmentsTBody.appendChild(newRow);
+                });
+            }
             // Reinitialize tooltips
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
-        }
+            resolve(json.total_count);
+        })
     }
 }
 // Initialize when document is ready
