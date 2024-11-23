@@ -21,7 +21,7 @@
 <br>
 
 <p>
-    {% with id = appointment.opportunity_id, name = appointment.opportunity_name %}
+    {% with id = appointment.opportunity_id, name = appointment.opportunity_name, tasks = appointment.task_count, comments = appointment.comment_count %}
         {% include "common/_list_tasks.html" %}
     {% endwith %}
 </p>

@@ -1,5 +1,5 @@
 <button type="button" class="btn btn-primary btn-sm task-comment-btn border border-white" onclick="listTasks({{ id }}, '{{ name }}')" title="List Tasks">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16" data-bs-toggle="tooltip" data-bs-placement="top">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="{% if tasks > 0 %}gold{% else %}white{% endif %}" class="bi bi-list-task no-tasks" viewBox="0 0 16 16" data-bs-toggle="tooltip" data-bs-placement="top">
         <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5H2zM3 3H2v1h1V3z"/>
         <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9z"/>
         <path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5V7zM2 7h1v1H2V7zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5H2zm1 .5H2v1h1v-1z"/>
@@ -12,7 +12,7 @@
     </svg>
 </button>
 <button type="button" class="btn btn-primary btn-sm task-comment-btn border border-white" onclick="listComments({{ id }}, '{{ name }}')" title="List Comments">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-left-text" viewBox="0 0 16 16" data-bs-toggle="tooltip" data-bs-placement="top" title="List Comments">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="{% if comments > 0 %}gold{% else %}white{% endif %}" class="bi bi-chat-left-text" viewBox="0 0 16 16" data-bs-toggle="tooltip" data-bs-placement="top" title="List Comments">
         <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
         <path d="M3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 6a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 6zm0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
     </svg> 

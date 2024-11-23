@@ -77,7 +77,7 @@ function loadOpportunities(searchTerm, searchType, filters) {
                 row += '</td>' +
                 '<td>' + (opportunity.opportunity_status ? opportunity.opportunity_status : 'Not Set') + '</td>' +
                 '<td>' + agentSelect + '</td>' +
-                '<td>' + task_comment_actions(opportunity.id, opportunity.name) + '</td>' +
+                '<td>' + task_comment_actions(opportunity.id, opportunity.name, opportunity.task_count, opportunity.comment_count) + '</td>' +
                 '</tr>';
             $('#opportunitiesTable tbody').append(row);
         });

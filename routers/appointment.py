@@ -75,7 +75,8 @@ def list_appointments():
         'page': page,
         'total_pages': pages,
         'selected_employee_id': current_user.id,
-        'total_items': total_items}), 200
+        'total_items': total_items
+        }), 200
 
 @appointment_blueprint.route('/<int:appointment_id>/cancel', methods=['POST'])
 @login_required

@@ -1,0 +1,112 @@
+<div class="legend" style="text-align: center; font-weight: bold;">
+    Daily Performance Metrics
+</div>
+<canvas id="metricsChart"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Make an AJAX call to load the report
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/opportunity/report/daily', true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var reportData = JSON.parse(xhr.responseText);
+                updateChart(reportData);
+            }
+        };
+        xhr.send();
+
+        function updateChart(reportData) {
+            // Define colors for each metric
+            const colors = {
+                'Call Show up for follow up bookings': 'rgb(75, 192, 192)',
+                'Call Show up for self bookings': 'rgb(255, 99, 132)',
+                'Call booked through Follow up': 'rgb(54, 162, 235)',
+                'Call booked via VSL': 'rgb(255, 206, 86)',
+                'Overall Show-up': 'rgb(153, 102, 255)',
+                'Sale Conversion': 'rgb(255, 159, 64)',
+                'Total Leads': 'rgb(201, 203, 207)'
+            };
+
+            // Prepare datasets
+            const datasets = Object.keys(colors).map(metric => ({
+                label: metric,
+                data: Object.entries(reportData).map(([date, values]) => ({
+                    x: new Date(date),  // Convert string to Date object
+                    y: metric === 'Total Leads' ? values[metric][0] : values[metric][1]
+                })),
+                borderColor: colors[metric],
+                backgroundColor: colors[metric],
+                tension: 0.4,
+                fill: false
+            }));
+
+            var ctx = document.getElementById('metricsChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'MMM d'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Value'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.dataset.label === 'Total Leads') {
+                                        label += context.parsed.y;
+                                    } else {
+                                        label += context.parsed.y.toFixed(1) + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>

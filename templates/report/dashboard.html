@@ -31,7 +31,7 @@ Report
         <div class="col-md-6">      
             <div class="table-responsive">
                 {% if "Admin" in current_user.roles or "Sales" in current_user.roles %}
-                {% include "report/leads/_custom_report.html" %}
+                {% include "report/leads/_daily_report.html" %}
                 {% endif %}
             </div>
         </div>

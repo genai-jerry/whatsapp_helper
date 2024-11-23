@@ -7,10 +7,20 @@ class TaskList {
                 const onclickAttr = button.getAttribute('onclick');
                 if (onclickAttr.includes('listTasks')) {
                     button.setAttribute('onclick', `listTasks(${lead.id}, '${lead.name}')`);
+                    if (lead.task_count > 0) {
+                        $(button).find('.bi-list-task').attr('fill', 'gold');
+                    }else{
+                        $(button).find('.bi-list-task').attr('fill', 'white');
+                    }
                 } else if (onclickAttr.includes('showCreateTaskModal')) {
                     button.setAttribute('onclick', `showCreateTaskModal(${lead.id}, '${lead.name}')`);
                 } else if (onclickAttr.includes('listComments')) {
                     button.setAttribute('onclick', `listComments(${lead.id}, '${lead.name}')`);
+                    if (lead.comment_count > 0) {
+                        $(button).find('.bi-chat-left-text').attr('fill', 'gold');
+                    }else{
+                        $(button).find('.bi-chat-left-text').attr('fill', 'white');
+                    }
                 } else if (onclickAttr.includes('showCreateCommentModal')) {
                     button.setAttribute('onclick', `showCreateCommentModal(${lead.id}, '${lead.name}')`);
                 }
