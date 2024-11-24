@@ -429,7 +429,7 @@ def set_call_setter(opportunity_id, user_id):
 @opportunity_blueprint.route('/report/daily', methods=['GET'])
 @login_required
 def get_daily_report():
-    start_date = request.args.get('start_date', (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))
+    start_date = request.args.get('start_date', (datetime.datetime.now() - datetime.timedelta(days=15)).strftime('%Y-%m-%d'))
     end_date = request.args.get('end_date', datetime.datetime.  now().strftime('%Y-%m-%d'))
     metrics = generate_day_wise_metrics(start_date, end_date)
     return jsonify(metrics), 200

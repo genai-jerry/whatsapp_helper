@@ -42,11 +42,11 @@ function fetchAndDisplayReport(startDate, endDate, tableBody) {
         success: function(report) {
             tableBody.empty();  // clear previous table data
             report = JSON.parse(report);
-            for (const data of report) {
+            for (const [key, value] of Object.entries(report)) {
                 row = $('<tr></tr>');
-                row.append($('<td></td>').text(data.name || 'Call Pending'));
-                row.append($('<td></td>').text(data.count));
-                row.append($('<td></td>').text(data.percentage));
+                row.append($('<td></td>').text(key));
+                row.append($('<td></td>').text(value[0]));
+                row.append($('<td></td>').text(value[1] !== -1 ? value[1] + '%' : 'N/A'));
                 tableBody.append(row);
             }
         },

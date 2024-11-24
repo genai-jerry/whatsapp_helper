@@ -723,13 +723,64 @@ def generate_report(start_date, end_date):
         if cursor:
             cursor.close()
 
+def generate_closure_report(start_date, end_date):
+    try:
+        conn = create_connection()
+        cursor = conn.cursor()
+        end_date = f'{end_date} 23:59:59'
+        # Define the SQL queries to get the data for the conversion metrics
+        load_followup_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where o.call_setter != 4 and o.call_setter is not Null'
+        load_self_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (a.status !=6 and a.status != 5) AND (o.call_setter = 4 or o.call_setter is Null)'
+        load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status !=6 and a.status != 5)'
+        queries = {
+            'appointments_by_setter': f"{load_followup_opportunities} and a.appointment_time BETWEEN %s AND %s",
+            'setter_appointment_show_up': f"{load_followup_opportunities} AND a.status in (2,3,4) AND a.appointment_time BETWEEN %s AND %s",
+            'appointments_by_self': f"{load_self_opportunities} AND a.appointment_time BETWEEN %s AND %s",
+            'self_appointment_show_up': f"{load_self_opportunities} AND a.status in (2,3,4) AND a.appointment_time BETWEEN %s AND %s",
+            'sale_conversion': '''SELECT count(s.id) 
+                from sale s 
+                left join opportunity o on o.id = s.opportunity_id
+                where s.sale_date BETWEEN %s AND %s AND s.is_final = 1 AND s.cancelled != 1''',
+            'total_appointments': f"{load_opportunities_not_canceled} AND a.appointment_time BETWEEN %s AND %s",
+        }
+
+        metrics = {}
+        for metric, query in queries.items():
+            cursor.execute(query, (start_date, end_date))
+            count = cursor.fetchone()[0]
+            metrics[metric] = count
+
+        appointments_by_setter = metrics['appointments_by_setter']
+        setter_appointment_show_up = metrics['setter_appointment_show_up']
+        appointments_by_self = metrics['appointments_by_self']
+        self_appointment_show_up = metrics['self_appointment_show_up']
+        sale_conversion = metrics['sale_conversion']
+        total_appointments = appointments_by_setter + appointments_by_self
+        total_calls_showed_up = setter_appointment_show_up + self_appointment_show_up
+
+
+        # Calculate the percentages
+        metrics_data = {}
+        metrics_data['Total Appointments Set'] = [total_appointments, -1]
+        metrics_data['Appointments by setter'] = [appointments_by_setter, round((appointments_by_setter / total_appointments) * 100, 2) if total_appointments != 0 else 0]
+        metrics_data['Appointments Show up for setter'] = [setter_appointment_show_up, round((setter_appointment_show_up / appointments_by_setter) * 100, 2) if appointments_by_setter != 0 else 0]
+        metrics_data['Appointments by self'] = [appointments_by_self, round((appointments_by_self / total_appointments) * 100, 2) if total_appointments != 0 else 0]
+        metrics_data['Appointments Show up for self'] = [self_appointment_show_up, round((self_appointment_show_up / appointments_by_self) * 100, 2) if appointments_by_self != 0 else 0]
+        metrics_data['Overall Show-up'] = [total_calls_showed_up, round((total_calls_showed_up / total_appointments) * 100, 2) if total_appointments != 0 else 0]
+        metrics_data['Sale Conversion'] = [sale_conversion, round((sale_conversion / (total_calls_showed_up)) * 100, 2) if total_calls_showed_up != 0 else 0]
+
+        return metrics_data
+    finally:
+        if cursor:
+            cursor.close()
+
 def generate_metrics(start_date, end_date):
     try:
         conn = create_connection()
         cursor = conn.cursor()
         end_date = f'{end_date} 23:59:59'
         # Define the SQL queries to get the data for the conversion metrics
-        load_total_opportunities = 'SELECT COUNT(*) FROM opportunity WHERE register_time BETWEEN %s AND %s'
+        load_total_opportunities = 'SELECT COUNT(*) FROM opportunity WHERE last_register_time BETWEEN %s AND %s'
         load_followup_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where o.call_setter != 4 and o.call_setter is not Null'
         load_self_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (a.status !=6 and a.status != 5) AND (o.call_setter = 4 or o.call_setter is Null)'
         load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status !=6 and a.status != 5)'
@@ -774,6 +825,60 @@ def generate_metrics(start_date, end_date):
         if cursor:
             cursor.close()
 
+def generate_metrics_for_daily_performance(start_date, end_date):
+    try:
+        conn = create_connection()
+        cursor = conn.cursor()
+        end_date = f'{end_date} 23:59:59'
+        # Define the SQL queries to get the data for the conversion metrics
+        load_total_opportunities = 'SELECT COUNT(*) FROM opportunity WHERE last_register_time BETWEEN %s AND %s'
+        load_followup_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where o.call_setter != 4 and o.call_setter is not Null'
+        load_self_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (a.status !=6 and a.status != 5) AND (o.call_setter = 4 or o.call_setter is Null)'
+        load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status !=6 and a.status != 5)'
+        queries = {
+            'total_leads': load_total_opportunities,
+            'call_booked_follow_up': f"{load_followup_opportunities} and o.last_register_time BETWEEN %s AND %s",
+            'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status in (2,3,4) AND o.last_register_time BETWEEN %s AND %s",
+            'call_booked_vsl': f"{load_self_opportunities} AND o.last_register_time BETWEEN %s AND %s",
+            'call_show_up_self': f"{load_self_opportunities} AND a.status in (2,3,4) AND o.last_register_time BETWEEN %s AND %s",
+            'sale_conversion': '''SELECT count(s.id) 
+                from sale s 
+                left join opportunity o on o.id = s.opportunity_id
+                where o.last_register_time BETWEEN %s AND %s AND s.is_final = 1 AND s.cancelled != 1''',
+            'total_calls_booked': f"{load_opportunities_not_canceled} AND o.last_register_time BETWEEN %s AND %s",
+        }
+
+        metrics = {}
+        for metric, query in queries.items():
+            cursor.execute(query, (start_date, end_date))
+            count = cursor.fetchone()[0]
+            metrics[metric] = count
+
+        call_booked_through_followup = metrics['call_booked_follow_up']
+        call_show_up_followup = metrics['call_show_up_follow_up']
+        call_booked_by_self = metrics['call_booked_vsl']
+        call_show_up_self = metrics['call_show_up_self']
+        sale_conversion = metrics['sale_conversion']
+        total_calls_booked = call_booked_through_followup + call_booked_by_self
+        total_leads = metrics['total_leads']
+        total_calls_showed_up = call_show_up_followup + call_show_up_self
+
+
+        # Calculate the percentages
+        metrics_data = {}
+        metrics_data['Total Leads'] = [total_leads, -1]
+        metrics_data['Call booked through Follow up'] = [call_booked_through_followup, round((call_booked_through_followup / total_leads) * 100, 2) if total_leads != 0 else 0]
+        metrics_data['Call Show up for follow up bookings'] = [call_show_up_followup, round((call_show_up_followup / call_booked_through_followup) * 100, 2) if call_booked_through_followup != 0 else 0]
+        metrics_data['Call booked via VSL'] = [call_booked_by_self, round((call_booked_by_self / total_leads) * 100, 2) if total_leads != 0 else 0]
+        metrics_data['Call Show up for self bookings'] = [call_show_up_self, round((call_show_up_self / call_booked_by_self) * 100, 2) if call_booked_by_self != 0 else 0]
+        metrics_data['Overall Show-up'] = [total_calls_showed_up, round((total_calls_showed_up / total_calls_booked) * 100, 2) if total_calls_booked != 0 else 0]
+        metrics_data['Sale Conversion'] = [sale_conversion, round((sale_conversion / (total_calls_showed_up)) * 100, 2) if total_calls_showed_up != 0 else 0]
+
+        return metrics_data
+    finally:
+        if cursor:
+            cursor.close()
+
 def generate_day_wise_metrics(start_date, end_date):
     try:
         connection = create_connection()
@@ -782,49 +887,50 @@ def generate_day_wise_metrics(start_date, end_date):
 
         # Base queries modified to group by date
         load_total_opportunities = '''
-            SELECT COUNT(*), DATE(register_time) as date 
+            SELECT COUNT(*), DATE(last_register_time) as date 
             FROM opportunity 
-            WHERE register_time BETWEEN %s AND %s 
-            GROUP BY DATE(register_time)'''
+            WHERE last_register_time BETWEEN %s AND %s 
+            GROUP BY DATE(last_register_time)'''
         
         load_followup_opportunities = '''
-            SELECT COUNT(DISTINCT o.id), DATE(a.appointment_time) as date
+            SELECT COUNT(DISTINCT o.id), DATE(o.last_register_time) as date
             FROM appointments a 
             JOIN opportunity o ON o.id = a.opportunity_id 
             WHERE o.call_setter != 4 AND o.call_setter IS NOT NULL
-            AND a.appointment_time BETWEEN %s AND %s
-            GROUP BY DATE(a.appointment_time)'''
+            AND o.last_register_time BETWEEN %s AND %s
+            GROUP BY DATE(o.last_register_time)'''
             
         load_followup_showup = '''
-            SELECT COUNT(DISTINCT o.id), DATE(a.appointment_time) as date
+            SELECT COUNT(DISTINCT o.id), DATE(o.last_register_time) as date
             FROM appointments a 
             JOIN opportunity o ON o.id = a.opportunity_id 
             WHERE o.call_setter != 4 AND o.call_setter IS NOT NULL
-            AND a.status IN (2,3,4) AND a.appointment_time BETWEEN %s AND %s
-            GROUP BY DATE(a.appointment_time)'''
+            AND a.status IN (2,3,4) AND o.last_register_time BETWEEN %s AND %s
+            GROUP BY DATE(o.last_register_time)'''
             
         load_self_opportunities = '''
-            SELECT COUNT(DISTINCT o.id), DATE(a.appointment_time) as date
+            SELECT COUNT(DISTINCT o.id), DATE(o.last_register_time) as date
             FROM appointments a 
             JOIN opportunity o ON o.id = a.opportunity_id 
             WHERE (a.status NOT IN (6,5)) AND (o.call_setter = 4 OR o.call_setter IS NULL)
-            AND a.appointment_time BETWEEN %s AND %s
-            GROUP BY DATE(a.appointment_time)'''
+            AND o.last_register_time BETWEEN %s AND %s
+            GROUP BY DATE(o.last_register_time)'''
             
         load_self_showup = '''
-            SELECT COUNT(DISTINCT o.id), DATE(a.appointment_time) as date
+            SELECT COUNT(DISTINCT o.id), DATE(o.last_register_time) as date
             FROM appointments a 
             JOIN opportunity o ON o.id = a.opportunity_id 
             WHERE (a.status NOT IN (6,5)) AND (o.call_setter = 4 OR o.call_setter IS NULL)
-            AND a.status IN (2,3,4) AND a.appointment_time BETWEEN %s AND %s
-            GROUP BY DATE(a.appointment_time)'''
+            AND a.status IN (2,3,4) AND o.last_register_time BETWEEN %s AND %s
+            GROUP BY DATE(o.last_register_time)'''
             
         load_sales = '''
-            SELECT COUNT(id), DATE(sale_date) as date
-            FROM sale 
-            WHERE sale_date BETWEEN %s AND %s 
-            AND is_final = 1 AND cancelled != 1
-            GROUP BY DATE(sale_date)'''
+            SELECT COUNT(s.id), DATE(o.last_register_time) as date
+            FROM sale s
+            LEFT JOIN opportunity o ON o.id = s.opportunity_id
+            WHERE o.last_register_time BETWEEN %s AND %s 
+            AND s.is_final = 1 AND s.cancelled != 1
+            GROUP BY DATE(o.last_register_time)'''
 
         # Execute queries and store results
         cursor.execute(load_total_opportunities, (start_date, end_date))
@@ -859,22 +965,29 @@ def generate_day_wise_metrics(start_date, end_date):
         for date in date_range:
             total_leads = total_leads_by_date.get(date, 0)
             followup_bookings = followup_bookings_by_date.get(date, 0)
+            followup_bookings_percentage = round((followup_bookings / total_leads * 100), 2) if total_leads > 0 else 0
             followup_showup = followup_showup_by_date.get(date, 0)
-            self_bookings = self_bookings_by_date.get(date, 0)
+            followup_showup_percentage = round((followup_showup / followup_bookings * 100), 2) if followup_bookings > 0 else 0
+            self_bookings = self_bookings_by_date.get(date, 0)  
+            self_bookings_percentage = round((self_bookings / total_leads * 100), 2) if total_leads > 0 else 0
             self_showup = self_showup_by_date.get(date, 0)
+            self_showup_percentage = round((self_showup / self_bookings * 100), 2) if self_bookings > 0 else 0
             sales = sales_by_date.get(date, 0)
             
             total_bookings = followup_bookings + self_bookings
             total_showup = followup_showup + self_showup
+            total_showup_percentage = round((total_showup / total_bookings * 100), 2) if total_bookings > 0 else 0
+
+            sales_percentage = round((sales / total_showup * 100), 2) if total_showup > 0 else 0
 
             metrics = {
                 'Total Leads': [total_leads, -1],
-                'Call booked through Follow up': [followup_bookings, round((followup_bookings / total_leads * 100), 2) if total_leads > 0 else 0],
-                'Call Show up for follow up bookings': [followup_showup, round((followup_showup / followup_bookings * 100), 2) if followup_bookings > 0 else 0],
-                'Call booked via VSL': [self_bookings, round((self_bookings / total_leads * 100), 2) if total_leads > 0 else 0],
-                'Call Show up for self bookings': [self_showup, round((self_showup / self_bookings * 100), 2) if self_bookings > 0 else 0],
-                'Overall Show-up': [total_showup, round((total_showup / total_bookings * 100), 2) if total_bookings > 0 else 0],
-                'Sale Conversion': [sales, round((sales / total_showup * 100), 2) if total_showup > 0 else 0]
+                'Call booked by call setter': [followup_bookings, followup_bookings_percentage],
+                'Call Show up for call setter bookings': [followup_showup, followup_showup_percentage],
+                'Call booked by Self': [self_bookings, self_bookings_percentage],
+                'Call Show up for self bookings': [self_showup, self_showup_percentage],
+                'Overall Show-up': [total_showup, total_showup_percentage],
+                'Sale Conversion': [sales, sales_percentage]
             }
             
             daily_metrics[date] = metrics
