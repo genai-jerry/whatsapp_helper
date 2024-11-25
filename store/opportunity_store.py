@@ -813,10 +813,10 @@ def generate_metrics(start_date, end_date):
         # Calculate the percentages
         metrics_data = {}
         metrics_data['Total Leads'] = [total_leads, -1]
-        metrics_data['Call booked through Follow up'] = [call_booked_through_followup, round((call_booked_through_followup / total_leads) * 100, 2) if total_leads != 0 else 0]
-        metrics_data['Call Show up for follow up bookings'] = [call_show_up_followup, round((call_show_up_followup / call_booked_through_followup) * 100, 2) if call_booked_through_followup != 0 else 0]
-        metrics_data['Call booked via VSL'] = [call_booked_by_self, round((call_booked_by_self / total_leads) * 100, 2) if total_leads != 0 else 0]
-        metrics_data['Call Show up for self bookings'] = [call_show_up_self, round((call_show_up_self / call_booked_by_self) * 100, 2) if call_booked_by_self != 0 else 0]
+        metrics_data['Opt-in Appointments'] = [call_booked_through_followup, round((call_booked_through_followup / total_leads) * 100, 2) if total_leads != 0 else 0]
+        metrics_data['Show-up for opt-in appointments'] = [call_show_up_followup, round((call_show_up_followup / call_booked_through_followup) * 100, 2) if call_booked_through_followup != 0 else 0]
+        metrics_data['Self Booked Appointments'] = [call_booked_by_self, round((call_booked_by_self / total_leads) * 100, 2) if total_leads != 0 else 0]
+        metrics_data['Show-up for self booked appointments'] = [call_show_up_self, round((call_show_up_self / call_booked_by_self) * 100, 2) if call_booked_by_self != 0 else 0]
         metrics_data['Overall Show-up'] = [total_calls_showed_up, round((total_calls_showed_up / total_calls_booked) * 100, 2) if total_calls_booked != 0 else 0]
         metrics_data['Sale Conversion'] = [sale_conversion, round((sale_conversion / (total_calls_showed_up)) * 100, 2) if total_calls_showed_up != 0 else 0]
 
@@ -867,10 +867,10 @@ def generate_metrics_for_daily_performance(start_date, end_date):
         # Calculate the percentages
         metrics_data = {}
         metrics_data['Total Leads'] = [total_leads, -1]
-        metrics_data['Call booked through Follow up'] = [call_booked_through_followup, round((call_booked_through_followup / total_leads) * 100, 2) if total_leads != 0 else 0]
-        metrics_data['Call Show up for follow up bookings'] = [call_show_up_followup, round((call_show_up_followup / call_booked_through_followup) * 100, 2) if call_booked_through_followup != 0 else 0]
-        metrics_data['Call booked via VSL'] = [call_booked_by_self, round((call_booked_by_self / total_leads) * 100, 2) if total_leads != 0 else 0]
-        metrics_data['Call Show up for self bookings'] = [call_show_up_self, round((call_show_up_self / call_booked_by_self) * 100, 2) if call_booked_by_self != 0 else 0]
+        metrics_data['Opt-in Appointments'] = [call_booked_through_followup, round((call_booked_through_followup / total_leads) * 100, 2) if total_leads != 0 else 0]
+        metrics_data['Show-up for opt-in appointments'] = [call_show_up_followup, round((call_show_up_followup / call_booked_through_followup) * 100, 2) if call_booked_through_followup != 0 else 0]
+        metrics_data['Self Booked Appointments'] = [call_booked_by_self, round((call_booked_by_self / total_leads) * 100, 2) if total_leads != 0 else 0]
+        metrics_data['Show-up for self booked appointments'] = [call_show_up_self, round((call_show_up_self / call_booked_by_self) * 100, 2) if call_booked_by_self != 0 else 0]
         metrics_data['Overall Show-up'] = [total_calls_showed_up, round((total_calls_showed_up / total_calls_booked) * 100, 2) if total_calls_booked != 0 else 0]
         metrics_data['Sale Conversion'] = [sale_conversion, round((sale_conversion / (total_calls_showed_up)) * 100, 2) if total_calls_showed_up != 0 else 0]
 
@@ -962,7 +962,7 @@ def generate_day_wise_metrics(start_date, end_date):
 
         # Compile metrics for each day
         daily_metrics = {}
-        for date in date_range:
+        for index, date in enumerate(date_range):
             total_leads = total_leads_by_date.get(date, 0)
             followup_bookings = followup_bookings_by_date.get(date, 0)
             followup_bookings_percentage = round((followup_bookings / total_leads * 100), 2) if total_leads > 0 else 0
@@ -987,7 +987,8 @@ def generate_day_wise_metrics(start_date, end_date):
                 'Call booked by Self': [self_bookings, self_bookings_percentage],
                 'Call Show up for self bookings': [self_showup, self_showup_percentage],
                 'Overall Show-up': [total_showup, total_showup_percentage],
-                'Sale Conversion': [sales, sales_percentage]
+                'Sale Conversion': [sales, sales_percentage],
+                'Log': ['Log Data' if index%2 == 0 else '', -1]
             }
             
             daily_metrics[date] = metrics
