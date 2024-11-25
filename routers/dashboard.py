@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint, request, render_template
 from flask_login import current_user, login_required
 from store.appointment_store import get_all_appointment_status, list_all_appointments_for_confirmation
-from store.opportunity_store import generate_report, generate_metrics, get_all_call_status, list_all_leads_for_follow_up, list_all_leads_for_no_show, list_all_new_leads
+from store.opportunity_store import *
 from store.tasks_store import get_tasks_due
 from store.employee_store import get_all_employees
 from datetime import datetime
@@ -61,7 +61,7 @@ import json
 def report_data():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-    report = generate_report(start_date, end_date)
+    report = generate_closure_report(start_date, end_date)
     
     # Convert the report dictionary to JSON
     report_json = json.dumps(report)
@@ -74,7 +74,7 @@ def report_data():
 def metrics_data():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-    metrics = generate_metrics(start_date, end_date)
+    metrics = generate_metrics_for_daily_performance(start_date, end_date)
     
     # Convert the metrics dictionary to JSON
     metrics_json = json.dumps(metrics)

@@ -24,7 +24,7 @@
 </select>
 </p>
 <p>
-    {% with id = lead.id, name = lead.name %}
+    {% with id = lead.id, name = lead.name, tasks = lead.task_count, comments = lead.comment_count %}
         {% include 'common/_list_tasks.html' %}
     {% endwith %}
 </p>

@@ -33,6 +33,43 @@ def get_ad_spend_for_account(ad_account, start_date, end_date):
         print(error_message)  # Log the error
         raise Exception(error_message)
     
+@facebook_blueprint.route('/refresh')
+def refresh_ad_sets():
+    try:
+        ad_accounts = get_all_ad_accounts() 
+        formatted_accounts = []
+        for ad_account in ad_accounts:
+            # Initialize the API for each account
+            api = FacebookAdsApi.init(
+                ad_account['app_id'], 
+                ad_account['app_secret'], 
+                ad_account['ad_account_access_token']
+            )
+            
+            # Create an AdAccount instance
+            account = AdAccount(f'act_{ad_account["ad_account_id"]}')
+            
+            # Get account details
+            account_details = account.api_get(
+                fields=['id', 'name', 'currency', 'timezone_name']
+            )
+            
+            formatted_accounts.append({
+                'ad_account_id': account_details['id'].replace('act_', ''),
+                'name': account_details['name'],
+                'currency': account_details['currency'],
+                'timezone': account_details['timezone_name']
+            })
+            
+        return formatted_accounts
+    except FacebookRequestError as e:
+        error_message = f"Facebook API error: {e.api_error_message()}"
+        print(error_message)  # Log the error
+        raise Exception(error_message)
+
+def get_ad_accounts():
+    return get_all_ad_accounts()
+    
 def get_ad_spend_for_month(month, year):
     # Initialize the Facebook Ads API
     ad_accounts = get_all_ad_accounts()
@@ -64,3 +101,54 @@ def display_ad_spend(year, month):
         return jsonify({'error': 'Failed to retrieve ad spend data. Please check your permissions and try again.'}), 400
     update_marketing_spend(month_name, year, ad_spend)
     return jsonify({'ad_spend': ad_spend})
+
+@facebook_blueprint.route('/ad_sets')
+def get_all_ad_sets():
+    try:
+        ad_accounts = get_all_ad_accounts()
+        all_ad_sets = []
+        
+        for ad_account in ad_accounts:
+            # Initialize the API for each account
+            FacebookAdsApi.init(
+                ad_account['app_id'],
+                ad_account['app_secret'],
+                ad_account['ad_account_access_token']
+            )
+            
+            # Create an AdAccount instance
+            account = AdAccount(f'act_{ad_account["ad_account_id"]}')
+            
+            # Get ad sets for the account
+            ad_sets = account.get_ad_sets(
+                fields=[
+                    'id',
+                    'name',
+                    'status',
+                    'daily_budget',
+                    'lifetime_budget',
+                    'start_time',
+                    'end_time'
+                ]
+            )
+            
+            # Format ad sets data
+            account_ad_sets = [{
+                'ad_account_id': ad_account['ad_account_id'],
+                'ad_set_id': ad_set['id'],
+                'name': ad_set['name'],
+                'status': ad_set['status'],
+                'daily_budget': ad_set.get('daily_budget'),
+                'lifetime_budget': ad_set.get('lifetime_budget'),
+                'start_time': ad_set.get('start_time'),
+                'end_time': ad_set.get('end_time')
+            } for ad_set in ad_sets]
+            
+            all_ad_sets.extend(account_ad_sets)
+            
+        return jsonify(all_ad_sets)
+        
+    except FacebookRequestError as e:
+        error_message = f"Facebook API error: {e.api_error_message()}"
+        print(error_message)  # Log the error
+        return jsonify({'error': error_message}), 400

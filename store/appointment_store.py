@@ -241,11 +241,15 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None, mentor_i
     query = """
     SELECT a.id, o.name, o.email, o.phone, o.name AS opportunity_name, o.id AS opportunity_id, m.name AS mentor_name, m.id AS mentor_id, a.appointment_time AS appointment_time,
     a.career_challenge, a.challenge_description, a.urgency, a.salary_range, a.expected_salary, a.current_employer, a.financial_situation, a.grade, 
-    a.verified, a.conflicted, a.canceled, a.confirmed, os.name as opportunity_status, a.appointment_number, a.name, a.email, a.telephone
+    a.verified, a.conflicted, a.canceled, a.confirmed, os.name as opportunity_status, a.appointment_number, a.name, a.email, a.telephone,
+    COUNT(DISTINCT t.id) as task_count,
+    COUNT(DISTINCT c.id) as comment_count
     FROM appointments AS a
     LEFT JOIN opportunity AS o ON a.opportunity_id = o.id
     LEFT JOIN opportunity_status AS os ON a.status = os.id
     LEFT JOIN sales_agent AS m ON a.mentor_id = m.id
+    LEFT JOIN tasks AS t ON a.opportunity_id = t.opportunity_id
+    LEFT JOIN comments AS c ON a.opportunity_id = c.opportunity_id
     WHERE (a.canceled = FALSE OR a.canceled IS NULL)
     """
     count_query = "SELECT COUNT(*) FROM appointments WHERE (canceled = FALSE OR canceled IS NULL)"
@@ -263,6 +267,7 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None, mentor_i
             current_time = datetime(2023, 1, 1).date()
             query = query + '''
                 AND a.appointment_time > %s
+                GROUP BY a.id
                 ORDER BY a.appointment_time DESC
                 LIMIT %s OFFSET %s
             '''
@@ -274,6 +279,7 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None, mentor_i
                 current_time = convert_date_str_to_datetime(app_date)
                 query = query + '''
                     and DATE(a.appointment_time) = %s 
+                    GROUP BY a.id
                     ORDER BY a.appointment_time ASC
                     LIMIT %s OFFSET %s
                 '''
@@ -284,6 +290,7 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None, mentor_i
                 current_time = datetime.now(pytz.timezone('GMT')).date()
                 query = query + '''
                     and a.appointment_time > %s 
+                    GROUP BY a.id
                     ORDER BY a.appointment_time ASC
                     LIMIT %s OFFSET %s
                 '''
@@ -334,7 +341,9 @@ def retrieve_appointments(page_number, page_size, max=0, app_date=None, mentor_i
                 'appointment_number': row[22],
                 'applicant_name': row[23],
                 'applicant_email': row[24],
-                'applicant_telephone': row[25]
+                'applicant_telephone': row[25],
+                'task_count': row[26],
+                'comment_count': row[27]
             }
             appointments.append(appointment)
 
@@ -486,8 +495,12 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, search=
         connection = create_connection()
         cursor = connection.cursor()
         sql = '''SELECT a.id, a.opportunity_id, a.status, a.created_at, a.appointment_time,
-                o.name, o.email, o.phone, a.confirmed, o.ad_name
+                o.name, o.email, o.phone, a.confirmed, o.ad_name,
+                COUNT(DISTINCT t.id) as task_count,
+                COUNT(DISTINCT c.id) as comment_count
                 FROM appointments a
+                LEFT JOIN tasks t ON t.opportunity_id = a.opportunity_id
+                LEFT JOIN comments c ON c.opportunity_id = a.opportunity_id
                 JOIN opportunity o on o.id = a.opportunity_id
                 WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
                 AND (a.confirmed = 0 AND a.status IS NULL)'''
@@ -500,22 +513,25 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, search=
             sql_params.append(formatted_search_term)
         if assigned:
             if user_id:
-                sql += " AND a.call_setter = %s ORDER BY a.appointment_time ASC "
+                sql += " AND a.call_setter = %s "
+                sql += " GROUP BY a.id, a.opportunity_id, a.status, a.created_at, a.appointment_time "
                 offset = (page - 1) * page_size
-                sql += " LIMIT %s OFFSET %s"
+                sql += " ORDER BY a.appointment_time ASC LIMIT %s OFFSET %s"
                 sql_params.append(user_id)
                 sql_params.append(page_size)
                 sql_params.append(offset)
             else:
-                sql += " AND a.call_setter IS NOT NULL ORDER BY a.appointment_time ASC "
+                sql += " AND a.call_setter IS NOT NULL "
+                sql += " GROUP BY a.id, a.opportunity_id, a.status, a.created_at, a.appointment_time "
                 offset = (page - 1) * page_size
-                sql += " LIMIT %s OFFSET %s"
+                sql += " ORDER BY a.appointment_time ASC LIMIT %s OFFSET %s"
                 sql_params.append(page_size)
                 sql_params.append(offset)
         else:
-            sql += " AND a.call_setter IS NULL ORDER BY a.appointment_time ASC "
+            sql += " AND a.call_setter IS NULL "
+            sql += " GROUP BY a.id, a.opportunity_id, a.status, a.created_at, a.appointment_time "
             offset = (page - 1) * page_size
-            sql += " LIMIT %s OFFSET %s"
+            sql += " ORDER BY a.appointment_time ASC LIMIT %s OFFSET %s"
             sql_params.append(page_size)
             sql_params.append(offset)
         cursor.execute(sql, sql_params)
@@ -532,7 +548,9 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, search=
                 'opportunity_email': result[6],
                 'opportunity_phone': result[7],
                 'confirmed': result[8],
-                'ad_name': result[9]
+                'ad_name': result[9],
+                'task_count': result[10],
+                'comment_count': result[11],
             }
             appointments.append(appointment)
 

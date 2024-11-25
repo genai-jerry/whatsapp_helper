@@ -188,6 +188,8 @@ def list_opportunities():
             'ad_medium': opportunity['ad_medium'],
             'video_watched': opportunity['video_watched'],
             'ad_placement': opportunity['ad_placement'],
+            'task_count': opportunity['task_count'],
+            'comment_count': opportunity['comment_count']
             }
             response_data.append(opportunity_data)
         
@@ -399,7 +401,6 @@ def record_sale(opportunity_id):
         record_new_sale(opportunity_id, sale_date, sale_value, note, sales_agent, product)
         
         return get_opportunity_detail(opportunity_id)
-        return get_opportunity_detail(opportunity_id)
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
@@ -424,3 +425,11 @@ def set_call_setter(opportunity_id, user_id):
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
+    
+@opportunity_blueprint.route('/report/daily', methods=['GET'])
+@login_required
+def get_daily_report():
+    start_date = request.args.get('start_date', (datetime.datetime.now() - datetime.timedelta(days=15)).strftime('%Y-%m-%d'))
+    end_date = request.args.get('end_date', datetime.datetime.  now().strftime('%Y-%m-%d'))
+    metrics = generate_day_wise_metrics(start_date, end_date)
+    return jsonify(metrics), 200
