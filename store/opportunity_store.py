@@ -734,9 +734,9 @@ def generate_closure_report(start_date, end_date):
         load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status !=6 and a.status != 5)'
         queries = {
             'appointments_by_setter': f"{load_followup_opportunities} and a.appointment_time BETWEEN %s AND %s",
-            'setter_appointment_show_up': f"{load_followup_opportunities} AND a.status in (2,3,4) AND a.appointment_time BETWEEN %s AND %s",
+            'setter_appointment_show_up': f"{load_followup_opportunities} AND a.status in (2,3,4,11,12) AND a.appointment_time BETWEEN %s AND %s",
             'appointments_by_self': f"{load_self_opportunities} AND a.appointment_time BETWEEN %s AND %s",
-            'self_appointment_show_up': f"{load_self_opportunities} AND a.status in (2,3,4) AND a.appointment_time BETWEEN %s AND %s",
+            'self_appointment_show_up': f"{load_self_opportunities} AND a.status in (2,3,4,11,12) AND a.appointment_time BETWEEN %s AND %s",
             'sale_conversion': '''SELECT count(s.id) 
                 from sale s 
                 left join opportunity o on o.id = s.opportunity_id
@@ -787,9 +787,9 @@ def generate_metrics(start_date, end_date):
         queries = {
             'total_leads': load_total_opportunities,
             'call_booked_follow_up': f"{load_followup_opportunities} and a.appointment_time BETWEEN %s AND %s",
-            'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status in (2,3,4) AND a.appointment_time BETWEEN %s AND %s",
+            'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status in (2,3,4,11,12) AND a.appointment_time BETWEEN %s AND %s",
             'call_booked_vsl': f"{load_self_opportunities} AND a.appointment_time BETWEEN %s AND %s",
-            'call_show_up_self': f"{load_self_opportunities} AND a.status in (2,3,4) AND a.appointment_time BETWEEN %s AND %s",
+            'call_show_up_self': f"{load_self_opportunities} AND a.status in (2,3,4,11,12) AND a.appointment_time BETWEEN %s AND %s",
             'sale_conversion': f"SELECT count(s.id) from sale s where s.sale_date BETWEEN %s AND %s AND s.is_final = 1 AND s.cancelled != 1",
             'total_calls_booked': f"{load_opportunities_not_canceled} AND a.appointment_time BETWEEN %s AND %s",
         }
@@ -838,9 +838,9 @@ def generate_metrics_for_daily_performance(start_date, end_date):
         queries = {
             'total_leads': load_total_opportunities,
             'call_booked_follow_up': f"{load_followup_opportunities} and o.last_register_time BETWEEN %s AND %s",
-            'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status in (2,3,4) AND o.last_register_time BETWEEN %s AND %s",
+            'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status in (2,3,4,11,12) AND o.last_register_time BETWEEN %s AND %s",
             'call_booked_vsl': f"{load_self_opportunities} AND o.last_register_time BETWEEN %s AND %s",
-            'call_show_up_self': f"{load_self_opportunities} AND a.status in (2,3,4) AND o.last_register_time BETWEEN %s AND %s",
+            'call_show_up_self': f"{load_self_opportunities} AND a.status in (2,3,4,11,12) AND o.last_register_time BETWEEN %s AND %s",
             'sale_conversion': '''SELECT count(s.id) 
                 from sale s 
                 left join opportunity o on o.id = s.opportunity_id
@@ -905,7 +905,7 @@ def generate_day_wise_metrics(start_date, end_date):
             FROM appointments a 
             JOIN opportunity o ON o.id = a.opportunity_id 
             WHERE o.call_setter != 4 AND o.call_setter IS NOT NULL
-            AND a.status IN (2,3,4) AND o.last_register_time BETWEEN %s AND %s
+            AND a.status IN (2,3,4,11,12) AND o.last_register_time BETWEEN %s AND %s
             GROUP BY DATE(o.last_register_time)'''
             
         load_self_opportunities = '''
@@ -921,7 +921,7 @@ def generate_day_wise_metrics(start_date, end_date):
             FROM appointments a 
             JOIN opportunity o ON o.id = a.opportunity_id 
             WHERE (a.status NOT IN (6,5)) AND (o.call_setter = 4 OR o.call_setter IS NULL)
-            AND a.status IN (2,3,4) AND o.last_register_time BETWEEN %s AND %s
+            AND a.status IN (2,3,4,11,12) AND o.last_register_time BETWEEN %s AND %s
             GROUP BY DATE(o.last_register_time)'''
             
         load_sales = '''
@@ -1167,7 +1167,7 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, search=None, pa
          FROM opportunity o
          LEFT JOIN tasks t ON t.opportunity_id = o.id
          LEFT JOIN comments c ON c.opportunity_id = o.id
-         WHERE o.call_status IS NULL AND (o.callback_time IS NULL or DATE(o.callback_time) <= CURDATE())'''
+         WHERE o.call_status IN (3, 12, 13)  AND (o.callback_time IS NULL or DATE(o.callback_time) <= CURDATE())'''
         sql_params = []
         if search:
             sql += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
@@ -1223,7 +1223,9 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, search=None, pa
             })
         
         sql_params = []
-        count_sql = "SELECT COUNT(id) FROM opportunity WHERE call_status IN (3, 12, 13)  AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())"
+        count_sql = '''SELECT COUNT(id) FROM opportunity 
+            WHERE call_status IN (3, 12, 13)  
+            AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())'''
         if search:
             count_sql += " AND (name LIKE %s OR email LIKE %s OR phone LIKE %s)"
             formatted_search_term = "%" + search + "%"
