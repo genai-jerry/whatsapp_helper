@@ -302,7 +302,6 @@ def update_opportunity_detail():
             'call_status': call_status,
             #'opportunity_status': opportunity_status,
             'optin_caller': optin_caller,
-            'call_setter': call_setter,
             'comment': comment,
             'sales_date': sales_date,
             'gender': gender,
@@ -312,6 +311,8 @@ def update_opportunity_detail():
             'same_state': same_state,
             'gst': gst
         }
+        if call_setter:
+            opportunity_data['call_setter'] = call_setter
         print('Updating Opportunity Data:', opportunity_data)
         # Call the update_opportunity function
         update_opportunity_data(opportunity_id, opportunity_data)

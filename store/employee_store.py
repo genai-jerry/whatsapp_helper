@@ -1,4 +1,3 @@
-
 from db.connection_manager import *
 
 def get_all_employees():

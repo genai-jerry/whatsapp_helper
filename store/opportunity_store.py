@@ -529,21 +529,21 @@ def update_opportunity_data(opportunity_id, opportunity_data):
         cursor = connection.cursor()
 
         # Prepare the SQL query with placeholders
-        sql = """
+        sql = '''
         UPDATE opportunity
-        SET name = %s, email = %s, phone = %s, call_status = %s, call_setter = %s, optin_caller = %s, assigned_to = %s,
-        comment = %s, gender = %s, company_type = %s, challenge_type = %s, address = %s, same_state = %s, gst = %s
-        WHERE id = %s
-        """
+        SET name = %s, email = %s, phone = %s, optin_caller = %s, assigned_to = %s,
+        comment = %s, gender = %s, company_type = %s, challenge_type = %s, address = %s, same_state = %s, gst = %s'''
+
+        if 'call_setter' in opportunity_data:   
+            sql += ", call_setter = %s"
+
+        sql += " WHERE id = %s"
 
         # Prepare the values for the query
         values = (
             opportunity_data['name'],
             opportunity_data['email'],
             format_phone_number(opportunity_data['phone']),
-            opportunity_data['call_status'] if int(opportunity_data['call_status']) > 0 else None,
-            #opportunity_data['opportunity_status'] if int(opportunity_data['opportunity_status']) > 0 else None,
-            opportunity_data['call_setter'] if int(opportunity_data['call_setter']) > 0 else None,
             opportunity_data['optin_caller'] if int(opportunity_data['optin_caller']) > 0 else None,
             opportunity_data['optin_caller'] if int(opportunity_data['optin_caller']) > 0 else None,
             opportunity_data['comment'],
@@ -552,27 +552,17 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             opportunity_data['challenge_type'] if opportunity_data['challenge_type'] != '-1' else None,
             opportunity_data['address'],
             opportunity_data['same_state'],
-            opportunity_data['gst'],
-            opportunity_id
+            opportunity_data['gst']
         )
+
+        if 'call_setter' in opportunity_data:
+            values += (opportunity_data['call_setter'] if int(opportunity_data['call_setter']) > 0 else None,)
+
+        values += (opportunity_id,)
 
         # Execute the query with the provided values
         cursor.execute(sql, values)
-        if int(opportunity_data['call_status']) > 0:
-            opportunity = get_opportunity_by_id(opportunity_id)
-            data = {
-                'id': opportunity['id'],
-                'name': opportunity['name'],
-                'email': opportunity['email'],
-                'phone': opportunity['phone'],
-                'opportunity_status': opportunity['opportunity_status'],
-                'call_status': opportunity['call_status'],
-                'fbp': opportunity['fbp'],
-                'fbc': opportunity['fbc'],
-                'ad_account': opportunity['ad_account']
-             }
-            handle_opportunity_update(data, 
-                                  'call_status', f'{data["call_status"]}')
+        
         connection.commit()
     finally:
         if cursor:
@@ -667,7 +657,10 @@ def get_all_sales_agents():
         connection = create_connection()
         cursor = connection.cursor()
 
-        sql = "SELECT id, name, color_code, text_color FROM sales_agent"
+        sql = '''SELECT sa.id, u.name, sa.color_code, sa.text_color FROM sales_agent sa
+            LEFT JOIN users u ON u.id = sa.user_id
+            WHERE u.active = 1
+            ORDER BY u.name ASC'''
         cursor.execute(sql)
         results = cursor.fetchall()
 
@@ -729,9 +722,9 @@ def generate_closure_report(start_date, end_date):
         cursor = conn.cursor()
         end_date = f'{end_date} 23:59:59'
         # Define the SQL queries to get the data for the conversion metrics
-        load_followup_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where o.call_setter != 4 and o.call_setter is not Null'
-        load_self_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (a.status !=6 and a.status != 5) AND (o.call_setter = 4 or o.call_setter is Null)'
-        load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status !=6 and a.status != 5)'
+        load_followup_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where ((o.call_setter is not Null and o.call_setter != 4))'
+        load_self_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where ((a.status not in (1,5,6)) AND (o.call_setter = 4 or o.call_setter is Null))'
+        load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status not in (1,5,6))'
         queries = {
             'appointments_by_setter': f"{load_followup_opportunities} and a.appointment_time BETWEEN %s AND %s",
             'setter_appointment_show_up': f"{load_followup_opportunities} AND a.status in (2,3,4,11,12) AND a.appointment_time BETWEEN %s AND %s",
@@ -782,8 +775,8 @@ def generate_metrics(start_date, end_date):
         # Define the SQL queries to get the data for the conversion metrics
         load_total_opportunities = 'SELECT COUNT(*) FROM opportunity WHERE last_register_time BETWEEN %s AND %s'
         load_followup_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where o.call_setter != 4 and o.call_setter is not Null'
-        load_self_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (a.status !=6 and a.status != 5) AND (o.call_setter = 4 or o.call_setter is Null)'
-        load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status !=6 and a.status != 5)'
+        load_self_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (a.status not in (1,5,6)) AND (o.call_setter = 4 or o.call_setter is Null)'
+        load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status not in (1,5,6))'
         queries = {
             'total_leads': load_total_opportunities,
             'call_booked_follow_up': f"{load_followup_opportunities} and a.appointment_time BETWEEN %s AND %s",
@@ -832,8 +825,8 @@ def generate_metrics_for_daily_performance(start_date, end_date):
         end_date = f'{end_date} 23:59:59'
         # Define the SQL queries to get the data for the conversion metrics
         load_total_opportunities = 'SELECT COUNT(*) FROM opportunity WHERE last_register_time BETWEEN %s AND %s'
-        load_followup_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where o.call_setter != 4 and o.call_setter is not Null'
-        load_self_opportunities = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id where (a.status !=6 and a.status != 5) AND (o.call_setter = 4 or o.call_setter is Null)'
+        load_followup_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where ((o.call_setter is not Null and o.call_setter != 4))'
+        load_self_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where ((o.call_setter = 4 or o.call_setter is Null) and (a.status is null or a.status not in (4,6)))'
         load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status !=6 and a.status != 5)'
         queries = {
             'total_leads': load_total_opportunities,
@@ -893,35 +886,35 @@ def generate_day_wise_metrics(start_date, end_date):
             GROUP BY DATE(last_register_time)'''
         
         load_followup_opportunities = '''
-            SELECT COUNT(DISTINCT o.id), DATE(o.last_register_time) as date
+            SELECT COUNT(DISTINCT a.opportunity_id), DATE(o.last_register_time) as date
             FROM appointments a 
             JOIN opportunity o ON o.id = a.opportunity_id 
-            WHERE o.call_setter != 4 AND o.call_setter IS NOT NULL
+            WHERE ((o.call_setter is not Null and o.call_setter != 4))
             AND o.last_register_time BETWEEN %s AND %s
             GROUP BY DATE(o.last_register_time)'''
             
         load_followup_showup = '''
-            SELECT COUNT(DISTINCT o.id), DATE(o.last_register_time) as date
+            SELECT COUNT(DISTINCT a.opportunity_id), DATE(o.last_register_time) as date
             FROM appointments a 
             JOIN opportunity o ON o.id = a.opportunity_id 
-            WHERE o.call_setter != 4 AND o.call_setter IS NOT NULL
+            WHERE ((o.call_setter is not Null and o.call_setter != 4))
             AND a.status IN (2,3,4,11,12) AND o.last_register_time BETWEEN %s AND %s
             GROUP BY DATE(o.last_register_time)'''
             
         load_self_opportunities = '''
-            SELECT COUNT(DISTINCT o.id), DATE(o.last_register_time) as date
+            SELECT COUNT(DISTINCT a.opportunity_id), DATE(o.last_register_time) as date
             FROM appointments a 
             JOIN opportunity o ON o.id = a.opportunity_id 
-            WHERE (a.status NOT IN (6,5)) AND (o.call_setter = 4 OR o.call_setter IS NULL)
+            WHERE ((a.status is null or a.status not in (1,5,6)) AND ((o.call_setter = 4 OR o.call_setter IS NULL)))
             AND o.last_register_time BETWEEN %s AND %s
             GROUP BY DATE(o.last_register_time)'''
             
         load_self_showup = '''
-            SELECT COUNT(DISTINCT o.id), DATE(o.last_register_time) as date
+            SELECT COUNT(DISTINCT a.opportunity_id), DATE(o.last_register_time) as date
             FROM appointments a 
             JOIN opportunity o ON o.id = a.opportunity_id 
-            WHERE (a.status NOT IN (6,5)) AND (o.call_setter = 4 OR o.call_setter IS NULL)
-            AND a.status IN (2,3,4,11,12) AND o.last_register_time BETWEEN %s AND %s
+            WHERE ((a.status IN (2,3,4,11,12)) AND ((o.call_setter = 4 OR o.call_setter IS NULL)))
+            AND o.last_register_time BETWEEN %s AND %s
             GROUP BY DATE(o.last_register_time)'''
             
         load_sales = '''
