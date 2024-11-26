@@ -1055,7 +1055,7 @@ def get_total_opportunity_count_for_month(month, year):
         if cursor:
             cursor.close()
 
-def list_all_new_leads(assigned = False, user_id=None, search=None, page=1, page_size=10):
+def list_all_new_leads(assigned = False, user_id=None, search=None, date=None, page=1, page_size=10):
     try:
         print(f'Assigned set to: {assigned} and user_id: {user_id}, search: {search}, page: {page}, page_size: {page_size}')
         connection = create_connection()
@@ -1071,8 +1071,11 @@ def list_all_new_leads(assigned = False, user_id=None, search=None, page=1, page
          WHERE o.call_status IS NULL AND (o.callback_time IS NULL or DATE(o.callback_time) <= CURDATE())
          '''
         sql_params = []
+        if date:
+            sql += " AND DATE(o.last_register_time) = %s"
+            sql_params.append(date)
         if search:
-            sql += " AND (name LIKE %s OR email LIKE %s OR phone LIKE %s)"
+            sql += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
             formatted_search_term = "%" + search + "%"
             sql_params.append(formatted_search_term)
             sql_params.append(formatted_search_term)
@@ -1096,12 +1099,16 @@ def list_all_new_leads(assigned = False, user_id=None, search=None, page=1, page
         sql += " ORDER BY last_register_time DESC LIMIT %s OFFSET %s"
         sql_params.append(page_size)
         sql_params.append(offset)
+        print(f'SQL: {sql} with params: {sql_params}')
         cursor.execute(sql, sql_params)
         results = cursor.fetchall()
 
         sql_params = []
         # Get the total count of opportunities
         count_sql = "SELECT COUNT(*) FROM opportunity WHERE call_status IS NULL AND (callback_time IS NULL or DATE(callback_time) <= CURDATE()) "
+        if date:
+            count_sql += " AND DATE(last_register_time) = %s"
+            sql_params.append(date)
         if search:
             count_sql += " AND (name LIKE %s OR email LIKE %s OR phone LIKE %s)"
             formatted_search_term = "%" + search + "%"
@@ -1147,7 +1154,7 @@ def list_all_new_leads(assigned = False, user_id=None, search=None, page=1, page
         if connection:
             connection.close()
 
-def list_all_leads_for_follow_up(assigned = False, user_id=None, search=None, page=1, page_size=10):
+def list_all_leads_for_follow_up(assigned = False, user_id=None, search=None, date=None, page=1, page_size=10):
     try:
         print(f'Assigned set to: {assigned} and user_id: {user_id}, search: {search}, page: {page}, page_size: {page_size}')
         connection = create_connection()
@@ -1162,6 +1169,9 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, search=None, pa
          LEFT JOIN comments c ON c.opportunity_id = o.id
          WHERE o.call_status IN (3, 12, 13)  AND (o.callback_time IS NULL or DATE(o.callback_time) <= CURDATE())'''
         sql_params = []
+        if date:
+            sql += " AND DATE(o.last_register_time) = %s"
+            sql_params.append(date)
         if search:
             sql += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
             formatted_search_term = "%" + search + "%"
@@ -1219,6 +1229,9 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, search=None, pa
         count_sql = '''SELECT COUNT(id) FROM opportunity 
             WHERE call_status IN (3, 12, 13)  
             AND (callback_time IS NULL or DATE(callback_time) <= CURDATE())'''
+        if date:
+            count_sql += " AND DATE(last_register_time) = %s"
+            sql_params.append(date)
         if search:
             count_sql += " AND (name LIKE %s OR email LIKE %s OR phone LIKE %s)"
             formatted_search_term = "%" + search + "%"
@@ -1246,7 +1259,7 @@ def list_all_leads_for_follow_up(assigned = False, user_id=None, search=None, pa
         if connection:
             connection.close()
 
-def list_all_leads_for_no_show(assigned = False, user_id=None, search=None, page=1, page_size=10):
+def list_all_leads_for_no_show(assigned = False, user_id=None, search=None, date=None, page=1, page_size=10):
     try:
         connection = create_connection()
         cursor = connection.cursor()
@@ -1266,6 +1279,9 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, search=None, page
                 WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
                 AND a.status = 1 AND (o.callback_time IS NULL or DATE(o.callback_time) <= CURDATE())'''
         sql_params = []
+        if date:
+            sql += " AND DATE(o.last_register_time) = %s"
+            sql_params.append(date)
         if search:
             sql += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
             formatted_search_term = "%" + search + "%"
@@ -1331,6 +1347,9 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, search=None, page
                     ) a ON a.opportunity_id = o.id AND a.rn = 1
                     WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
                     AND a.status = 1 AND (o.callback_time IS NULL or DATE(o.callback_time) <= CURDATE())'''
+        if date:
+            count_sql += " AND DATE(o.last_register_time) = %s"
+            sql_params.append(date)
         if search:
             count_sql += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
             formatted_search_term = "%" + search + "%"

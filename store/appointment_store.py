@@ -489,7 +489,7 @@ def get_initial_discussion_appointment(opportunity_id):
         if cursor:
             cursor.close()
 
-def list_all_appointments_for_confirmation(assigned=False, user_id=None, search=None, page=1, page_size=10):
+def list_all_appointments_for_confirmation(assigned=False, user_id=None, search=None, date=None, page=1, page_size=10):
     try:
         print(f'List all appointments for confirmation with assigned: {assigned} and user_id: {user_id}')
         connection = create_connection()
@@ -505,6 +505,9 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, search=
                 WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
                 AND (a.confirmed = 0 AND a.status IS NULL)'''
         sql_params = []
+        if date:
+            sql += " AND DATE(a.appointment_time) = %s"
+            sql_params.append(date)
         if search:
             sql += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
             formatted_search_term = "%" + search + "%"
@@ -559,6 +562,9 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, search=
                         JOIN opportunity o on o.id = a.opportunity_id
                         WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
                         AND a.confirmed = 0 AND a.status IS NULL'''
+        if date:
+            count_query += " AND DATE(a.appointment_time) = %s"
+            sql_params.append(date)
         if search:
             count_query += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
             formatted_search_term = "%" + search + "%"
