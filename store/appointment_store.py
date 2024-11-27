@@ -638,3 +638,18 @@ def get_all_appointment_status():
             cursor.close()
         if cnx:
             cnx.close()
+
+def update_appointment_link(appointment_id, opportunity_id):
+    try:
+        cnx = create_connection()
+        cursor = cnx.cursor()
+        query = "UPDATE appointments SET opportunity_id = %s WHERE id = %s"
+        cursor.execute(query, (opportunity_id, appointment_id))
+        cnx.commit()
+    except Exception as err:
+        raise err   
+    finally:
+        if cursor:
+            cursor.close()
+        if cnx:
+            cnx.close()
