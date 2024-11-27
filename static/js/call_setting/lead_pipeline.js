@@ -51,7 +51,8 @@ class LeadPipeline {
         const button = event.target;
         const opportunityId = button.dataset.opportunityId;
         const employeeId = $('#employeeSelect').val();
-
+        const parentLeadList = button.closest('.leads-list');
+        const elementId = parentLeadList.id;
         if (!employeeId) {
             alert('Please select an employee first');
             return;
@@ -80,6 +81,8 @@ class LeadPipeline {
                 button.innerHTML = 'Assigned';
                 button.classList.remove('btn-primary');
                 button.classList.add('btn-outline-success');
+                const assignedElementId = elementId.replace('pipeline', 'assigned');
+                window.assignedLead.handleAssigned(assignedElementId);
             } else {
                 // Error handling
                 throw new Error(data.message || 'Failed to assign opportunity');
