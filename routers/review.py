@@ -95,6 +95,7 @@ def get_sales_review_data(user_id):
 def get_call_setting_data(user_id=None):
     type = request.args.get('type', None, type=str)
     search = request.args.get('search', None, type=str)
+    date = request.args.get('date', None, type=str)
     if search == '':
         search = None
     print(f'Getting call setting data for type: {type}')
@@ -112,6 +113,7 @@ def get_call_setting_data(user_id=None):
                 assigned=False, 
                 user_id=user_id,
                 search=search,
+                date=date,
                 page=request.args.get('pipeline_appointments_page', 1, type=int),
                 page_size=10
             )
@@ -120,6 +122,7 @@ def get_call_setting_data(user_id=None):
                 assigned=True,
                 user_id=user_id,
                 search=search,
+                date=date,
                 page=request.args.get('assigned_appointments_page', 1, type=int),
                 page_size=10
             )
@@ -128,6 +131,7 @@ def get_call_setting_data(user_id=None):
                 assigned=False,
                 user_id=user_id,
                 search=search,
+                date=date,
                 page=request.args.get('pipeline_leads_page', 1, type=int),
                 page_size=10
             )
@@ -136,6 +140,7 @@ def get_call_setting_data(user_id=None):
                 assigned=True,
                 user_id=user_id,
                 search=search,
+                date=date,
                 page=request.args.get('assigned_leads_page', 1, type=int),
                 page_size=10
             )
@@ -144,6 +149,7 @@ def get_call_setting_data(user_id=None):
                 assigned=False,
                 user_id=user_id,
                 search=search,
+                date=date,
                 page=request.args.get('pipeline_no_show_page', 1, type=int),
                 page_size=10
             )
@@ -152,6 +158,7 @@ def get_call_setting_data(user_id=None):
                 assigned=True,
                 user_id=user_id,
                 search=search,
+                date=date,
                 page=request.args.get('assigned_no_show_page', 1, type=int),
                 page_size=10
             )
@@ -160,6 +167,7 @@ def get_call_setting_data(user_id=None):
                 assigned=False,
                 user_id=user_id,
                 search=search,
+                date=date,
                 page=request.args.get('pipeline_follow_up_page', 1, type=int),
                 page_size=10
             )
@@ -168,6 +176,7 @@ def get_call_setting_data(user_id=None):
                 assigned=True,
                 user_id=user_id,
                 search=search,
+                date=date,
                 page=request.args.get('assigned_follow_up_page', 1, type=int),
                 page_size=10
             )

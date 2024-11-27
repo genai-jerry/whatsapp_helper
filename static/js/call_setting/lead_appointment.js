@@ -3,6 +3,7 @@ class LeadAppointment {
         this.pipelineAppointments = {};
         this.rowElement = {};
         this.navElement = {};
+        this.params = new URLSearchParams();
         this.initializeEventListeners();
     }
 
@@ -62,16 +63,15 @@ class LeadAppointment {
 
         const selectedEmployeeId = document.getElementById('employeeSelect').value;
 
-        const params = new URLSearchParams();
-        params.append('type', element_id);
+        this.params.set('type', element_id);
 
         if(param_args){
             Object.keys(param_args).forEach(key => {
-                params.append(key, param_args[key]);
+                this.params.set(key, param_args[key]);
             });
         }
         if (selectedEmployeeId) {
-            params.append('selected_employee_id', selectedEmployeeId);
+            this.params.set('selected_employee_id', selectedEmployeeId);
         }
 
         return new Promise((resolve, reject) => {
@@ -80,7 +80,7 @@ class LeadAppointment {
             card.classList.add('loading-blur');
             const tableBody = $(card).find('tbody')[0];
             tableBody.appendChild(templateRow);
-            this.loadAppointments(params, card, tableBody, templateRow, selectedEmployeeId)
+            this.loadAppointments(this.params, card, tableBody, templateRow, selectedEmployeeId)
                 .then(totalCount => {
                     const newNavElement = this.navElement[element_id].cloneNode(true);
                     $(card).find('.pagination')[0].replaceWith(newNavElement);
@@ -99,7 +99,7 @@ class LeadAppointment {
 
     async loadAppointments(params, card, appointmentsTbody, templateRow, selectedEmployeeId){
         return new Promise((resolve, reject) => {
-        fetch(`/review/call-setting?${params.toString()}`, {
+        fetch(`/review/call-setting?${this.params.toString()}`, {
             method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'

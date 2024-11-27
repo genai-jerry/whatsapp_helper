@@ -3,6 +3,7 @@ class LeadPipeline {
         this.pipelineElements = {};
         this.rowElement = {};
         this.navElement = {};
+        this.params = new URLSearchParams();
         this.initializeEventListeners();
     }
 
@@ -13,8 +14,39 @@ class LeadPipeline {
                 this.handleAssignment(e);
             }
         });
+        this.initializeDateFilter('follow-up-date-filter');
+        this.initializeDateFilter('appointments-date-filter');
+        this.initializeDateFilter('new-leads-date-filter');
+        this.initializeDateFilter('no-show-date-filter');
     }
 
+    initializeDateFilter(element_id) {
+        const dateFilterElement = $(`#${element_id}`)[0];
+        const cardElement = $(dateFilterElement).closest('.card')[0]
+        const leadListElement = $(cardElement).find('.leads-list')[0];
+        const dateTextElement = $(`#${element_id}`).siblings('.selected-date')[0];
+        const cardId = leadListElement.id;
+        $(dateTextElement).click(function() {
+            $(`#${element_id}`).show();
+            $(dateTextElement).hide();
+            window.leadPipeline.params.delete('date');
+            window.leadPipeline.handlePipeline(cardId).then(([totalCount, card]) => {
+                window.callSettingPagination.handleResponse(card, '1', `${cardId}_page`, totalCount);
+            });
+        });
+        flatpickr(`#${element_id}`, {
+            dateFormat: "Y-m-d",
+            onClose: function(selectedDates, dateStr, instance) {
+                $(`#${element_id}`).hide();
+                $(dateTextElement).show();
+                $(dateTextElement).text(formatDateWithMonth(dateStr));
+                window.leadPipeline.handlePipeline(cardId, {'date': dateStr}).then(([totalCount, card]) => {
+                    window.callSettingPagination.handleResponse(card, '1', `${cardId}_page`, totalCount);
+                });
+            },
+            disableMobile: true
+        });
+    }
     async handleAssignment(event) {
         const button = event.target;
         const opportunityId = button.dataset.opportunityId;
@@ -72,16 +104,16 @@ class LeadPipeline {
 
         const selectedEmployeeId = document.getElementById('employeeSelect').value;
 
-        const params = new URLSearchParams();
-        params.append('type', element_id);
+        
+        this.params.set('type', element_id);
 
         if(param_args){
             Object.keys(param_args).forEach(key => {
-                params.append(key, param_args[key]);
+                this.params.set(key, param_args[key]);
             });
         }
         if (selectedEmployeeId) {
-            params.append('selected_employee_id', selectedEmployeeId);
+            this.params.set('selected_employee_id', selectedEmployeeId);
         }
 
         return new Promise((resolve, reject) => {
@@ -90,7 +122,7 @@ class LeadPipeline {
             card.classList.add('loading-blur');
             const tableBody = $(card).find('tbody')[0];
             tableBody.appendChild(templateRow);
-            this.loadLeads(params, card, tableBody, templateRow, selectedEmployeeId)
+            this.loadLeads(this.params, card, tableBody, templateRow, selectedEmployeeId)
                 .then(totalCount => {
                     const newNavElement = this.navElement[element_id].cloneNode(true);
                     $(card).find('.pagination')[0].replaceWith(newNavElement);
@@ -109,7 +141,7 @@ class LeadPipeline {
 
     async loadLeads(params, card, pipelineTbody, templateRow, selectedEmployeeId) {
         return new Promise((resolve, reject) => {
-            fetch(`/review/call-setting?${params.toString()}`, {
+            fetch(`/review/call-setting?${this.params.toString()}`, {
                 method: 'GET',
             headers: {
                     'X-Requested-With': 'XMLHttpRequest'
