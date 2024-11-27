@@ -1276,7 +1276,7 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, search=None, date
                 ) a ON a.opportunity_id = o.id AND a.rn = 1
                 LEFT JOIN tasks t ON t.opportunity_id = o.id
                 LEFT JOIN comments c ON c.opportunity_id = o.id
-                WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
+                WHERE (o.call_status IS NULL OR o.call_status not in (2,4,5,6,9,14)) 
                 AND a.status = 1 AND (o.callback_time IS NULL or DATE(o.callback_time) <= CURDATE())'''
         sql_params = []
         if date:
@@ -1345,7 +1345,7 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, search=None, date
                         ROW_NUMBER() OVER (PARTITION BY opportunity_id ORDER BY appointment_time DESC) as rn
                         FROM appointments
                     ) a ON a.opportunity_id = o.id AND a.rn = 1
-                    WHERE (o.call_status IS NULL OR o.call_status not in (14)) 
+                    WHERE (o.call_status IS NULL OR o.call_status not in (2,4,5,6,9,14)) 
                     AND a.status = 1 AND (o.callback_time IS NULL or DATE(o.callback_time) <= CURDATE())'''
         if date:
             count_sql += " AND DATE(o.last_register_time) = %s"
