@@ -109,8 +109,10 @@ function loadAppointments(max, date) {
                 var row = $(
                     '<tr class="grade-' + appointment.grade + '">' +
                     '<td></td>' +
-                    '<td>' + (appointment.applicant_name ? '<a style="color: #c8cdd5" href="' + url + '">' + appointment.applicant_name + '</a>' : appointment.opportunity_name) 
-                    + '</td>' +
+                    '<td>' + (appointment.applicant_name ? '<a style="color: #c8cdd5" href="' + url + '">' +
+                        appointment.applicant_name + '</a>' : appointment.opportunity_name) + 
+                    addLinkToAppointment(appointment) +
+                    '</td>' +
                     '<td><ul class="list-inline mb-1"><li class="list-inline-item mb-1"><span><a type="button" class="btn btn-success" href="tel:' + telephone + '"><i class="bi bi-telephone"></i>' + 
                                 '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-telephone" viewBox="0 0 16 16">' 
                                     +'<path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>' 
@@ -165,10 +167,40 @@ function loadAppointments(max, date) {
         });           
     });
 }
-
+function addLinkToAppointment(appointment){
+    if(appointment.opportunity_id == null){
+        return '&nbsp;<span style="cursor: pointer;" id="link-icon-' + appointment.id + '" class="link-icon" onclick="showLinkTextBox(' + appointment.id + ',' + appointment.opportunity_id + ')">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-link-45deg" viewBox="0 0 16 16">' +
+            '<path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"/>' +
+            '<path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"/>' +
+            '</svg></span>'
+    }
+    return '';
+}
 
 function handleCalendarSelect(date){
     loadAppointments(-1, date);
+}
+
+// Add this function to handle showing the text box
+function showLinkTextBox(appointmentId) {
+    const textBox = $('<div class="input-group mb-3">' +
+        '<form action="/appointment/' + appointmentId + '/link" method="POST">' +
+        '<input type="text" class="form-control" placeholder="Enter Opportunity Id" name="opportunity_id" id="link-input-' + appointmentId + '">' +
+        '<div class="input-group-append">' +
+        '<button class="btn btn-primary" type="submit">Link</button>' +
+        '</div>' +
+        '</form>' +
+        '</div>');
+    $('#link-icon-' + appointmentId).replaceWith(textBox);
+}
+
+function saveLink(appointmentId) {
+    const linkUrl = $('#link-input-' + appointmentId).val();
+    // Here you can add AJAX call to save the link
+    console.log('Saving link:', linkUrl, 'for appointment:', appointmentId);
+    // After saving, reload the appointments or update the UI
+    loadAppointments(current_max_setting);
 }
 
 $(document).ready(function() {

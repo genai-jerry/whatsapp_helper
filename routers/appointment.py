@@ -136,3 +136,11 @@ def set_appointment_status(opportunity_id, appointment_id):
     except Exception as e:
         print(str(e))
         return error_response(500, str(e))
+    
+@appointment_blueprint.route('/<int:appointment_id>/link', methods=['POST'])
+@login_required
+def set_appointment_link(appointment_id):
+    opportunity_id = request.form.get('opportunity_id')
+    print('Setting link for appointment:', appointment_id, 'to opportunity:', opportunity_id)
+    update_appointment_link(appointment_id, opportunity_id)
+    return show_appointments()
