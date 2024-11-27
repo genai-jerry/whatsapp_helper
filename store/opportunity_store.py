@@ -1072,7 +1072,7 @@ def list_all_new_leads(assigned = False, user_id=None, search=None, page=1, page
          '''
         sql_params = []
         if search:
-            sql += " AND (name LIKE %s OR email LIKE %s OR phone LIKE %s)"
+            sql += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
             formatted_search_term = "%" + search + "%"
             sql_params.append(formatted_search_term)
             sql_params.append(formatted_search_term)

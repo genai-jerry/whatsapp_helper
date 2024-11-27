@@ -180,10 +180,12 @@ class AssignedAppointment {
                     // Update ad name
                     const adNameBadge = newRow.querySelector('.bi-megaphone')?.closest('.badge');
                     if (adNameBadge) {
-                        adNameBadge.textContent = appointment.ad_name.length > 10 ? 
-                            appointment.ad_name.substring(0, 10) + '...' : 
-                            appointment.ad_name;
-                        adNameBadge.setAttribute('title', appointment.ad_name);
+                        if(appointment.ad_name){
+                            adNameBadge.textContent = appointment.ad_name.length > 10 ? 
+                                appointment.ad_name.substring(0, 10) + '...' : 
+                                appointment.ad_name;
+                            adNameBadge.setAttribute('title', appointment.ad_name);
+                        }
                     }
 
                     // Update status buttons

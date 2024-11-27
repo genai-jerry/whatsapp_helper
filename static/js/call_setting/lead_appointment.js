@@ -28,6 +28,12 @@ class LeadAppointment {
         try {
             const appointmentId = button.dataset.appointmentId;
             const employee_id = $('#employeeSelect').val();
+            const parentLeadList = button.closest('.leads-list');
+            const elementId = parentLeadList.id;
+            if (!employee_id) {
+                alert('Please select an employee first');
+                return;
+            }
             const response = await fetch(`/review/call-setting/assign-appointment`, {
                 method: 'POST',
                 headers: {
@@ -43,6 +49,8 @@ class LeadAppointment {
                 button.innerHTML = 'Assigned';
                 button.classList.remove('btn-primary');
                 button.classList.add('btn-outline-success');
+                const assignedElementId = elementId.replace('pipeline', 'assigned');
+                window.assignedAppointment.handleAppointment(assignedElementId);
             } else {
                 throw new Error(data.message || 'Failed to assign appointment');
             }
