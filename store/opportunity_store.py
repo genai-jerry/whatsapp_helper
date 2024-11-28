@@ -824,26 +824,31 @@ def generate_metrics_for_daily_performance(start_date, end_date):
         cursor = conn.cursor()
         end_date = f'{end_date} 23:59:59'
         # Define the SQL queries to get the data for the conversion metrics
-        load_total_opportunities = 'SELECT COUNT(*) FROM opportunity WHERE last_register_time BETWEEN %s AND %s'
-        load_followup_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where ((o.call_setter is not Null and o.call_setter != 4))'
-        load_self_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where ((o.call_setter = 4 or o.call_setter is Null) and (a.status is null or a.status not in (4,6)))'
-        load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status !=6 and a.status != 5)'
+        load_total_opportunities = 'SELECT COUNT(distinct(id)) FROM opportunity WHERE last_register_time BETWEEN %s AND %s'
+        load_followup_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where ((o.call_setter is not Null and o.call_setter != 4)) and o.last_register_time BETWEEN %s AND %s'
+        load_self_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where ((o.call_setter = 4 or o.call_setter is Null) and (a.status is null or a.status not in (4,6))) and o.last_register_time BETWEEN %s AND %s'
+        load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status !=6 and a.status != 5) and o.last_register_time BETWEEN %s AND %s'
         queries = {
             'total_leads': load_total_opportunities,
-            'call_booked_follow_up': f"{load_followup_opportunities} and o.last_register_time BETWEEN %s AND %s",
-            'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status in (2,3,4,11,12) AND o.last_register_time BETWEEN %s AND %s",
-            'call_booked_vsl': f"{load_self_opportunities} AND o.last_register_time BETWEEN %s AND %s",
-            'call_show_up_self': f"{load_self_opportunities} AND a.status in (2,3,4,11,12) AND o.last_register_time BETWEEN %s AND %s",
+            'call_booked_follow_up': f"{load_followup_opportunities}",
+            'call_scheduled_follow_up': f"{load_followup_opportunities} AND a.appointment_time BETWEEN %s AND %s",
+            'call_show_up_follow_up': f"{load_followup_opportunities} AND a.status in (2,3,4,11,12) AND a.appointment_time BETWEEN %s AND %s",
+            'call_booked_vsl': f"{load_self_opportunities}",
+            'call_scheduled_vsl': f"{load_self_opportunities} AND a.appointment_time BETWEEN %s AND %s",
+            'call_show_up_self': f"{load_self_opportunities} AND a.status in (2,3,4,11,12) AND a.appointment_time BETWEEN %s AND %s",
             'sale_conversion': '''SELECT count(s.id) 
                 from sale s 
                 left join opportunity o on o.id = s.opportunity_id
                 where o.last_register_time BETWEEN %s AND %s AND s.is_final = 1 AND s.cancelled != 1''',
-            'total_calls_booked': f"{load_opportunities_not_canceled} AND o.last_register_time BETWEEN %s AND %s",
+            'total_calls_booked': f"{load_opportunities_not_canceled}",
         }
 
         metrics = {}
         for metric, query in queries.items():
-            cursor.execute(query, (start_date, end_date))
+            if metric == 'call_scheduled_follow_up' or metric == 'call_scheduled_vsl' or metric == 'call_show_up_follow_up' or metric == 'call_show_up_self':
+                cursor.execute(query, (start_date, end_date, start_date, end_date))
+            else:
+                cursor.execute(query, (start_date, end_date))
             count = cursor.fetchone()[0]
             metrics[metric] = count
 
@@ -855,15 +860,18 @@ def generate_metrics_for_daily_performance(start_date, end_date):
         total_calls_booked = call_booked_through_followup + call_booked_by_self
         total_leads = metrics['total_leads']
         total_calls_showed_up = call_show_up_followup + call_show_up_self
-
+        call_scheduled_follow_up = metrics['call_scheduled_follow_up']
+        call_scheduled_vsl = metrics['call_scheduled_vsl']
 
         # Calculate the percentages
         metrics_data = {}
         metrics_data['Total Leads'] = [total_leads, -1]
         metrics_data['Opt-in Appointments'] = [call_booked_through_followup, round((call_booked_through_followup / total_leads) * 100, 2) if total_leads != 0 else 0]
-        metrics_data['Show-up for opt-in appointments'] = [call_show_up_followup, round((call_show_up_followup / call_booked_through_followup) * 100, 2) if call_booked_through_followup != 0 else 0]
+        metrics_data['Appointments Scheduled for opt-in'] = [call_scheduled_follow_up, -1]
+        metrics_data['Show-up for opt-in appointments'] = [call_show_up_followup, round((call_show_up_followup / call_scheduled_follow_up) * 100, 2) if call_scheduled_follow_up != 0 else 0]
         metrics_data['Self Booked Appointments'] = [call_booked_by_self, round((call_booked_by_self / total_leads) * 100, 2) if total_leads != 0 else 0]
-        metrics_data['Show-up for self booked appointments'] = [call_show_up_self, round((call_show_up_self / call_booked_by_self) * 100, 2) if call_booked_by_self != 0 else 0]
+        metrics_data['Appointments Scheduled for self bookings'] = [call_scheduled_vsl, -1]
+        metrics_data['Show-up for self booked appointments'] = [call_show_up_self, round((call_show_up_self / call_scheduled_vsl) * 100, 2) if call_scheduled_vsl != 0 else 0]
         metrics_data['Overall Show-up'] = [total_calls_showed_up, round((total_calls_showed_up / total_calls_booked) * 100, 2) if total_calls_booked != 0 else 0]
         metrics_data['Sale Conversion'] = [sale_conversion, round((sale_conversion / (total_calls_showed_up)) * 100, 2) if total_calls_showed_up != 0 else 0]
 

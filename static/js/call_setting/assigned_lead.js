@@ -276,6 +276,9 @@ class AssignedLead {
         if (status === '8') {
             select.closest('tr').style.backgroundColor = '#c8e6c9';
             this.showCallSetterButton(select);
+            $('#appointments-booked-today').text(parseInt($('#appointments-booked-today').text()) + 1);
+        }else{
+            $('#calls-made-today').text(parseInt($('#calls-made-today').text()) + 1);
         }
     }
 

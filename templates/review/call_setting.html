@@ -36,19 +36,28 @@
                         <tr>
                             <td>Calls Made</td>
                             {% for update_count in update_counts %}
-                            <td class="calls-data">{{ update_count.count }}</td>
+                            <td class="calls-data"
+                                id="calls-made-{% if update_count.is_today %}today{% endif %}">
+                                {{ update_count.count }}
+                            </td>
                             {% endfor %}
                         </tr>
                         <tr>
                             <td>Appointments Booked</td>
                             {% for update_count in update_counts %}
-                            <td class="calls-data">{{ update_count.book_count }}</td>
+                            <td class="calls-data"
+                                id="appointments-booked-{% if update_count.is_today %}today{% endif %}">
+                                {{ update_count.book_count }}
+                            </td>
                             {% endfor %}
                         </tr>
                         <tr></tr>
                             <td>Sales</td>
                             {% for update_count in update_counts %}
-                            <td class="calls-data">{{ update_count.sale_count }}</td>
+                            <td class="calls-data"
+                                id="sales-{% if update_count.is_today %}today{% endif %}">
+                                {{ update_count.sale_count }}
+                            </td>
                             {% endfor %}
                         </tr>
                     </tbody>
