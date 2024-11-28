@@ -94,17 +94,21 @@ def get_performance_metrics_for_date_range(start_date, end_date, sales_agent_id=
         # Get appointment data
         appointment_sql = '''
             SELECT 
-                COUNT(DISTINCT CASE WHEN a.created_at BETWEEN %s AND %s 
+                COUNT(DISTINCT CASE WHEN o.last_register_time BETWEEN %s AND %s AND a.created_at BETWEEN %s AND %s 
                     THEN a.opportunity_id END) as total_appointments_booked,
-                COUNT(DISTINCT CASE WHEN a.status IN (2,3,4) AND a.appointment_time BETWEEN %s AND %s
-                    THEN a.opportunity_id END) as total_appointments_attended
+                COUNT(DISTINCT CASE WHEN a.status IN (2,3,4) AND o.last_register_time BETWEEN %s AND %s AND a.appointment_time BETWEEN %s AND %s 
+                    THEN a.opportunity_id END) as total_appointments_attended,
+                COUNT(DISTINCT CASE WHEN (a.status is null OR a.status NOT IN (5,6)) AND o.last_register_time BETWEEN %s AND %s AND a.appointment_time BETWEEN %s AND %s 
+                    THEN a.opportunity_id END) as total_appointments_scheduled
+
             FROM appointments a
+            LEFT JOIN opportunity o ON a.opportunity_id = o.id
         '''
         if sales_agent_id:
             appointment_sql += ' WHERE a.mentor_id = %s'
-            cursor.execute(appointment_sql, (start_date, end_date, start_date, end_date, sales_agent_id))
+            cursor.execute(appointment_sql, (start_date, end_date, start_date, end_date, start_date, end_date, start_date, end_date, start_date, end_date, start_date, end_date, sales_agent_id))
         else:
-            cursor.execute(appointment_sql, (start_date, end_date, start_date, end_date))
+            cursor.execute(appointment_sql, (start_date, end_date, start_date, end_date, start_date, end_date, start_date, end_date, start_date, end_date, start_date, end_date))
         appointment_data = cursor.fetchone()
 
         # Get sales data
@@ -132,6 +136,7 @@ def get_performance_metrics_for_date_range(start_date, end_date, sales_agent_id=
             'sales_value_goal': projection_data[4],
             'total_appointments_booked': appointment_data[0],
             'total_appointments_attended': appointment_data[1],
+            'total_appointments_scheduled': appointment_data[2],
             'total_sales_final': sales_data[0],
             'total_sales_deposit': sales_data[1],
             'total_final_sale_value': sales_data[2]

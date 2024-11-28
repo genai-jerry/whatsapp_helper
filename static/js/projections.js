@@ -122,6 +122,7 @@ function calculateMetrics() {
     const actualLeads = $('#total_lead_value').text();
     const actualAdLeads = $('#ad_lead_value').text();
     const actualAppointmentsBooked = $('#appointment_booked_count').text();
+    const totalAppointmentsScheduled = $('#total_appointments_scheduled_value').text();
     const actualShowUps = $('#actual_show_up_rate_value').text();
     const actualSalesClosure = $('#actual_sales_closure_rate_value').text();
     const actualLeadCost = $('#actual_lead_cost').text();
@@ -143,7 +144,7 @@ function calculateMetrics() {
 
     // Calcuate the actual rates and set it in the html
     const actualAppointmentBookedRate = (actualAppointmentsBooked / actualLeads) * 100;
-    const actualShowUpRate = (actualShowUps / actualAppointmentsBooked) * 100;
+    const actualShowUpRate = (actualShowUps / totalAppointmentsScheduled) * 100;
     const actualSalesClosureRate = (actualSalesClosure / actualShowUps) * 100;
     const actualCostPerLead = actualLeadCost / actualAdLeads;
 

@@ -71,7 +71,7 @@
                           <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
                         </svg>
                     </td>
-                    <td><span id="total_lead_value">{{opportunity_count.total_leads}}</span> (<span id="ad_lead_value">{{opportunity_count.ad_leads}}</span>)</td>
+                    <td><span id="total_lead_value">{{opportunity_count.total_leads}}</span> (<span id="ad_lead_value">{{opportunity_count.ad_leads}}</span> from Ads)</td>
                     <td><span id="actual_lead_rate"></span></td>
                 </tr>
                 <tr>
@@ -93,7 +93,10 @@
                     <td><span id="show_up_rate_projection_value">0</span></td>
                     <td>Rs <span id="show_up_rate_cost">0</span></td>
                     <td>Rs <span id="actual_show_up_rate_cost">0</span></td>
-                    <td><span id="actual_show_up_rate_value">{{performance_metrics.total_appointments_attended}}</span></td>
+                    <td>
+                        <span id="total_appointments_scheduled_value" style="display: none;">{{performance_metrics.total_appointments_scheduled}}</span>
+                        <span id="actual_show_up_rate_value">{{performance_metrics.total_appointments_attended}}</span> of {{performance_metrics.total_appointments_scheduled}}</span> scheduled
+                    </td>
                     
                     <td><span id="actual_show_up_rate"></span> %</td>
                 </tr>
