@@ -5,6 +5,7 @@ class AssignedLead {
         this.navElement = {}
         this.params = new URLSearchParams();
         this.initializeStatusSelects();
+        this.initializeNavsForCards();
     }
 
     initializeStatusSelects() {
@@ -24,6 +25,24 @@ class AssignedLead {
                 select.value = '';
                 select.style.backgroundColor = 'white';
                 select.style.color = 'black';
+            }
+        });
+    }
+
+    async initializeNavsForCards() {
+        // Initialize navs for cards
+        $('.assigned-card').each(function() {
+            const card = $(this)[0];
+            const count = $(card).find('.items_count')[0].textContent;
+            const nav = $(card).find('nav')[0];
+            if (count > 10) {
+                if (nav) {
+                    $(nav).show();
+                }
+            }else{
+                if (nav) {
+                    $(nav).hide();
+                }
             }
         });
     }

@@ -82,7 +82,9 @@ class LeadPipeline {
                 button.classList.remove('btn-primary');
                 button.classList.add('btn-outline-success');
                 const assignedElementId = elementId.replace('pipeline', 'assigned');
-                window.assignedLead.handleAssigned(assignedElementId);
+                window.assignedLead.handleAssigned(assignedElementId).then(([totalCount, card]) => {
+                    window.callSettingPagination.handleResponse(card, '1', `${assignedElementId}_page`, totalCount);
+                });;
             } else {
                 // Error handling
                 throw new Error(data.message || 'Failed to assign opportunity');
