@@ -762,13 +762,13 @@ def generate_closure_report(start_date, end_date):
         # Calculate the percentages
         metrics_data = {}
         metrics_data['Total Appointments Set'] = [total_appointments, -1]
-        metrics_data['Appointments booked by setter'] = [all_appointments_by_setter, round((all_appointments_by_setter / total_appointments) * 100, 2) if total_appointments != 0 else 0]
         metrics_data['All Appointments by self'] = [all_appointments_by_self, round((all_appointments_by_self / total_appointments) * 100, 2) if total_appointments != 0 else 0]
-        metrics_data['Total Appointments Confirmed'] = [total_appointments_confirmed, -1]
-        metrics_data['Appointments Confirmed for setter'] = [confirmed_appointments_by_setter, round((confirmed_appointments_by_setter / total_appointments) * 100, 2) if total_appointments != 0 else 0]
-        metrics_data['Show up for setter Appointments'] = [setter_appointment_show_up, round((setter_appointment_show_up / confirmed_appointments_by_setter) * 100, 2) if confirmed_appointments_by_setter != 0 else 0]
         metrics_data['Confirmed Appointments by self'] = [confirmed_appointments_by_self, round((confirmed_appointments_by_self / total_appointments) * 100, 2) if total_appointments != 0 else 0]
         metrics_data['Show up for Confirmed self Appointments'] = [self_appointment_show_up, round((self_appointment_show_up / confirmed_appointments_by_self) * 100, 2) if confirmed_appointments_by_self != 0 else 0]
+        metrics_data['Appointments booked by setter'] = [all_appointments_by_setter, round((all_appointments_by_setter / total_appointments) * 100, 2) if total_appointments != 0 else 0]
+        metrics_data['Appointments Confirmed for setter'] = [confirmed_appointments_by_setter, round((confirmed_appointments_by_setter / total_appointments) * 100, 2) if total_appointments != 0 else 0]
+        metrics_data['Show up for setter Appointments'] = [setter_appointment_show_up, round((setter_appointment_show_up / confirmed_appointments_by_setter) * 100, 2) if confirmed_appointments_by_setter != 0 else 0]
+        metrics_data['Total Appointments Confirmed'] = [total_appointments_confirmed, -1]
         metrics_data['Overall Show-up for confirmed appointments'] = [total_calls_showed_up, round((total_calls_showed_up / total_appointments_confirmed) * 100, 2) if total_appointments_confirmed != 0 else 0]
         metrics_data['Sale Conversion'] = [sale_conversion, round((sale_conversion / (total_calls_showed_up)) * 100, 2) if total_calls_showed_up != 0 else 0]
 
