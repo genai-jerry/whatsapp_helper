@@ -1,5 +1,5 @@
 // Function to list all pending tasks for a given opportunity
-function listTasks(opportunity_id) {
+function listTasks(opportunity_id, for_all=false) {
     const tableBody = document.getElementById('taskListTableBody');
     if (!tableBody) {
         console.error('Task list table body not found');
@@ -13,7 +13,7 @@ function listTasks(opportunity_id) {
     }
 
     const employee_id = $('#employeeSelect')?.val();
-    if (employee_id && employee_id != '') {
+    if (employee_id && employee_id != '' && !for_all) {
         url += `&employee_id=${employee_id}`;
     }
     // Fetch task data from the server

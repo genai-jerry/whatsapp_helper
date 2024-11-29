@@ -182,7 +182,9 @@ def get_all_tasks_for_opportunity(opportunity_id, employee_id = None, page=1, pe
         sql = '''SELECT COUNT(*) FROM tasks t WHERE t.opportunity_id = %s'''
         if employee_id:
             sql += ''' AND t.user_id = %s'''
-        cursor.execute(sql, (opportunity_id, employee_id))
+            cursor.execute(sql, (opportunity_id, employee_id))
+        else:
+            cursor.execute(sql, (opportunity_id,))
 
         total_tasks = cursor.fetchone()[0]
         tasks_list = []

@@ -71,12 +71,12 @@ function showErrorToast(message) {
     showToast(message, 'error');
 }   
 
-function task_comment_actions(opportunity_id, opportunity_name, task_count, comment_count){
+function task_comment_actions(opportunity_id, opportunity_name, task_count, comment_count, for_all=false){
     let taskListColor = task_count > 0 ? 'gold' : 'white';
     let commentListColor = comment_count > 0 ? 'gold' : 'white';
 
     let icons = '<div class="btn-group" role="group" aria-label="Task and Comment Actions">' +
-                    '  <a type="button" class="btn btn-sm task-comment-btn border border-white" style="background-color: #0d6efd; color: white; cursor: pointer;" onclick="listTasks(' + opportunity_id + ', \'' + opportunity_name  + '\')" title="List Tasks">' +
+                    '  <a type="button" class="btn btn-sm task-comment-btn border border-white" style="background-color: #0d6efd; color: white; cursor: pointer;" onclick="listTasks(' + opportunity_id + ', \'' + opportunity_name  + '\',' + for_all  + ')" title="List Tasks">' +
                     '    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="' + taskListColor + '" class="bi bi-list-task" viewBox="0 0 16 16">' +
                     '      <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5H2zM3 3H2v1h1V3z"/>' +
                     '      <path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9z"/>' +

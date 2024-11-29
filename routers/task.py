@@ -10,10 +10,7 @@ def get_tasks_api():
     opportunity_id = request.args.get("opportunity_id")
     employee_id = request.args.get("employee_id")
     tasks_type = request.args.get("tasks_type", "due")
-    if tasks_type == "assigned":
-        assigned_by = current_user.id
-    else:
-        assigned_by = None
+    
     if opportunity_id:
         tasks, _ = get_all_tasks_for_opportunity(opportunity_id, employee_id)
     else:

@@ -131,7 +131,7 @@ function loadAppointments(max, date) {
                     (appointment.confirmed ? '' : '<button id="confirmed" class="btn btn-success btn-sm mb-2" onclick="confirmAppointment(' + appointment.id + ')">Confirm</button>')  +
                     '</td>' +
                     '<td style="color: #c8cdd5">' + opportunityStatusSelect + '</td>' +
-                    '<td>' + task_comment_actions(appointment.opportunity_id, appointment.opportunity_name, appointment.task_count, appointment.comment_count) + '</td>' +
+                    '<td>' + task_comment_actions(appointment.opportunity_id, appointment.opportunity_name, appointment.task_count, appointment.comment_count, true) + '</td>' +
                     '</tr>'
                 );
 
