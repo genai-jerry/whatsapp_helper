@@ -723,14 +723,16 @@ def generate_closure_report(start_date, end_date):
         end_date = f'{end_date} 23:59:59'
         # Define the SQL queries to get the data for the conversion metrics
         load_followup_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where ((o.call_setter is not Null and o.call_setter != 4))'
+        load_confirmed_followup_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where ((a.status not in (1,5,6)) AND(o.call_setter is not Null and o.call_setter != 4))'
         load_all_self_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where (o.call_setter = 4 or o.call_setter is Null)'
         load_self_opportunities = 'select count(distinct(a.opportunity_id)) from appointments a join opportunity o on o.id = a.opportunity_id where ((a.status not in (1,5,6)) AND (o.call_setter = 4 or o.call_setter is Null))'
         load_opportunities_not_canceled = 'select count(distinct(o.id)) from appointments a join opportunity o on o.id = a.opportunity_id join sale s on s.opportunity_id = o.id where (a.status not in (1,5,6))'
         queries = {
-            'appointments_by_setter': f"{load_followup_opportunities} and a.appointment_time BETWEEN %s AND %s",
+            'all_appointments_by_setter': f"{load_followup_opportunities} and a.appointment_time BETWEEN %s AND %s",
+            'confirmed_appointments_by_setter': f"{load_confirmed_followup_opportunities} AND a.appointment_time BETWEEN %s AND %s",
             'setter_appointment_show_up': f"{load_followup_opportunities} AND a.status in (2,3,4,11,12) AND a.appointment_time BETWEEN %s AND %s",
             'all_appointments_by_self': f"{load_all_self_opportunities} AND a.appointment_time BETWEEN %s AND %s",
-            'appointments_by_self': f"{load_self_opportunities} AND a.appointment_time BETWEEN %s AND %s",
+            'confirmed_appointments_by_self': f"{load_self_opportunities} AND a.appointment_time BETWEEN %s AND %s",
             'self_appointment_show_up': f"{load_self_opportunities} AND a.status in (2,3,4,11,12) AND a.appointment_time BETWEEN %s AND %s",
             'sale_conversion': '''SELECT count(s.id) 
                 from sale s 
@@ -745,25 +747,29 @@ def generate_closure_report(start_date, end_date):
             count = cursor.fetchone()[0]
             metrics[metric] = count
 
-        appointments_by_setter = metrics['appointments_by_setter']
+        all_appointments_by_setter = metrics['all_appointments_by_setter']
+        confirmed_appointments_by_setter = metrics['confirmed_appointments_by_setter']
         setter_appointment_show_up = metrics['setter_appointment_show_up']
         all_appointments_by_self = metrics['all_appointments_by_self']
-        appointments_by_self = metrics['appointments_by_self']
+        confirmed_appointments_by_self = metrics['confirmed_appointments_by_self']
         self_appointment_show_up = metrics['self_appointment_show_up']
         sale_conversion = metrics['sale_conversion']
-        total_appointments = appointments_by_setter + appointments_by_self
+        total_appointments = all_appointments_by_self + all_appointments_by_setter
+        total_appointments_confirmed = confirmed_appointments_by_setter + confirmed_appointments_by_self
         total_calls_showed_up = setter_appointment_show_up + self_appointment_show_up
 
 
         # Calculate the percentages
         metrics_data = {}
         metrics_data['Total Appointments Set'] = [total_appointments, -1]
-        metrics_data['Appointments by setter'] = [appointments_by_setter, round((appointments_by_setter / total_appointments) * 100, 2) if total_appointments != 0 else 0]
-        metrics_data['Appointments Show up for setter'] = [setter_appointment_show_up, round((setter_appointment_show_up / appointments_by_setter) * 100, 2) if appointments_by_setter != 0 else 0]
+        metrics_data['Appointments booked by setter'] = [all_appointments_by_setter, round((all_appointments_by_setter / total_appointments) * 100, 2) if total_appointments != 0 else 0]
         metrics_data['All Appointments by self'] = [all_appointments_by_self, round((all_appointments_by_self / total_appointments) * 100, 2) if total_appointments != 0 else 0]
-        metrics_data['Confirmed Appointments by self'] = [appointments_by_self, round((appointments_by_self / total_appointments) * 100, 2) if total_appointments != 0 else 0]
-        metrics_data['Appointments Show up for Confirmed Appts'] = [self_appointment_show_up, round((self_appointment_show_up / appointments_by_self) * 100, 2) if appointments_by_self != 0 else 0]
-        metrics_data['Overall Show-up'] = [total_calls_showed_up, round((total_calls_showed_up / total_appointments) * 100, 2) if total_appointments != 0 else 0]
+        metrics_data['Total Appointments Confirmed'] = [total_appointments_confirmed, -1]
+        metrics_data['Appointments Confirmed for setter'] = [confirmed_appointments_by_setter, round((confirmed_appointments_by_setter / total_appointments) * 100, 2) if total_appointments != 0 else 0]
+        metrics_data['Show up for setter Appointments'] = [setter_appointment_show_up, round((setter_appointment_show_up / confirmed_appointments_by_setter) * 100, 2) if confirmed_appointments_by_setter != 0 else 0]
+        metrics_data['Confirmed Appointments by self'] = [confirmed_appointments_by_self, round((confirmed_appointments_by_self / total_appointments) * 100, 2) if total_appointments != 0 else 0]
+        metrics_data['Show up for Confirmed self Appointments'] = [self_appointment_show_up, round((self_appointment_show_up / confirmed_appointments_by_self) * 100, 2) if confirmed_appointments_by_self != 0 else 0]
+        metrics_data['Overall Show-up for confirmed appointments'] = [total_calls_showed_up, round((total_calls_showed_up / total_appointments_confirmed) * 100, 2) if total_appointments_confirmed != 0 else 0]
         metrics_data['Sale Conversion'] = [sale_conversion, round((sale_conversion / (total_calls_showed_up)) * 100, 2) if total_calls_showed_up != 0 else 0]
 
         return metrics_data
