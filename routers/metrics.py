@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask_login import login_required
 from store.metrics_store import *
 from store.employee_store import get_all_employees
 from utils import get_month_year, get_month_number
@@ -28,6 +29,7 @@ def show_projections(selected_date, month_name, year):
                            year=year)
 
 @metrics_blueprint.route('projections', methods=['GET'])
+@login_required
 def projections():
     # Handle GET request
     selected_date = request.args.get('selected_date', 0, type=int)
@@ -39,6 +41,7 @@ def projections():
     
 
 @metrics_blueprint.route('projections/config', methods=['POST'])
+@login_required
 def edit_projection_config():
     month = request.form['selected_month']
     year = request.form['selected_year']
@@ -58,6 +61,7 @@ def edit_projection_config():
     return show_projections(selected_date, month, int(year))
     
 @metrics_blueprint.route('projections/employee/config', methods=['POST'])
+@login_required
 def edit_employee_projection_config():
     month = request.args.get('month', datetime.now().strftime('%B'))
     year = request.args.get('year', datetime.now().year)
@@ -80,6 +84,7 @@ def edit_employee_projection_config():
 
 # Add this new route
 @metrics_blueprint.route('projections/<int:sales_agent_id>/config', methods=['GET'])
+@login_required
 def get_sales_projection(sales_agent_id):
     month = request.args.get('month')
     year = request.args.get('year')

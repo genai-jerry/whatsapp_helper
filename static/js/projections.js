@@ -70,10 +70,10 @@ function calculateMetrics() {
     const bookingRateGoal = parseFloat($('#appointment_booked_goal').val()) || 0;
     const showUpRateGoal = parseFloat($('#show_up_rate_goal').val()) / 100 || 0;
     const closeRateGoal = parseFloat($('#close_rate_goal').val()) / 100 || 0;
-    const leadGenerationGoal = Math.round((totalCallSlots *100) / bookingRateGoal);
-    const appointmentCountGoal = Math.round(leadGenerationGoal * (bookingRateGoal / 100));
-    const attendedCountGoal = Math.round(appointmentCountGoal * showUpRateGoal);
-    const salesCountGoal = Math.round(attendedCountGoal * closeRateGoal);
+    const leadGenerationGoal = bookingRateGoal > 0 ? Math.round((totalCallSlots *100) / bookingRateGoal) : 0;
+    const appointmentCountGoal = bookingRateGoal > 0 ? Math.round(leadGenerationGoal * (bookingRateGoal / 100)) : 0;
+    const attendedCountGoal = showUpRateGoal > 0 ? Math.round(appointmentCountGoal * showUpRateGoal) : 0;
+    const salesCountGoal = closeRateGoal > 0 ? Math.round(attendedCountGoal * closeRateGoal) : 0;
 
     $('#appointment_booked_goal_value').text(appointmentCountGoal);
     $('#show_up_rate_goal_value').text(attendedCountGoal);
@@ -85,10 +85,10 @@ function calculateMetrics() {
     const bookingRateProjection = parseFloat($('#appointment_booked_projection').val()) || 0;
     const showUpRateProjection = parseFloat($('#show_up_rate_projection').val()) / 100 || 0;
     const closeRateProjection = parseFloat($('#close_rate_projection').val()) / 100 || 0;
-    const leadGenerationProjection = Math.round((totalCallSlots *100) / bookingRateProjection);
-    const appointmentCountProjection = Math.round(leadGenerationProjection * (bookingRateProjection / 100));
-    const attendedCountProjection = Math.round(appointmentCountProjection * showUpRateProjection);
-    const salesCountProjection = Math.round(attendedCountProjection * closeRateProjection);
+    const leadGenerationProjection = bookingRateProjection > 0 ? Math.round((totalCallSlots *100) / bookingRateProjection) : 0;
+    const appointmentCountProjection = bookingRateProjection > 0 ? Math.round(leadGenerationProjection * (bookingRateProjection / 100)) : 0;
+    const attendedCountProjection = showUpRateProjection > 0 ? Math.round(appointmentCountProjection * showUpRateProjection) : 0;
+    const salesCountProjection = closeRateProjection > 0 ? Math.round(attendedCountProjection * closeRateProjection) : 0;
 
     $('#appointment_booked_projection_value').text(appointmentCountProjection);
     $('#show_up_rate_projection_value').text(attendedCountProjection);
@@ -99,9 +99,9 @@ function calculateMetrics() {
     const averageSaleValue = parseFloat($('#averageSaleValue').val()) || 0;
     
     const totalLeadCost = leadGenerationGoal * costPerLead;
-    const appointmentCost = totalLeadCost / appointmentCountProjection;
-    const attendedCost = totalLeadCost / attendedCountProjection;
-    const saleCost = totalLeadCost / (salesCountProjection > 0 ? salesCountProjection : 1);
+    const appointmentCost = appointmentCountProjection > 0 ? totalLeadCost / appointmentCountProjection : 0;
+    const attendedCost = attendedCountProjection > 0 ? totalLeadCost / attendedCountProjection : 0;
+    const saleCost = salesCountProjection > 0 ? totalLeadCost / (salesCountProjection > 0 ? salesCountProjection : 1) : 0;
 
     $('#projected_lead_cost').text(formatIndianRupee(totalLeadCost.toFixed(2)));
     $('#lead_cost').text(formatIndianRupee(totalLeadCost.toFixed(2)));
