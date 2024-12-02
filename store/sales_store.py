@@ -943,7 +943,8 @@ def get_weekly_summary(user_id, start_date, end_date, page=1, per_page=10):
                 SUM(CASE WHEN status = 4 THEN 1 ELSE 0 END) as follow_up,
                 SUM(CASE WHEN status = 5 THEN 1 ELSE 0 END) as rescheduled,
                 SUM(CASE WHEN status = 6 THEN 1 ELSE 0 END) as cancelled,
-                SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as pending
+                SUM(CASE WHEN (status IS NULL or status in (9, 10)) THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status in (11,12) THEN 1 ELSE 0 END) as no_offer
             FROM appointments a
             LEFT JOIN sales_agent sa ON sa.id = a.mentor_id
             WHERE a.appointment_time between %s AND %s
@@ -969,7 +970,8 @@ def get_weekly_summary(user_id, start_date, end_date, page=1, per_page=10):
                 'follow_up': result[4] or 0,
                 'rescheduled': result[5] or 0,
                 'cancelled': result[6] or 0,
-                'pending': result[7] or 0
+                'pending': result[7] or 0,
+                'no_offer': result[8] or 0
             })
 
             current_date = week_end + timedelta(days=1)  # Move to next Monday

@@ -80,6 +80,7 @@ class Opportunity(db.Model):
     call_status = db.Column(db.Integer, db.ForeignKey('lead_call_status.id'))
     call_setter = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
     optin_caller = db.Column(db.Integer, db.ForeignKey('sales_agent.id'))
+    mentor_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=True)
     company_type = db.Column(db.Integer, db.ForeignKey('company_type.id'))
     challenge_type = db.Column(db.Integer, db.ForeignKey('challenge_type.id'))
     assigned_to = db.Column(db.Integer, db.ForeignKey('sales_agent.id'), nullable=True)

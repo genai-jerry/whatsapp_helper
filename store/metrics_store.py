@@ -63,7 +63,7 @@ def update_sales_agent_projections(projection_config_data):
         if connection:
             connection.close()
 
-def get_performance_metrics_for_date_range(start_date, end_date, sales_agent_id=None):
+def get_performance_metrics_for_registered_leads_date_range(start_date, end_date, sales_agent_id=None):
     try:
         start_date = start_date.strftime('%Y-%m-%d 00:00:00')
         end_date = end_date.strftime('%Y-%m-%d 23:59:59')
@@ -120,6 +120,94 @@ def get_performance_metrics_for_date_range(start_date, end_date, sales_agent_id=
             FROM sale
             LEFT JOIN opportunity o ON sale.opportunity_id = o.id
             WHERE sale_date AND o.last_register_time BETWEEN %s AND %s
+        '''
+        if sales_agent_id:
+            sales_sql += ' AND sales_agent = %s'
+            cursor.execute(sales_sql, (start_date, end_date, sales_agent_id))
+        else:
+            cursor.execute(sales_sql, (start_date, end_date))
+        sales_data = cursor.fetchone()
+
+        # Combine all data
+        performance_metrics = {
+            'total_call_slots': projection_data[0],
+            'closure_percentage_goal': projection_data[1],
+            'closure_percentage_projected': projection_data[2],
+            'sales_value_projected': projection_data[3],
+            'sales_value_goal': projection_data[4],
+            'total_appointments_booked': appointment_data[0],
+            'total_appointments_attended': appointment_data[1],
+            'total_appointments_scheduled': appointment_data[2],
+            'total_sales_final': sales_data[0],
+            'total_sales_deposit': sales_data[1],
+            'total_final_sale_value': sales_data[2]
+        }
+
+        return performance_metrics
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def get_sales_performance_metrics_date_range(start_date, end_date, sales_agent_id=None):
+    try:
+        start_date = start_date.strftime('%Y-%m-%d 00:00:00')
+        end_date = end_date.strftime('%Y-%m-%d 23:59:59')
+
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # Get projection data
+        if sales_agent_id:
+            projection_sql = '''
+                SELECT SUM(total_call_slots), AVG(closure_percentage_goal), AVG(closure_percentage_projected), 
+                    AVG(sales_value_projected), AVG(sales_value_goal)
+                FROM sales_projections 
+                WHERE DATE(CONCAT(year, '-', LPAD(MONTH(STR_TO_DATE(month, '%M')), 2, '0'), '-01')) BETWEEN %s AND %s
+                AND sales_agent_id = %s
+            '''
+            cursor.execute(projection_sql, (start_date, end_date, sales_agent_id))
+        else:
+            projection_sql = '''
+                SELECT SUM(total_call_slots), AVG(closure_percentage_goal), AVG(closure_percentage_projected), 
+                    AVG(sales_value_projected), AVG(sales_value_goal)
+                FROM sales_projections 
+                WHERE DATE(CONCAT(year, '-', LPAD(MONTH(STR_TO_DATE(month, '%M')), 2, '0'), '-01')) BETWEEN %s AND %s
+            '''
+            cursor.execute(projection_sql, (start_date, end_date))
+        projection_data = cursor.fetchone()
+
+        # Get appointment data
+        appointment_sql = '''
+            SELECT 
+                COUNT(DISTINCT CASE WHEN a.appointment_time BETWEEN %s AND %s
+                    THEN a.opportunity_id END) as total_appointments_booked,
+                COUNT(DISTINCT CASE WHEN a.status IN (2,3,4,11,12) AND a.appointment_time BETWEEN %s AND %s 
+                    THEN a.opportunity_id END) as total_appointments_attended,
+                COUNT(DISTINCT CASE WHEN (a.status is null OR a.status NOT IN (5,6)) AND a.appointment_time BETWEEN %s AND %s 
+                    THEN a.opportunity_id END) as total_appointments_scheduled
+            FROM appointments a
+            LEFT JOIN opportunity o ON a.opportunity_id = o.id
+        '''
+        if sales_agent_id:
+            appointment_sql += ' WHERE a.mentor_id = %s'
+            cursor.execute(appointment_sql, (start_date, end_date, start_date, end_date, start_date, end_date, sales_agent_id))
+        else:
+            cursor.execute(appointment_sql, (start_date, end_date, start_date, end_date, start_date, end_date))
+        appointment_data = cursor.fetchone()
+
+        # Get sales data
+        sales_sql = '''
+            SELECT 
+                COUNT(CASE WHEN is_final = 1 THEN 1 END) as total_sales_final,
+                COUNT(CASE WHEN is_final = 0 THEN 1 END) as total_sales_deposit,
+                SUM(CASE WHEN is_final = 1 THEN sale_value ELSE 0 END) as total_final_sale_value
+            FROM sale
+            LEFT JOIN opportunity o ON sale.opportunity_id = o.id
+            LEFT JOIN appointments a ON o.id = a.opportunity_id
+            WHERE sale_date AND a.appointment_time BETWEEN %s AND %s
         '''
         if sales_agent_id:
             sales_sql += ' AND sales_agent = %s'
@@ -390,7 +478,7 @@ def get_monthly_performance_for_agent(month, year, user_id):
         week_end = min(week_start + timedelta(days=6), end_date_of_month)
         week_end = week_end.strptime(week_end.strftime('%Y-%m-%d 23:59:59'), '%Y-%m-%d %H:%M:%S')
         # Fetch actual data for this week
-        data = get_performance_metrics_for_date_range(week_start, week_end, agent_id)
+        data = get_sales_performance_metrics_date_range(week_start, week_end, agent_id)
         
         week_data = {
             'week_number': week + 1,

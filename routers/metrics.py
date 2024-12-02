@@ -17,7 +17,7 @@ def show_projections(selected_date, month_name, year):
     start_date_of_month = datetime(year, month_number, 1)
     end_date_of_month = datetime(year, month_number, calendar.monthrange(year, month_number)[1])
 
-    performance_metrics = get_performance_metrics_for_date_range(start_date_of_month, end_date_of_month)
+    performance_metrics = get_performance_metrics_for_registered_leads_date_range(start_date_of_month, end_date_of_month)
     print(f'Projection Config: {projection_config}')
     return render_template('metrics/projections.html', 
                            projection_config=projection_config, employees=employees, 

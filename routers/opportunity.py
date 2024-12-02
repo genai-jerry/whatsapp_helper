@@ -243,8 +243,10 @@ def get_opportunity_detail(opportunity_id):
             'company_type': opportunity['company_type'],
             'address': opportunity['address'],
             'same_state': opportunity['same_state'],
-            'gst': opportunity['gst']
+            'gst': opportunity['gst'],
+            'mentor': opportunity['mentor']
         }
+        print(f'Response Data: {response_data}')
         call_statuses = get_all_call_status()
          # Get a list of opportunity statuses
         opportunity_statuses = get_all_opportunity_status()
@@ -265,7 +267,7 @@ def get_opportunity_detail(opportunity_id):
                        sales_agents=sales_agents, challenge_types=challenge_types,
                        company_types=company_types, sales=sales, employees=employees, selected_employee_id=current_user.id)
     except Exception as e:
-        print(str(e))
+        print(str(e.with_traceback()))
         return error_response(500, str(e))
 
 @opportunity_blueprint.route('/update', methods=['POST'])
@@ -288,6 +290,7 @@ def update_opportunity_detail():
         company_type = request.form.get('company_type')
         address = request.form.get('address')
         same_state = request.form.get('same_state')
+        mentor = request.form.get('mentor')
         if same_state == 'on':
             same_state = True
         else:
@@ -309,7 +312,8 @@ def update_opportunity_detail():
             'company_type': company_type,
             'address': address,
             'same_state': same_state,
-            'gst': gst
+            'gst': gst,
+            'mentor': mentor
         }
         if call_setter:
             opportunity_data['call_setter'] = call_setter

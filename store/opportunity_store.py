@@ -398,7 +398,8 @@ def get_opportunity_by_id(opportunity_id):
                 opportunity.optin_caller as optin_caller,
                 opportunity.address,
                 opportunity.same_state,
-                opportunity.gst
+                opportunity.gst,
+                opportunity.mentor_id as mentor
             FROM 
                 opportunity
             WHERE 
@@ -464,6 +465,7 @@ def get_opportunity_by_id(opportunity_id):
             'address': opportunity[19],
             'same_state': opportunity[20],
             'gst': opportunity[21],
+            'mentor': opportunity[22],
             'appointments': appointment_data,
             'messages': [{'type': message[1], 'sender': message[2], 'receiver': message[3], 'message': message[5], 'template': message[6], 'status': message[7], 'error_message': message[8], 'create_time': message[9], 'update_time': message[10]} for message in messages],
             'templates': [{'id': template[0], 'name': template[1], 'active': template[2], 'template_text': template[3]} for template in templates]
@@ -532,7 +534,7 @@ def update_opportunity_data(opportunity_id, opportunity_data):
         sql = '''
         UPDATE opportunity
         SET name = %s, email = %s, phone = %s, optin_caller = %s, assigned_to = %s,
-        comment = %s, gender = %s, company_type = %s, challenge_type = %s, address = %s, same_state = %s, gst = %s'''
+        comment = %s, gender = %s, company_type = %s, challenge_type = %s, address = %s, same_state = %s, gst = %s, mentor_id = %s'''
 
         if 'call_setter' in opportunity_data:   
             sql += ", call_setter = %s"
@@ -552,7 +554,8 @@ def update_opportunity_data(opportunity_id, opportunity_data):
             opportunity_data['challenge_type'] if opportunity_data['challenge_type'] != '-1' else None,
             opportunity_data['address'],
             opportunity_data['same_state'],
-            opportunity_data['gst']
+            opportunity_data['gst'],
+            opportunity_data['mentor'] if int(opportunity_data['mentor']) > 0 else None
         )
 
         if 'call_setter' in opportunity_data:

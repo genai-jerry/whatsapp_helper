@@ -128,9 +128,15 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-6">
-            &nbsp;
+    <div class="row mb-3">
+        <div class="form-group col-md-3">
+            <label for="mentor">Mentor</label>
+            <select class="form-control" id="mentor" name="mentor">
+                <option value="-1">Select the Mentor</option>
+                {% for employee in employees %}
+                    <option value="{{ employee.id }}" {% if opportunity.mentor == employee.id %}selected{% endif %}>{{ employee.name }}</option>
+                {% endfor %}
+            </select>
         </div>
     </div>
     <div class="row">

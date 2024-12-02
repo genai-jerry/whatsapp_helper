@@ -211,6 +211,8 @@ def format_date_time(value):
 
 @app.template_filter()
 def convert_to_date(value):
+    if value is None:
+        return ""
     return value.strftime('%d %b %Y')
 
 @app.template_filter()
