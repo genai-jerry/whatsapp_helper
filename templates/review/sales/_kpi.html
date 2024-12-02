@@ -29,8 +29,10 @@
                     <th>Actual</th>
                     {% if performance_data %}
                         {% for week in performance_data.weeks %}
-                            <th title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Proj)</th>
-                            <th title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Actual)</th>
+                            <th class="{{ 'bg-primary text-white' if week.start_date|date_between_inclusive(week.end_date) }}" 
+                                title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Proj)</th>
+                            <th class="{{ 'bg-primary text-white' if week.start_date|date_between_inclusive(week.end_date) }}"
+                                title="{{ week.start_date }} to {{ week.end_date }}">Week {{ loop.index }} (Actual)</th>
                         {% endfor %}
                     {% endif %}
                 </tr>

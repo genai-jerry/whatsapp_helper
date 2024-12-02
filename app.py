@@ -2,9 +2,6 @@ from datetime import datetime
 from flask import Flask, g, jsonify, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 import pytz
-from routers.driver import driver_blueprint
-from routers.instance import instance_blueprint
-from routers.message import message_blueprint
 from routers.models import SystemUser
 from routers.appointment import appointment_blueprint
 from routers.qr import qr_blueprint
@@ -45,9 +42,6 @@ from models import *
 from werkzeug.security import generate_password_hash
 
 # Register the blueprints
-app.register_blueprint(instance_blueprint, url_prefix='/instance')
-app.register_blueprint(driver_blueprint, url_prefix='/driver')
-app.register_blueprint(message_blueprint, url_prefix='/message')
 app.register_blueprint(qr_blueprint, url_prefix='/qr')
 app.register_blueprint(template_blueprint, url_prefix='/template')
 app.register_blueprint(opportunity_blueprint, url_prefix='/opportunity')
@@ -258,6 +252,25 @@ def month_add(value):
     today = datetime.now().date()
     new_date = today - relativedelta(months=int(value))
     return new_date.strftime('%B %Y')
+
+@app.template_filter()
+def date_between_inclusive(start_date, end_date):
+    try:
+        # Convert string dates to datetime objects if they're strings
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        elif isinstance(start_date, datetime):
+            start_date = start_date.date()
+            
+        if isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        elif isinstance(end_date, datetime):
+            end_date = end_date.date()
+            
+        current_date = datetime.now().date()
+        return start_date <= current_date <= end_date
+    except (ValueError, TypeError):
+        return False
 
 @app.template_filter()
 def round_up(value):

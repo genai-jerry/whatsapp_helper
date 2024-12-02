@@ -1,11 +1,17 @@
 <h2>Performance for the period</h2>
-<label for="start_date">Start Date:</label>
-<input type="date" id="start_date">
-
-<label for="end_date">End Date:</label>
-<input type="date" id="end_date">
-
-<button id="generate_report">Generate Report</button>
+<form class="row g-3 align-items-end mb-3" action="#">
+    <div class="col-md-4">
+        <label for="start_date" class="form-label">Start Date:</label>
+        <input type="date" class="form-control" id="start_date">
+    </div>
+    <div class="col-md-4">
+        <label for="end_date" class="form-label">End Date:</label>
+        <input type="date" class="form-control" id="end_date">
+    </div>
+    <div class="col-md-4">
+        <button id="generate_report" class="btn btn-primary">Generate Report</button>
+    </div>
+</form>
 <table class="table table-striped" id="periodicMetrics">
     <thead>
         <tr>

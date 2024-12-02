@@ -12,8 +12,9 @@ pymysql
 flask_login
 flask_sqlalchemy
 pytz
-dateutil
+python-dateutil
 pdfkit
 wkhtmltopdf
 facebook-business
 Babel
+mysql

@@ -167,7 +167,7 @@ def get_projection_for_sales_agent_for_month(sales_agent_id, month, year):
             cursor.execute(sql, (sales_agent_id, month, year))
         else:
             sql = '''SELECT SUM(total_call_slots), AVG(closure_percentage_goal), AVG(closure_percentage_projected), 
-                AVG(sales_value_projected), AVG(sales_value_goal), AVG(sale_price), AVG(commission_percentage)
+                SUM(sales_value_projected), SUM(sales_value_goal), AVG(sale_price), AVG(commission_percentage)
                 FROM sales_projections 
                 WHERE month=%s AND year=%s'''
             # Prepare the query and execute it with the provided values

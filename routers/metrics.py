@@ -88,6 +88,8 @@ def edit_employee_projection_config():
 def get_sales_projection(sales_agent_id):
     month = request.args.get('month')
     year = request.args.get('year')
+    if sales_agent_id == 0:
+        sales_agent_id = None
 
     projection = get_projection_for_sales_agent_for_month(sales_agent_id, month, year)
 

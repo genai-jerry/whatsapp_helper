@@ -126,9 +126,9 @@ function calculateMetrics() {
     const actualShowUps = $('#actual_show_up_rate_value').text();
     const actualSalesClosure = $('#actual_sales_closure_rate_value').text();
     const actualLeadCost = $('#actual_lead_cost').text();
-    const actualAppointmentBookedCost = actualLeadCost / actualAppointmentsBooked;
-    const actualShowUpRateCost = actualLeadCost / actualShowUps;
-    const actualSalesClosureCost = actualLeadCost / (actualSalesClosure > 0 ? actualSalesClosure : 1);
+    const actualAppointmentBookedCost = actualAppointmentsBooked > 0 ? actualLeadCost / actualAppointmentsBooked : 0;
+    const actualShowUpRateCost = actualShowUps > 0 ? actualLeadCost / actualShowUps : 0;
+    const actualSalesClosureCost = actualSalesClosure > 0 ? actualLeadCost / (actualSalesClosure > 0 ? actualSalesClosure : 1) : 0;
 
     $('#actual_appointment_booked_cost').text(formatIndianRupee(actualAppointmentBookedCost.toFixed(2)));
     $('#actual_show_up_rate_cost').text(formatIndianRupee(actualShowUpRateCost.toFixed(2)));
@@ -144,9 +144,9 @@ function calculateMetrics() {
 
     // Calcuate the actual rates and set it in the html
     const actualAppointmentBookedRate = (actualAppointmentsBooked / actualLeads) * 100;
-    const actualShowUpRate = (actualShowUps / totalAppointmentsScheduled) * 100;
-    const actualSalesClosureRate = (actualSalesClosure / actualShowUps) * 100;
-    const actualCostPerLead = actualLeadCost / actualAdLeads;
+    const actualShowUpRate = totalAppointmentsScheduled > 0 ? (actualShowUps / totalAppointmentsScheduled) * 100 : 0;
+    const actualSalesClosureRate = actualShowUps > 0 ? (actualSalesClosure / actualShowUps) * 100 : 0;
+    const actualCostPerLead = actualAdLeads > 0 ? actualLeadCost / actualAdLeads : 0;
 
     $('#totalActualRevenue').text(formatIndianRupee(totalActualRevenue.toFixed(2)));
     $('#totalActualCost').text(formatIndianRupee(totalActualCost));
