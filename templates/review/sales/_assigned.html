@@ -1,0 +1,157 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center mb-2">
+        <h5 class="mb-0">Confirmed Appointments</h5>
+    </div>
+    <div class="ms-2 me-2">
+        <div class="row" id="assignedLeadsContainer">
+            <!-- Appointments Column -->
+        <div class="assigned-card" id="appointmentsColumn">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Confirmed Appointments (<span class="items_count">{{ assigned_confirmed_appointments_count }}</span>)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="leads-list assigned-appt-list" id="assigned_appointments">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in assigned_confirmed_appointments %}
+                                <tr class="assigned-appt-item"> 
+                                    <td>
+                                        {% include 'review/call-setting/_appt_assigned_title.html' %}
+                                    </td>
+                                    <td>
+                                        {% include 'review/call-setting/_appt_status_list.html' %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Add pagination controls -->    
+                        {% with page=assigned_appointments_page, page_size=10 %}
+                        {% with count=assigned_confirmed_appointments_count %}
+                        {% with page_args='assigned_appointments_page' %}
+                        {% include 'review/call-setting/_pagination.html' %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        <!-- Add pagination controls -->
+                        
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<!-- Add this right before the closing body tag -->
+<style>
+.expand-icon {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.expand-icon:hover {
+    transform: scale(1.1);
+}
+
+.expanded-column {
+    order: -1;
+}
+
+.minimized-column {
+    transition: all 0.3s ease;
+}
+
+.leads-list {
+    max-height: 400px;  /* Adjust this value as needed */
+    overflow-y: auto;
+}
+
+.table {
+    margin-bottom: 0;  /* Remove bottom margin to prevent double scrollbars */
+}
+
+/* Optional: Keep the header fixed while scrolling */
+.table thead {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const columns = {
+        appointments: document.getElementById('appointmentsColumn'),
+        newLeads: document.getElementById('newLeadsColumn'),
+        followUp: document.getElementById('followUpColumn'),
+        noShows: document.getElementById('noShowsColumn')
+    };
+
+    const expandIcons = document.querySelectorAll('.expand-icon');
+    let currentlyExpanded = null;
+
+    expandIcons.forEach(icon => {
+        icon.addEventListener('click', function() {
+            const columnType = this.dataset.column;
+            const column = columns[columnType];
+
+            if (currentlyExpanded === column) {
+                // Restore all columns to original state
+                resetColumns();
+                currentlyExpanded = null;
+            } else {
+                // Expand clicked column and minimize others
+                expandColumn(column);
+                currentlyExpanded = column;
+            }
+        });
+    });
+
+    function expandColumn(column) {
+        // Reset all columns first
+        resetColumns();
+        
+        // Expand the selected column
+        column.classList.remove('col-md-3');
+        column.classList.add('col-md-9', 'expanded-column');
+        
+        // Minimize other columns
+        Object.values(columns).forEach(col => {
+            if (col !== column) {
+                col.classList.remove('col-md-3');
+                col.classList.add('col-md-3', 'minimized-column');
+            }
+        });
+
+        // Rearrange minimized columns
+        const container = document.getElementById('assignedLeadsContainer');
+        container.style.display = 'flex';
+        container.style.flexWrap = 'wrap';
+    }
+
+    function resetColumns() {
+        Object.values(columns).forEach(column => {
+            column.classList.remove('col-md-9', 'expanded-column', 'minimized-column');
+            column.classList.add('col-md-3');
+        });
+        
+        const container = document.getElementById('assignedLeadsContainer');
+        container.style.display = 'flex';
+        container.style.flexWrap = 'wrap';
+    }
+});
+</script>
+
+{% include "task/list_modal.html" %}
+{% include "task/create_modal.html" %}
+{% include "comment/comment_modals.html" %}

@@ -147,7 +147,7 @@ class LeadAppointment {
                         appointment.opportunity_name;
 
                     // Update appointment time
-                    const appointmentTimeSpan = templateItem.querySelector('.bi-calendar')?.closest('.badge');
+                    const appointmentTimeSpan = templateItem.querySelector('.bi-calendar-event')?.closest('.badge');
                     if (appointmentTimeSpan) {
                         const timeText = appointmentTimeSpan.childNodes[appointmentTimeSpan.childNodes.length - 1];
                         timeText.textContent = formatDateTime(appointment.appointment_time);

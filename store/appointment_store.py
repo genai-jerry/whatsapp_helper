@@ -398,7 +398,7 @@ def confirm_saved_appointment(appointment_id):
         # Create a new cursor
         cursor = cnx.cursor()
         # Define the SQL query for updating the appointment with the given ID
-        query = "UPDATE appointments SET confirmed = TRUE WHERE id = %s"
+        query = "UPDATE appointments SET confirmed = TRUE, status = 9 WHERE id = %s"
         # Execute the SQL query with the appointment ID as a parameter
         cursor.execute(query, (appointment_id,))
         # Commit the transaction
@@ -489,25 +489,97 @@ def get_initial_discussion_appointment(opportunity_id):
         if cursor:
             cursor.close()
 
+def list_all_confirmed_appointments(sales_agent_id, page=1, page_size=10):
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        sql = '''SELECT DISTINCT(a.opportunity_id), a.id, a.status, a.created_at, a.appointment_time,
+                o.name, o.email, o.phone, a.confirmed, o.ad_name,
+                COUNT(DISTINCT t.id) as task_count,
+                COUNT(DISTINCT c.id) as comment_count,
+                a.career_challenge, a.challenge_description, a.urgency, a.salary_range, 
+                a.expected_salary, a.current_employer, a.financial_situation, a.grade
+                FROM appointments a
+                LEFT JOIN tasks t ON t.opportunity_id = a.opportunity_id
+                LEFT JOIN comments c ON c.opportunity_id = a.opportunity_id
+                JOIN opportunity o on o.id = a.opportunity_id
+                WHERE a.status in (9, 10) AND a.mentor_id = %s 
+                AND CONVERT_TZ(a.appointment_time, 'GMT', 'Asia/Kolkata') >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+                GROUP BY a.id, a.opportunity_id, a.status, a.created_at, a.appointment_time
+                ORDER BY a.appointment_time ASC
+                LIMIT %s OFFSET %s
+                '''
+        offset = (page - 1) * page_size
+        cursor.execute(sql, (sales_agent_id, page_size, offset))
+        results = cursor.fetchall()
+        appointments = []   
+        for result in results:
+            appointment = {
+                'opportunity_id': result[0],
+                'appointment_id': result[1],
+                'status': result[2],
+                'created_at': result[3],
+                'appointment_time': result[4],
+                'opportunity_name': result[5],
+                'opportunity_email': result[6],
+                'opportunity_phone': result[7],
+                'confirmed': result[8],
+                'ad_name': result[9],
+                'task_count': result[10],
+                'comment_count': result[11],
+                'career_challenge': result[12],
+                'challenge_description': result[13],
+                'urgency': result[14],
+                'salary_range': result[15],
+                'expected_salary': result[16],
+                'current_employer': result[17],
+                'financial_situation': result[18],
+                'grade': result[19]
+            }
+            appointments.append(appointment)
+
+        count_query = '''SELECT COUNT(DISTINCT a.opportunity_id) FROM appointments a
+                        JOIN opportunity o on o.id = a.opportunity_id
+                        WHERE a.status in (9, 10) AND a.mentor_id = %s 
+                        AND CONVERT_TZ(a.appointment_time, 'GMT', 'Asia/Kolkata') >= DATE_SUB(NOW(), INTERVAL 1 HOUR)'''
+        cursor.execute(count_query, (sales_agent_id,))
+        total_appointments = cursor.fetchone()[0]
+        return appointments, total_appointments
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
 def list_all_appointments_for_confirmation(assigned=False, user_id=None, search=None, date=None, page=1, page_size=10):
     try:
         print(f'List all appointments for confirmation with assigned: {assigned} and user_id: {user_id}')
         connection = create_connection()
         cursor = connection.cursor()
-        sql = '''SELECT a.id, a.opportunity_id, a.status, a.created_at, a.appointment_time,
-                o.name, o.email, o.phone, a.confirmed, o.ad_name,
-                COUNT(DISTINCT t.id) as task_count,
-                COUNT(DISTINCT c.id) as comment_count
+        sql = '''WITH LatestAppointments AS (
+                    SELECT MAX(id) as latest_id
+                    FROM appointments 
+                    WHERE confirmed = 0 AND CONVERT_TZ(appointment_time, 'GMT', 'Asia/Kolkata') >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+                    GROUP BY opportunity_id
+                )
+                SELECT distinct(a.opportunity_id), a.id, a.status, a.created_at, a.appointment_time,
+                       o.name, o.email, o.phone, a.confirmed, o.ad_name,
+                       COUNT(DISTINCT t.id) as task_count,
+                       COUNT(DISTINCT c.id) as comment_count,
+                       a.career_challenge, a.challenge_description, a.urgency, a.salary_range, 
+                       a.expected_salary, a.current_employer, a.financial_situation, a.grade
                 FROM appointments a
+                INNER JOIN LatestAppointments la ON a.id = la.latest_id
                 LEFT JOIN tasks t ON t.opportunity_id = a.opportunity_id
                 LEFT JOIN comments c ON c.opportunity_id = a.opportunity_id
                 JOIN opportunity o on o.id = a.opportunity_id
-                WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
-                AND (a.confirmed = 0 AND a.status IS NULL)'''
+                WHERE a.status is NULL '''
         sql_params = []
         if date:
             sql += " AND DATE(a.appointment_time) = %s"
             sql_params.append(date)
+        else:
+            sql += " AND a.appointment_time >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) "
         if search:
             sql += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
             formatted_search_term = "%" + search + "%"
@@ -542,8 +614,8 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, search=
         appointments = []
         for result in results:
             appointment = {
-                'appointment_id': result[0],
-                'opportunity_id': result[1],
+                'opportunity_id': result[0],
+                'appointment_id': result[1],
                 'status': result[2],
                 'created_at': result[3],
                 'appointment_time': result[4],
@@ -554,17 +626,33 @@ def list_all_appointments_for_confirmation(assigned=False, user_id=None, search=
                 'ad_name': result[9],
                 'task_count': result[10],
                 'comment_count': result[11],
+                'career_challenge': result[12],
+                'challenge_description': result[13],
+                'urgency': result[14],
+                'salary_range': result[15],
+                'expected_salary': result[16],
+                'current_employer': result[17],
+                'financial_situation': result[18],
+                'grade': result[19]
             }
             appointments.append(appointment)
 
         sql_params = []
-        count_query = '''SELECT COUNT(a.id) FROM appointments a 
+        count_query = '''WITH LatestAppointments AS (
+                            SELECT MAX(id) as latest_id
+                            FROM appointments 
+                            GROUP BY opportunity_id
+                        )
+                        SELECT COUNT(DISTINCT a.opportunity_id) 
+                        FROM appointments a
+                        INNER JOIN LatestAppointments la ON a.id = la.latest_id
                         JOIN opportunity o on o.id = a.opportunity_id
-                        WHERE a.appointment_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
-                        AND a.confirmed = 0 AND a.status IS NULL'''
+                        WHERE a.confirmed = 0 '''
         if date:
             count_query += " AND DATE(a.appointment_time) = %s"
             sql_params.append(date)
+        else:
+            count_query += " AND a.appointment_time >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) "
         if search:
             count_query += " AND (o.name LIKE %s OR o.email LIKE %s OR o.phone LIKE %s)"
             formatted_search_term = "%" + search + "%"

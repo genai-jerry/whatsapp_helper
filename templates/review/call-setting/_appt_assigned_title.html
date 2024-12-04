@@ -11,6 +11,24 @@
         {{appointment.appointment_time | format_date}}
     </span>
 </p>
+<p>
+    <span class="badge bg-light text-dark" data-bs-toggle="tooltip" data-bs-html="true" 
+          title="<div class='candidate-details p-2'>
+                    <p><strong>Career Challenge:</strong> {{appointment.career_challenge or 'N/A'}}</p>
+                    <p><strong>Challenge Description:</strong> {{appointment.challenge_description or 'N/A'}}</p>
+                    <p><strong>Urgency:</strong> {{appointment.urgency or 'N/A'}}</p>
+                    <p><strong>Salary Range:</strong> {{appointment.salary_range or 'N/A'}}</p>
+                    <p><strong>Expected Salary:</strong> {{appointment.expected_salary or 'N/A'}}</p>
+                    <p><strong>Current Employer:</strong> {{appointment.current_employer or 'N/A'}}</p>
+                    <p><strong>Financial Situation:</strong> {{appointment.financial_situation or 'N/A'}}</p>
+                 </div>">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal-text" viewBox="0 0 16 16">
+            <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+            <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
+            <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z"/>
+        </svg>
+    </span>
+</p>
 
 <p>
     <span class="badge bg-light text-dark" data-bs-toggle="tooltip" data-bs-placement="top" title="{{appointment.ad_name}}">
@@ -21,11 +39,24 @@
     </span>
 </p>
 
+<style>
+    .tooltip-inner {
+        max-width: 400px;
+        text-align: left;
+    }
+    .candidate-details p {
+        margin-bottom: 0.5rem;
+        white-space: normal;
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                html: true
+            })
         })
     });
 </script>

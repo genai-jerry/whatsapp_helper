@@ -1,6 +1,6 @@
 from flask import jsonify, Blueprint, request, render_template
 from flask_login import current_user, login_required
-from store.appointment_store import get_all_appointment_status, list_all_appointments_for_confirmation
+from store.appointment_store import get_all_appointment_status, list_all_appointments_for_confirmation, list_all_confirmed_appointments
 from store.opportunity_store import *
 from store.tasks_store import get_tasks_due
 from store.employee_store import get_all_employees
@@ -30,6 +30,10 @@ def report():
     assigned_follow_up, assigned_follow_up_count = list_all_leads_for_follow_up(assigned=True, user_id=user_id, page=assigned_follow_up_page, page_size=10)
     assigned_no_show, assigned_no_show_count = list_all_leads_for_no_show(assigned=True, user_id=user_id, page=assigned_no_show_page, page_size=10)
     assigned_appointments, assigned_appointments_count = list_all_appointments_for_confirmation(assigned=True, user_id=user_id, page=assigned_appointments_page, page_size=10)
+    sales_agent_id = get_sales_agent_id_for_user(user_id)
+    print(f'Sales agent id: {sales_agent_id}')
+    assigned_confirmed_appointments, assigned_confirmed_appointments_count = list_all_confirmed_appointments(sales_agent_id)
+    print(f'Assigned Confirmed Appointments: {assigned_confirmed_appointments}')
     employees = get_all_employees()
     call_statuses = get_all_call_status()
     appointment_statuses = get_all_appointment_status()
@@ -49,6 +53,8 @@ def report():
                            assigned_follow_up_page=assigned_follow_up_page,
                            assigned_no_show_page=assigned_no_show_page,
                            assigned_appointments_page=assigned_appointments_page,
+                           assigned_confirmed_appointments=assigned_confirmed_appointments,
+                           assigned_confirmed_appointments_count=assigned_confirmed_appointments_count,
                            current_date=datetime.now(),
                            tasks_type=tasks_type,
                            page_size=10)

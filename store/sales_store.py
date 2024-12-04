@@ -483,16 +483,33 @@ def get_payments_report_call_setters(start_date=None, end_date=None):
 
         end_date = f'{end_date} 23:59:59'
         # SQL query to select payments within the specified duration
-        query = f'''SELECT s.call_setter, sa.name as call_setter_name, 
-        SUM(p.payment_value) as total_payment,
-        SUM(s.sale_value) as total_sale_value,
-        SUM(s.sale_value - s.total_paid) as pending_amount
-        FROM payments p
-        LEFT JOIN sale s ON p.sale = s.id
-        LEFT JOIN sales_agent sa ON sa.id = s.call_setter
-        WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}' AND s.is_final = 1
+        query = f'''WITH OpportunityTotals AS (
+            SELECT 
+                o.id as opportunity_id,
+                s.call_setter,
+                sa.name as call_setter_name,
+                SUM(p.payment_value) as opportunity_payment,
+                MAX(s.sale_value) as opportunity_sale_value,
+                MAX(s.sale_value - s.total_paid) as opportunity_pending
+            FROM payments p
+            LEFT JOIN sale s ON p.sale = s.id
+            LEFT JOIN sales_agent sa ON sa.id = s.call_setter
+            LEFT JOIN opportunity o ON o.id = s.opportunity_id
+            LEFT JOIN users u ON u.id = sa.user_id
+            WHERE p.payment_date >= '{start_date}' 
+                AND p.payment_date <= '{end_date}' 
+                AND s.is_final = 1 
+                AND u.active = 1
+            GROUP BY o.id, s.call_setter, sa.name
+        )
+        SELECT 
+            call_setter,
+            call_setter_name,
+            SUM(opportunity_payment) as total_payment,
+            SUM(opportunity_sale_value) as total_sale_value,
+            SUM(opportunity_pending) as pending_amount
+        FROM OpportunityTotals
         GROUP BY call_setter, call_setter_name'''
-
 
         # Execute the query
         cursor.execute(query)
@@ -541,13 +558,13 @@ def get_payments_oppotunities_by_call_setter(page, page_size, start_date=None, e
             s.is_final as sale_status,
             p.payment_date as payment_date,
             o.id as opportunity_id
-        FROM opportunity o
-        LEFT JOIN sale s ON o.id = s.opportunity_id
-        LEFT JOIN sales_agent sa ON sa.id = s.call_setter
-        LEFT JOIN payments p ON p.sale = s.id
-        WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}'
-        ORDER BY p.payment_date DESC
-        LIMIT {page_size} OFFSET {(page - 1) * page_size}
+            FROM opportunity o
+            LEFT JOIN sale s ON o.id = s.opportunity_id
+            JOIN sales_agent sa ON sa.id = s.call_setter 
+            LEFT JOIN payments p ON p.sale = s.id
+            WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}' AND s.is_final = 1 and s.call_setter != 4
+            ORDER BY p.payment_date DESC
+            LIMIT {page_size} OFFSET {(page - 1) * page_size}
         '''
 
         # Execute the query
@@ -574,8 +591,9 @@ def get_payments_oppotunities_by_call_setter(page, page_size, start_date=None, e
         # Count the total number of rows
         count_query = f'''SELECT COUNT(*) FROM opportunity o
                 LEFT JOIN sale s ON o.id = s.opportunity_id
-                LEFT JOIN payments p ON p.sale = s.id
-                WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}'
+                JOIN sales_agent sa ON sa.id = s.call_setter 
+            LEFT JOIN payments p ON p.sale = s.id
+        WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}' AND s.is_final = 1 and s.call_setter != 4
                 '''
         cursor.execute(count_query)
         total_count = cursor.fetchone()[0]
@@ -661,23 +679,36 @@ def get_payments_report_sales_agents(start_date=None, end_date=None):
         connection = create_connection()
         cursor = connection.cursor()
 
-        # Get the current date
         if not end_date:
             end_date = datetime.date.today()
-
         if not start_date:
             start_date = datetime.date(end_date.year, end_date.month, 1)
-
         end_date = f'{end_date} 23:59:59'
-        # SQL query to select payments within the specified duration
-        query = f'''SELECT s.sales_agent, sa.name as sales_agent_name, 
-        SUM(p.payment_value) as total_payment,
-        SUM(s.sale_value) as total_sale_value,
-        SUM(s.sale_value - s.total_paid) as pending_amount
-        FROM payments p
-        LEFT JOIN sale s ON p.sale = s.id
-        LEFT JOIN sales_agent sa ON sa.id = s.sales_agent
-        WHERE p.payment_date >= '{start_date}' AND p.payment_date <= '{end_date}' AND s.is_final = 1
+
+        query = f'''WITH OpportunityTotals AS (
+            SELECT 
+                o.id as opportunity_id,
+                s.sales_agent,
+                sa.name as sales_agent_name,
+                SUM(p.payment_value) as opportunity_payment,
+                MAX(s.sale_value) as opportunity_sale_value,
+                MAX(s.sale_value - s.total_paid) as opportunity_pending
+            FROM payments p
+            LEFT JOIN sale s ON p.sale = s.id
+            LEFT JOIN sales_agent sa ON sa.id = s.sales_agent
+            LEFT JOIN opportunity o ON o.id = s.opportunity_id
+            WHERE p.payment_date >= '{start_date}' 
+                AND p.payment_date <= '{end_date}' 
+                AND s.is_final = 1
+            GROUP BY o.id, s.sales_agent, sa.name
+        )
+        SELECT 
+            sales_agent,
+            sales_agent_name,
+            SUM(opportunity_payment) as total_payment,
+            SUM(opportunity_sale_value) as total_sale_value,
+            SUM(opportunity_pending) as pending_amount
+        FROM OpportunityTotals
         GROUP BY sales_agent, sales_agent_name'''
 
         # Execute the query
