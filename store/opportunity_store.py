@@ -1410,13 +1410,14 @@ def list_all_leads_for_no_show(assigned = False, user_id=None, search=None, date
 
 def assign_opportunity_to_agent(opportunity_id, agent_id):
     try:
+        print(f'Assigning opportunity {opportunity_id} to agent {agent_id}')
         connection = create_connection()
         cursor = connection.cursor()
         sales_agent_id = get_sales_agent_id_for_user(agent_id)
-            
+        print(f'Sales agent id: {sales_agent_id} to assign to opportunity {opportunity_id}')
         # If not assigned, proceed with assignment
         sql = "UPDATE opportunity SET assigned_to = %s, optin_caller = %s WHERE id = %s AND assigned_to IS NULL"
-        cursor.execute(sql, (agent_id, sales_agent_id, opportunity_id))
+        cursor.execute(sql, (sales_agent_id, sales_agent_id, opportunity_id))
         updated_count = cursor.rowcount
         print(f'Updated {updated_count} rows')
         if updated_count == 0:
